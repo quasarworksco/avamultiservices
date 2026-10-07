@@ -32,12 +32,12 @@
   <link rel="stylesheet" href="../assets/css/styles.css">
   <style>
     .p-hero { padding-bottom: clamp(50px, 7vw, 90px); text-align: center; }
-    .p-hero .hero-title { margin-inline: auto; max-width: 900px; font-size: clamp(40px, 6.6vw, 84px); }
+    .p-hero .hero-title { margin-inline: auto; max-width: 820px; font-size: clamp(36px, 5.2vw, 66px); }
     .p-hero .hero-lead { margin-inline: auto; }
     .p-hero .hero-actions { justify-content: center; }
-    .p-hero .eyebrow { margin-inline: auto; }
+    .p-hero .eyebrow-pro { margin-inline: auto; }
 
-    .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; max-width: 980px; margin: 48px auto 0; border-radius: 24px; overflow: hidden; text-align: left; }
+    .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; max-width: 940px; margin: 40px auto 0; border-radius: 24px; overflow: hidden; text-align: left; }
     .meta > div { padding: 20px 22px; border-right: 1px solid var(--line); }
     .meta > div:last-child { border-right: 0; }
     .meta .l { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
@@ -208,6 +208,7 @@
   <symbol id="i-accessibility" viewBox="0 0 24 24"><circle cx="16" cy="4" r="1"/><path d="m18 19 1-7-6 1"/><path d="m5 8 3-3 5.5 3-2.36 3.5"/><path d="M4.24 14.5a5 5 0 0 0 6.88 6"/><path d="M13.76 17.5a5 5 0 0 0-6.88-6"/></symbol>
   <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
   <symbol id="i-list" viewBox="0 0 24 24"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></symbol>
+  <symbol id="i-skyline" viewBox="0 0 1200 180"><path d="M0 178V132H34V178 M38 178V114H64V178 M68 178V124H112V178 M116 178V92H146V178 M150 178V106H190V178 M196 178V32H204V24H230V32H238V178 M204 32V178M230 32V178 M244 178V80H272V178 M278 178V60L304 42L330 60V178 M338 178V46H374V178M342 46L356 28L370 46M356 28V16 M380 178V94H408V178 M414 178V68L438 28L466 74V178M438 28V178 M472 178V74H510V178 M514 178V108H540V178 M546 178V50Q568 38 590 50V178M560 66H576V82H560Z M596 178V88H630V178 M634 178V116H686V178 M690 178V130H720V178 M754 178V82M762 178V82M750 82H766 M740 64A18 18 0 1 0 776 64A18 18 0 1 0 740 64M741 58H775M741 70H775M758 46V32 M784 178V138H814V178 M820 166H1200M840 166Q1010 58 1180 166 M868 149V166 M897 136V166 M925 126V166 M953 118V166 M982 113V166 M1010 112V166 M1038 114V166 M1067 118V166 M1095 126V166 M1123 136V166 M1152 149V166 M0 178H1200"/></symbol>
   <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
 </svg>
 <div class="progress" aria-hidden="true"></div>
@@ -241,7 +242,7 @@
     <div class="blob blob-1" aria-hidden="true"></div>
     <div class="blob blob-2" aria-hidden="true"></div>
     <div class="container" style="position:relative">
-      <span class="eyebrow reveal"><span class="dot"><svg class="icon icon-sm"><use href="#i-sparkles"/></svg></span>Propuesta de diseño y desarrollo web</span>
+      <a href="#vista" class="eyebrow-pro reveal"><span class="eb-badge"><svg class="icon"><use href="#i-file"/></svg>REC-YEXRJM</span><span class="eb-text"><span class="pulse"></span>Propuesta de diseño y desarrollo web</span><svg class="icon eb-arrow"><use href="#i-arrow-right"/></svg></a>
       <h1 class="hero-title" id="p-title">
         <span class="line"><span style="--d:.05s">Hola Ana, tu nuevo</span></span>
         <span class="line"><span style="--d:.15s">sitio web está <span class="serif grad-text">listo.</span></span></span>
@@ -318,7 +319,7 @@
         <div class="feature glass-dark reveal"><span class="f-ico"><svg class="icon"><use href="#i-smartphone"/></svg></span><h3>100% responsive</h3><p>Se ve impecable en celulares, tablets y computadoras.</p></div>
         <div class="feature glass-dark reveal" style="--d:.06s"><span class="f-ico"><svg class="icon"><use href="#i-languages"/></svg></span><h3>Bilingüe ES / EN</h3><p>Selector de idioma para atender también a clientes en inglés.</p></div>
         <div class="feature glass-dark reveal" style="--d:.12s"><span class="f-ico"><svg class="icon"><use href="#i-send"/></svg></span><h3>Formulario inteligente</h3><p>Valida los datos, llega a tu correo y redirige a una página de agradecimiento.</p></div>
-        <div class="feature glass-dark reveal" style="--d:.18s"><span class="f-ico"><svg class="icon icon-fill"><use href="#i-whatsapp"/></svg></span><h3>WhatsApp integrado</h3><p>Botón flotante y enlaces con mensaje predefinido en todo el sitio.</p></div>
+        <div class="feature glass-dark reveal" style="--d:.18s"><span class="f-ico"><svg class="icon icon-fill"><use href="#i-whatsapp"/></svg></span><h3>WhatsApp integrado</h3><p>Barra de contacto fija en celular y enlaces con mensaje predefinido.</p></div>
         <div class="feature glass-dark reveal"><span class="f-ico"><svg class="icon"><use href="#i-sparkles"/></svg></span><h3>Glassmorphism y animaciones</h3><p>Efectos de cristal, entradas suaves y microinteracciones profesionales.</p></div>
         <div class="feature glass-dark reveal" style="--d:.06s"><span class="f-ico"><svg class="icon"><use href="#i-zap"/></svg></span><h3>Carga rápida</h3><p>Código ligero sin plantillas pesadas ni dependencias innecesarias.</p></div>
         <div class="feature glass-dark reveal" style="--d:.12s"><span class="f-ico"><svg class="icon"><use href="#i-accessibility"/></svg></span><h3>Accesible</h3><p>Navegación por teclado, contraste adecuado y respeto por "reducir movimiento".</p></div>
@@ -349,6 +350,11 @@
             <img src="../assets/img/logo-mark.svg" alt="Isotipo provisional de AVA Multiservices" width="64" height="64">
             <p>Isotipo provisional. Lo reemplazaremos por tu logo oficial en cuanto nos lo envíes en alta resolución.</p>
           </div>
+          <h3 style="margin-top:30px">Identidad local</h3>
+          <div style="margin-top:16px;padding:18px 18px 0;border-radius:16px;background:linear-gradient(160deg,#1d44e0,#071552);color:rgba(255,255,255,.55);overflow:hidden">
+            <svg class="skyline" style="width:100%;height:auto;aspect-ratio:1200/180;stroke-width:2.4" aria-hidden="true"><use href="#i-skyline"/></svg>
+          </div>
+          <p style="margin-top:12px;font-size:14px;color:var(--muted)">Silueta de Dallas (Reunion Tower y el puente Margaret Hunt Hill) creada a medida para conectar la marca con su ciudad.</p>
         </div>
         <div class="panel reveal" style="--d:.08s">
           <h3>Tipografía</h3>
