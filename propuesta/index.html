@@ -1,0 +1,493 @@
+<!doctype html>
+<html lang="es" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Propuesta de Sitio Web · AVA Multiservices | DGP Global Group</title>
+  <meta name="description" content="Presentación del nuevo sitio web de AVA Multiservices: diseño, funcionalidades, SEO y próximos pasos. Factura REC-YEXRJM.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#1438cc">
+  <link rel="canonical" href="https://avamultiservices.dgp-link.com/propuesta/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_US">
+  <meta property="og:site_name" content="AVA Multiservices">
+  <meta property="og:title" content="Propuesta de sitio web · AVA Multiservices">
+  <meta property="og:description" content="Tu nuevo sitio web está listo para revisión. Diseño, funcionalidades, SEO y próximos pasos.">
+  <meta property="og:url" content="https://avamultiservices.dgp-link.com/propuesta/">
+  <meta property="og:image" content="https://avamultiservices.dgp-link.com/assets/img/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Propuesta de sitio web · AVA Multiservices">
+  <meta name="twitter:description" content="Tu nuevo sitio web está listo para revisión.">
+  <meta name="twitter:image" content="https://avamultiservices.dgp-link.com/assets/img/og-image.jpg">
+
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="../assets/img/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <style>
+    .p-hero { padding-bottom: clamp(50px, 7vw, 90px); text-align: center; }
+    .p-hero .hero-title { margin-inline: auto; max-width: 900px; font-size: clamp(40px, 6.6vw, 84px); }
+    .p-hero .hero-lead { margin-inline: auto; }
+    .p-hero .hero-actions { justify-content: center; }
+    .p-hero .eyebrow { margin-inline: auto; }
+
+    .meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; max-width: 980px; margin: 48px auto 0; border-radius: 24px; overflow: hidden; text-align: left; }
+    .meta > div { padding: 20px 22px; border-right: 1px solid var(--line); }
+    .meta > div:last-child { border-right: 0; }
+    .meta .l { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .meta .l .icon { width: 15px; height: 15px; color: var(--blue); }
+    .meta .v { margin-top: 6px; font-weight: 700; font-size: 16px; word-break: break-word; }
+    .status { display: inline-flex; align-items: center; gap: 8px; }
+
+    /* Vista previa */
+    .preview { position: relative; display: grid; grid-template-columns: 1fr 260px; gap: 30px; align-items: end; }
+    .browser { border-radius: 20px; overflow: hidden; background: #fff; border: 1px solid var(--line-strong); box-shadow: 0 60px 120px -50px rgba(20, 56, 204, 0.55), 0 10px 30px -15px rgba(11, 21, 51, 0.25); }
+    .browser-bar { display: flex; align-items: center; gap: 14px; height: 46px; padding: 0 16px; background: var(--soft); border-bottom: 1px solid var(--line); }
+    .dots { display: flex; gap: 7px; }
+    .dots i { width: 11px; height: 11px; border-radius: 50%; background: #e2e8f0; }
+    .dots i:nth-child(1) { background: #ff5f57; } .dots i:nth-child(2) { background: #febc2e; } .dots i:nth-child(3) { background: #28c840; }
+    .url { flex: 1; display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 9px; background: #fff; border: 1px solid var(--line); font-size: 13px; color: var(--muted); overflow: hidden; white-space: nowrap; }
+    .url .icon { width: 14px; height: 14px; color: #16a34a; }
+    .frame-box { position: relative; width: 100%; aspect-ratio: 16 / 10; overflow: hidden; background: #f6f8fc; }
+    .frame-box iframe { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; pointer-events: auto; }
+    .phone { position: relative; padding: 10px; border-radius: 42px; background: #0b1533; box-shadow: 0 50px 90px -40px rgba(11, 21, 51, 0.7); }
+    .phone::before { content: ""; position: absolute; top: 18px; left: 50%; width: 80px; height: 22px; margin-left: -40px; border-radius: 20px; background: #0b1533; z-index: 2; }
+    .phone .frame-box { aspect-ratio: 9 / 19.5; border-radius: 32px; }
+    .preview-note { margin-top: 18px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+
+    /* Secciones construidas */
+    .built { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: b; }
+    .built li { position: relative; padding: 24px; border-radius: var(--radius-lg); background: #fff; border: 1px solid var(--line); transition: transform 0.4s var(--ease), border-color 0.3s; }
+    .built li:hover { transform: translateY(-4px); border-color: rgba(20, 56, 204, 0.25); }
+    .built .b-top { display: flex; align-items: center; justify-content: space-between; }
+    .built .b-ico { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 13px; background: var(--blue-50); color: var(--blue); }
+    .built .b-n { font-size: 12px; font-weight: 700; color: rgba(11, 21, 51, 0.3); letter-spacing: 0.1em; }
+    .built h3 { margin-top: 16px; font-size: 18px; }
+    .built p { margin-top: 6px; font-size: 14.5px; color: var(--muted); }
+
+    /* Funcionalidades */
+    .features { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .feature { padding: 24px; border-radius: var(--radius-lg); }
+    .feature .f-ico { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 13px; background: #fff; color: var(--blue); }
+    .feature h3 { margin-top: 18px; font-size: 17px; }
+    .feature p { margin-top: 6px; font-size: 14px; color: rgba(255, 255, 255, 0.72); }
+
+    /* Identidad */
+    .brand-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; }
+    .panel { padding: clamp(24px, 3.5vw, 36px); border-radius: var(--radius-lg); background: #fff; border: 1px solid var(--line); }
+    .panel h3 { font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 20px; }
+    .swatch .chip-c { height: 120px; border-radius: 16px; border: 1px solid var(--line); }
+    .swatch .n { margin-top: 10px; font-weight: 700; font-size: 14px; }
+    .swatch .h { font-size: 13px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .type-sample { margin-top: 20px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+    .type-sample:last-child { border-bottom: 0; padding-bottom: 0; }
+    .type-sample .big { font-size: 44px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; }
+    .type-sample .big.serif { font-weight: 400; color: var(--blue); }
+    .type-sample .meta-t { margin-top: 6px; font-size: 13px; color: var(--muted); }
+    .logo-row { display: flex; align-items: center; gap: 18px; margin-top: 20px; padding: 18px; border-radius: 16px; background: var(--soft); }
+    .logo-row img { width: 64px; height: 64px; border-radius: 16px; box-shadow: 0 10px 24px -10px rgba(20, 56, 204, 0.6); }
+    .logo-row p { font-size: 14px; color: var(--muted); }
+
+    /* Vista previa social */
+    .social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
+    .og-card { border-radius: 18px; overflow: hidden; background: #fff; border: 1px solid var(--line-strong); box-shadow: 0 30px 60px -36px rgba(11, 21, 51, 0.45); }
+    .og-card img { width: 100%; height: auto; aspect-ratio: 1200 / 630; object-fit: cover; }
+    .og-card .og-body { padding: 14px 16px 16px; background: var(--soft); }
+    .og-card .og-d { font-size: 12px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.04em; }
+    .og-card .og-t { margin-top: 4px; font-weight: 700; font-size: 16px; }
+    .og-card .og-s { margin-top: 4px; font-size: 14px; color: var(--muted); }
+    .wa-bubble { max-width: 420px; padding: 6px; border-radius: 14px; background: #d9fdd3; box-shadow: 0 1px 1px rgba(0, 0, 0, 0.08); }
+    .wa-bubble .og-card { border-radius: 10px; box-shadow: none; border: 0; }
+    .wa-bubble .og-body { background: #f5fff2; }
+    .wa-bubble .msg { padding: 8px 8px 2px; font-size: 14.5px; }
+    .wa-bubble .msg a { color: #027eb5; word-break: break-all; }
+    .wa-bubble .time { text-align: right; font-size: 11px; color: #667781; padding: 0 6px 2px; }
+    .wa-wrap { padding: 24px; border-radius: var(--radius-lg); background: #efeae2; }
+    .label-sm { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+    /* SEO */
+    .seo-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 28px; }
+    .seo-item { display: flex; gap: 14px; align-items: flex-start; padding: 18px 0; border-bottom: 1px solid var(--line); }
+    .seo-item .tick { display: grid; place-items: center; width: 28px; height: 28px; flex: none; border-radius: 50%; background: #e8f7ee; color: #15803d; }
+    .seo-item b { display: block; font-size: 15.5px; }
+    .seo-item span { font-size: 14px; color: var(--muted); }
+    .serp { margin-top: 36px; padding: 24px; border-radius: var(--radius-lg); background: #fff; border: 1px solid var(--line); font-family: Arial, sans-serif; }
+    .serp .site { display: flex; align-items: center; gap: 10px; }
+    .serp .fav { width: 28px; height: 28px; border-radius: 50%; background: var(--soft); display: grid; place-items: center; }
+    .serp .fav img { width: 18px; height: 18px; border-radius: 4px; }
+    .serp .sn { font-size: 14px; color: #202124; }
+    .serp .su { font-size: 12px; color: #4d5156; }
+    .serp .st { margin-top: 8px; font-size: 20px; color: #1a0dab; line-height: 1.3; }
+    .serp .sd { margin-top: 4px; font-size: 14px; color: #4d5156; line-height: 1.58; }
+
+    /* Próximos pasos */
+    .next { display: grid; gap: 12px; }
+    .next li { display: flex; gap: 18px; align-items: flex-start; padding: 22px 24px; border-radius: var(--radius-lg); }
+    .next .n { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 12px; background: #fff; color: var(--blue); font-weight: 800; }
+    .next h3 { font-size: 17px; }
+    .next p { margin-top: 4px; font-size: 14.5px; color: rgba(255, 255, 255, 0.72); }
+    .next .tag { display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; vertical-align: middle; background: rgba(255, 255, 255, 0.14); color: #c7d2ff; }
+
+    .p-footer-cta { text-align: center; }
+    .p-footer-cta .cta-box { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+    .p-footer-cta .cta-box p { margin-inline: auto; }
+    .p-footer-cta .cta-actions { justify-content: center; }
+
+    .p-foot { padding: 34px 0; background: #050f3d; color: rgba(255, 255, 255, 0.7); font-size: 14px; }
+    .p-foot .row { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .p-foot .brand { color: #fff; }
+    .p-foot .brand-sub { color: rgba(255, 255, 255, 0.55); }
+
+    @media (max-width: 1080px) {
+      .preview { grid-template-columns: 1fr; }
+      .phone { width: 260px; margin-inline: auto; }
+      .built { grid-template-columns: repeat(2, 1fr); }
+      .features { grid-template-columns: repeat(2, 1fr); }
+      .brand-grid, .social-grid { grid-template-columns: 1fr; }
+      .meta { grid-template-columns: 1fr 1fr; }
+      .meta > div:nth-child(2) { border-right: 0; }
+      .meta > div:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
+    }
+    @media (max-width: 680px) {
+      .built, .features, .seo-grid { grid-template-columns: 1fr; }
+      .swatches { grid-template-columns: 1fr 1fr; }
+      .swatch .chip-c { height: 80px; }
+      .meta { grid-template-columns: 1fr; }
+      .meta > div { border-right: 0; border-bottom: 1px solid var(--line); }
+      .meta > div:last-child { border-bottom: 0; }
+      .type-sample .big { font-size: 34px; }
+      .nav-cta .btn-ghost { display: none; }
+    }
+  </style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+  <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-instagram" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><path d="M17.5 6.5h.01"/></symbol>
+  <symbol id="i-whatsapp" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></symbol>
+  <symbol id="i-passport" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="10" r="4"/><path d="M8 10h8"/><path d="M12 6c1.3 1.3 1.3 6.7 0 8"/><path d="M12 6c-1.3 1.3-1.3 6.7 0 8"/><path d="M9 18h6"/></symbol>
+  <symbol id="i-calculator" viewBox="0 0 24 24"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M8 6h8"/><path d="M16 14v4"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></symbol>
+  <symbol id="i-stamp" viewBox="0 0 24 24"><path d="M5 22h14"/><path d="M19.27 13.73A2.5 2.5 0 0 0 17.5 13h-11A2.5 2.5 0 0 0 4 15.5V17a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5c0-.66-.26-1.3-.73-1.77Z"/><path d="M14 13V8.5C14 7 15 7 15 5a3 3 0 0 0-3-3c-1.66 0-3 1-3 3s1 2 1 3.5V13"/></symbol>
+  <symbol id="i-trending" viewBox="0 0 24 24"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-message" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M4.27 21a2 2 0 0 0 1.73 1H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"/><path d="m9 18-1.5-1.5"/><circle cx="5" cy="14" r="3"/></symbol>
+  <symbol id="i-clipboard" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></symbol>
+  <symbol id="i-badge" viewBox="0 0 24 24"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-languages" viewBox="0 0 24 24"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M14.54 21.69a.5.5 0 0 0 .94-.03l6.5-19a.5.5 0 0 0-.64-.63l-19 6.5a.5.5 0 0 0-.02.93l7.93 3.18a2 2 0 0 1 1.11 1.11z"/><path d="m21.85 2.15-10.94 10.94"/></symbol>
+  <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0l1.58 6.14a2 2 0 0 0 1.44 1.44l6.14 1.58a.5.5 0 0 1 0 .96l-6.14 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z"/></symbol>
+  <symbol id="i-devices" viewBox="0 0 24 24"><path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8"/><path d="M10 19v-4"/><path d="M7 19h5"/><rect width="6" height="10" x="16" y="12" rx="2"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .71-1.53l7-6a2 2 0 0 1 2.58 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-layout" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol>
+  <symbol id="i-smartphone" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98"/><path d="m15.41 6.51-6.82 3.98"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.13a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.56-2.5 5.56-5.55C21.97 6.01 17.46 2 12 2z"/></symbol>
+  <symbol id="i-accessibility" viewBox="0 0 24 24"><circle cx="16" cy="4" r="1"/><path d="m18 19 1-7-6 1"/><path d="m5 8 3-3 5.5 3-2.36 3.5"/><path d="M4.24 14.5a5 5 0 0 0 6.88 6"/><path d="M13.76 17.5a5 5 0 0 0-6.88-6"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
+</svg>
+<div class="progress" aria-hidden="true"></div>
+
+<header class="nav" id="nav">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="../" class="brand" aria-label="AVA Multiservices">
+        <img class="brand-mark" src="../assets/img/logo-mark.svg" alt="" width="38" height="38">
+        <span class="brand-text"><span class="brand-name">AVA</span><span class="brand-sub">Propuesta web</span></span>
+      </a>
+      <nav class="nav-links" aria-label="Secciones de la propuesta">
+        <a href="#vista">Vista previa</a>
+        <a href="#secciones">Secciones</a>
+        <a href="#funciones">Funciones</a>
+        <a href="#identidad">Identidad</a>
+        <a href="#seo">SEO</a>
+        <a href="#pasos">Próximos pasos</a>
+      </nav>
+      <div class="nav-cta">
+        <a href="../" target="_blank" rel="noopener" class="btn btn-primary btn-sm"><span>Ver sitio</span><svg class="icon icon-sm arrow"><use href="#i-arrow-up-right"/></svg></a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- Hero -->
+  <section class="hero p-hero" aria-labelledby="p-title">
+    <div class="hero-grid-bg" aria-hidden="true"></div>
+    <div class="blob blob-1" aria-hidden="true"></div>
+    <div class="blob blob-2" aria-hidden="true"></div>
+    <div class="container" style="position:relative">
+      <span class="eyebrow reveal"><span class="dot"><svg class="icon icon-sm"><use href="#i-sparkles"/></svg></span>Propuesta de diseño y desarrollo web</span>
+      <h1 class="hero-title" id="p-title">
+        <span class="line"><span style="--d:.05s">Hola Ana, tu nuevo</span></span>
+        <span class="line"><span style="--d:.15s">sitio web está <span class="serif grad-text">listo.</span></span></span>
+      </h1>
+      <p class="hero-lead reveal" style="--d:.3s">Diseñamos para <strong>AVA Multiservices</strong> una presencia digital profesional, moderna y pensada para que tus clientes conozcan tus servicios y te contacten en segundos.</p>
+      <div class="hero-actions reveal" style="--d:.4s">
+        <a href="../" target="_blank" rel="noopener" class="btn btn-primary"><svg class="icon"><use href="#i-globe"/></svg><span>Ver sitio en vivo</span></a>
+        <a href="#vista" class="btn btn-ghost"><span>Recorrer la propuesta</span><svg class="icon icon-sm arrow"><use href="#i-arrow-right"/></svg></a>
+      </div>
+
+      <div class="meta glass reveal" style="--d:.5s">
+        <div><div class="l"><svg class="icon"><use href="#i-users"/></svg>Cliente</div><div class="v">Ana Vargas</div></div>
+        <div><div class="l"><svg class="icon"><use href="#i-file"/></svg>Factura</div><div class="v">REC-YEXRJM</div></div>
+        <div><div class="l"><svg class="icon"><use href="#i-globe"/></svg>Dominio</div><div class="v">avamultiservices.dgp-link.com</div></div>
+        <div><div class="l"><svg class="icon"><use href="#i-badge"/></svg>Estado</div><div class="v status"><span class="pulse"></span>Listo para revisión</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vista previa -->
+  <section class="section section-soft" id="vista" aria-labelledby="v-title">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="script-kicker">Así se ve</span>
+        <h2 class="section-title" id="v-title">Vista previa <span class="serif">en vivo</span></h2>
+        <p class="section-lead">El sitio se adapta a cualquier pantalla: computadora, tablet y celular. Puedes navegarlo directamente aquí.</p>
+      </div>
+      <div class="preview reveal-scale">
+        <div class="browser">
+          <div class="browser-bar">
+            <div class="dots"><i></i><i></i><i></i></div>
+            <div class="url"><svg class="icon"><use href="#i-lock"/></svg>avamultiservices.dgp-link.com</div>
+          </div>
+          <div class="frame-box" data-w="1440"><iframe src="../" title="Vista previa del sitio en escritorio" loading="lazy" tabindex="-1"></iframe></div>
+        </div>
+        <div class="phone">
+          <div class="frame-box" data-w="390"><iframe src="../" title="Vista previa del sitio en celular" loading="lazy" tabindex="-1"></iframe></div>
+        </div>
+      </div>
+      <div class="preview-note">
+        <a href="../" target="_blank" rel="noopener" class="btn btn-ghost btn-sm"><svg class="icon icon-sm"><use href="#i-external"/></svg>Abrir en una pestaña nueva</a>
+        <a href="../gracias.html" target="_blank" rel="noopener" class="btn btn-ghost btn-sm"><svg class="icon icon-sm"><use href="#i-check"/></svg>Ver página de agradecimiento</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Secciones -->
+  <section class="section" id="secciones" aria-labelledby="s-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="script-kicker">Lo que construimos</span>
+        <h2 class="section-title" id="s-title">Cada sección, <span class="serif">con un propósito</span></h2>
+        <p class="section-lead">Incluimos las páginas solicitadas (Inicio, Nosotros, Servicios y Contacto) y sumamos secciones que generan confianza y facilitan el contacto.</p>
+      </div>
+      <ol class="built">
+        <li class="reveal"><div class="b-top"><span class="b-ico"><svg class="icon"><use href="#i-home"/></svg></span><span class="b-n">01</span></div><h3>Inicio</h3><p>Portada de alto impacto con mensaje claro, botón directo a WhatsApp y composición visual con efecto cristal.</p></li>
+        <li class="reveal" style="--d:.06s"><div class="b-top"><span class="b-ico"><svg class="icon"><use href="#i-layout"/></svg></span><span class="b-n">02</span></div><h3>Servicios</h3><p>Los 5 servicios en tarjetas tipo bento: migratorios, taxes, LLC, notaría y crédito, cada uno con su llamado a la acción.</p></li>
+        <li class="reveal" style="--d:.12s"><div class="b-top"><span class="b-ico"><svg class="icon"><use href="#i-users"/></svg></span><span class="b-n">03</span></div><h3>Nosotros</h3><p>Presentación de Ana Vargas, la misión de la empresa y sus valores: confianza, claridad y cercanía.</p></li>
+        <li class="reveal"><div class="b-top"><span class="b-ico"><svg class="icon"><use href="#i-list"/></svg></span><span class="b-n">04</span></div><h3>Proceso</h3><p>Cuatro pasos sencillos que explican cómo trabajas y reducen la incertidumbre del cliente.</p></li>
+        <li class="reveal" style="--d:.06s"><div class="b-top"><span class="b-ico"><svg class="icon"><use href="#i-message"/></svg></span><span class="b-n">05</span></div><h3>Preguntas frecuentes</h3><p>Responde las dudas más comunes antes de que el cliente escriba, y suma posicionamiento en Google.</p></li>
+        <li class="reveal" style="--d:.12s"><div class="b-top"><span class="b-ico"><svg class="icon"><use href="#i-mail"/></svg></span><span class="b-n">06</span></div><h3>Contacto</h3><p>Formulario con validación que llega a tu correo, más WhatsApp, teléfono, Instagram y ubicación.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Funciones -->
+  <section class="section section-dark" id="funciones" aria-labelledby="f-title">
+    <div class="container" style="position:relative">
+      <div class="section-head center reveal">
+        <span class="script-kicker light">Funcionalidades</span>
+        <h2 class="section-title" id="f-title">Pensado para <span class="serif">convertir visitas en clientes</span></h2>
+      </div>
+      <div class="features">
+        <div class="feature glass-dark reveal"><span class="f-ico"><svg class="icon"><use href="#i-smartphone"/></svg></span><h3>100% responsive</h3><p>Se ve impecable en celulares, tablets y computadoras.</p></div>
+        <div class="feature glass-dark reveal" style="--d:.06s"><span class="f-ico"><svg class="icon"><use href="#i-languages"/></svg></span><h3>Bilingüe ES / EN</h3><p>Selector de idioma para atender también a clientes en inglés.</p></div>
+        <div class="feature glass-dark reveal" style="--d:.12s"><span class="f-ico"><svg class="icon"><use href="#i-send"/></svg></span><h3>Formulario inteligente</h3><p>Valida los datos, llega a tu correo y redirige a una página de agradecimiento.</p></div>
+        <div class="feature glass-dark reveal" style="--d:.18s"><span class="f-ico"><svg class="icon icon-fill"><use href="#i-whatsapp"/></svg></span><h3>WhatsApp integrado</h3><p>Botón flotante y enlaces con mensaje predefinido en todo el sitio.</p></div>
+        <div class="feature glass-dark reveal"><span class="f-ico"><svg class="icon"><use href="#i-sparkles"/></svg></span><h3>Glassmorphism y animaciones</h3><p>Efectos de cristal, entradas suaves y microinteracciones profesionales.</p></div>
+        <div class="feature glass-dark reveal" style="--d:.06s"><span class="f-ico"><svg class="icon"><use href="#i-zap"/></svg></span><h3>Carga rápida</h3><p>Código ligero sin plantillas pesadas ni dependencias innecesarias.</p></div>
+        <div class="feature glass-dark reveal" style="--d:.12s"><span class="f-ico"><svg class="icon"><use href="#i-accessibility"/></svg></span><h3>Accesible</h3><p>Navegación por teclado, contraste adecuado y respeto por "reducir movimiento".</p></div>
+        <div class="feature glass-dark reveal" style="--d:.18s"><span class="f-ico"><svg class="icon"><use href="#i-shield"/></svg></span><h3>Aviso legal de Texas</h3><p>Incluye el aviso obligatorio para notarios que no son abogados, en español e inglés.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Identidad -->
+  <section class="section section-soft" id="identidad" aria-labelledby="i-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="script-kicker">Identidad visual</span>
+        <h2 class="section-title" id="i-title">Minimalista, <span class="serif">confiable y elegante</span></h2>
+        <p class="section-lead">Usamos tu paleta personalizada para transmitir seriedad y confianza, con acentos tipográficos que aportan calidez.</p>
+      </div>
+      <div class="brand-grid">
+        <div class="panel reveal">
+          <h3>Paleta de colores</h3>
+          <div class="swatches">
+            <div class="swatch"><div class="chip-c" style="background:#1438cc"></div><div class="n">Azul AVA</div><div class="h">#1438CC</div></div>
+            <div class="swatch"><div class="chip-c" style="background:#ffffff"></div><div class="n">Blanco</div><div class="h">#FFFFFF</div></div>
+            <div class="swatch"><div class="chip-c" style="background:#f1f5f9"></div><div class="n">Gris niebla</div><div class="h">#F1F5F9</div></div>
+            <div class="swatch"><div class="chip-c" style="background:#0b1533"></div><div class="n">Tinta (texto)</div><div class="h">#0B1533</div></div>
+          </div>
+          <h3 style="margin-top:30px">Marca</h3>
+          <div class="logo-row">
+            <img src="../assets/img/logo-mark.svg" alt="Isotipo provisional de AVA Multiservices" width="64" height="64">
+            <p>Isotipo provisional. Lo reemplazaremos por tu logo oficial en cuanto nos lo envíes en alta resolución.</p>
+          </div>
+        </div>
+        <div class="panel reveal" style="--d:.08s">
+          <h3>Tipografía</h3>
+          <div class="type-sample"><div class="big">Plus Jakarta Sans</div><div class="meta-t">Títulos y textos · moderna, clara y profesional</div></div>
+          <div class="type-sample"><div class="big serif">Instrument Serif</div><div class="meta-t">Acentos · aporta elegancia y un toque humano</div></div>
+          <h3 style="margin-top:26px">Iconografía</h3>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;color:var(--blue)">
+            <span class="sc-ico" style="width:48px;height:48px"><svg class="icon"><use href="#i-passport"/></svg></span>
+            <span class="sc-ico" style="width:48px;height:48px"><svg class="icon"><use href="#i-calculator"/></svg></span>
+            <span class="sc-ico" style="width:48px;height:48px"><svg class="icon"><use href="#i-building"/></svg></span>
+            <span class="sc-ico" style="width:48px;height:48px"><svg class="icon"><use href="#i-stamp"/></svg></span>
+            <span class="sc-ico" style="width:48px;height:48px"><svg class="icon"><use href="#i-gauge"/></svg></span>
+          </div>
+          <p style="margin-top:14px;font-size:14px;color:var(--muted)">Íconos SVG vectoriales a medida: nítidos en cualquier pantalla, sin emojis.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEO + Social -->
+  <section class="section" id="seo" aria-labelledby="seo-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="script-kicker">SEO y redes sociales</span>
+        <h2 class="section-title" id="seo-title">Listo para <span class="serif">Google y para compartir</span></h2>
+        <p class="section-lead">El sitio está optimizado para aparecer en búsquedas locales de Dallas y para verse profesional cuando se comparte por WhatsApp, Facebook, Instagram o X.</p>
+      </div>
+
+      <div class="social-grid">
+        <div class="reveal">
+          <span class="label-sm"><svg class="icon icon-sm icon-fill" style="color:#16a34a"><use href="#i-whatsapp"/></svg>Así se verá en WhatsApp</span>
+          <div class="wa-wrap">
+            <div class="wa-bubble">
+              <div class="og-card">
+                <img src="../assets/img/og-image.jpg" alt="Imagen para redes de AVA Multiservices" width="1200" height="630">
+                <div class="og-body">
+                  <div class="og-t">AVA Multiservices | Tus trámites, en manos confiables</div>
+                  <div class="og-s">Documentos migratorios, taxes, LLC, notaría y reparación de crédito en Dallas, Texas.</div>
+                  <div class="og-d" style="margin-top:6px">avamultiservices.dgp-link.com</div>
+                </div>
+              </div>
+              <div class="msg"><a href="../">https://avamultiservices.dgp-link.com</a></div>
+              <div class="time">10:24 a. m. <svg viewBox="0 0 18 11" width="16" height="10" style="display:inline;vertical-align:-1px" fill="none" stroke="#53bdeb" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6l3.5 3.5L11 2"/><path d="M7 9.5 8 10.5 16 2"/></svg></div>
+            </div>
+          </div>
+        </div>
+        <div class="reveal" style="--d:.08s">
+          <span class="label-sm"><svg class="icon icon-sm"><use href="#i-share"/></svg>Facebook · X (Twitter) · LinkedIn</span>
+          <div class="og-card">
+            <img src="../assets/img/og-image.jpg" alt="" width="1200" height="630">
+            <div class="og-body">
+              <div class="og-d">avamultiservices.dgp-link.com</div>
+              <div class="og-t">AVA Multiservices | Tus trámites, en manos confiables</div>
+              <div class="og-s">Documentos migratorios, taxes, LLC, notaría y reparación de crédito en Dallas, Texas.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="serp reveal">
+        <span class="label-sm" style="font-family:var(--font-sans)"><svg class="icon icon-sm"><use href="#i-search"/></svg>Así se verá en Google</span>
+        <div class="site">
+          <span class="fav"><img src="../assets/img/favicon.svg" alt=""></span>
+          <div><div class="sn">AVA Multiservices</div><div class="su">https://avamultiservices.dgp-link.com</div></div>
+        </div>
+        <div class="st">AVA Multiservices | Taxes, LLC, Notaría, Inmigración y Crédito en Dallas, TX</div>
+        <div class="sd">AVA Multiservices en Dallas, Texas: preparación de documentos migratorios, taxes, formación de LLC, notaría y reparación de crédito. Atención personalizada en español…</div>
+      </div>
+
+      <div class="seo-grid" style="margin-top:30px">
+        <div class="seo-item reveal"><span class="tick"><svg class="icon icon-sm"><use href="#i-check"/></svg></span><div><b>Título y descripción optimizados</b><span>Palabras clave locales: taxes, LLC, notaría, inmigración y crédito en Dallas.</span></div></div>
+        <div class="seo-item reveal"><span class="tick"><svg class="icon icon-sm"><use href="#i-check"/></svg></span><div><b>Open Graph y Twitter Cards</b><span>Imagen, título y descripción personalizados al compartir el enlace.</span></div></div>
+        <div class="seo-item reveal"><span class="tick"><svg class="icon icon-sm"><use href="#i-check"/></svg></span><div><b>Datos estructurados (Schema.org)</b><span>Negocio local, fundadora, servicios y preguntas frecuentes para resultados enriquecidos.</span></div></div>
+        <div class="seo-item reveal"><span class="tick"><svg class="icon icon-sm"><use href="#i-check"/></svg></span><div><b>SEO local</b><span>Metadatos geográficos de Dallas, Texas, y área de servicio definida.</span></div></div>
+        <div class="seo-item reveal"><span class="tick"><svg class="icon icon-sm"><use href="#i-check"/></svg></span><div><b>Sitemap y robots.txt</b><span>Facilitan que Google rastree e indexe el sitio correctamente.</span></div></div>
+        <div class="seo-item reveal"><span class="tick"><svg class="icon icon-sm"><use href="#i-check"/></svg></span><div><b>HTML semántico y canónico</b><span>Estructura de encabezados correcta, URL canónica y favicon en todos los dispositivos.</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Próximos pasos -->
+  <section class="section section-dark" id="pasos" aria-labelledby="n-title">
+    <div class="container" style="position:relative;max-width:900px">
+      <div class="section-head center reveal">
+        <span class="script-kicker light">Próximos pasos</span>
+        <h2 class="section-title" id="n-title">Lo que necesitamos <span class="serif">para publicar</span></h2>
+      </div>
+      <ol class="next">
+        <li class="glass-dark reveal"><span class="n">1</span><div><h3>Revisa el sitio y envíanos tus comentarios</h3><p>Textos, lista de servicios y cualquier ajuste que quieras hacer.</p></div></li>
+        <li class="glass-dark reveal"><span class="n">2</span><div><h3>Logo oficial en alta resolución <span class="tag">Pendiente</span></h3><p>Preferiblemente en PNG con fondo transparente o en formato vectorial (SVG, AI o PDF).</p></div></li>
+        <li class="glass-dark reveal"><span class="n">3</span><div><h3>Fotos profesionales <span class="tag">Opcional</span></h3><p>Una foto tuya y de tu oficina le darán aún más cercanía y confianza al sitio.</p></div></li>
+        <li class="glass-dark reveal"><span class="n">4</span><div><h3>Activar el formulario</h3><p>Al primer envío llegará un correo de confirmación a anavargasdoria@gmail.com; solo debes hacer clic en «Activate».</p></div></li>
+        <li class="glass-dark reveal"><span class="n">5</span><div><h3>Publicación y Google</h3><p>Publicamos en avamultiservices.dgp-link.com y lo registramos en Google Search Console.</p></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- CTA final -->
+  <section class="section p-footer-cta" aria-label="Aprobación">
+    <div class="container">
+      <div class="cta-box reveal-scale">
+        <div>
+          <h2>¿Lista para <span class="serif">lanzar tu sitio?</span></h2>
+          <p>Revisa cada detalle con calma. Cuando estés conforme, confírmanos y lo dejamos publicado.</p>
+        </div>
+        <div class="cta-actions">
+          <a href="../" target="_blank" rel="noopener" class="btn btn-white"><svg class="icon"><use href="#i-globe"/></svg>Ver sitio completo</a>
+          <a href="https://dgpglobalgroup.com" target="_blank" rel="noopener" class="btn btn-outline-light"><span>Contactar a DGP Global Group</span><svg class="icon icon-sm arrow"><use href="#i-arrow-up-right"/></svg></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="p-foot">
+  <div class="container row">
+    <span>Propuesta para <strong style="color:#fff">AVA Multiservices</strong> · Cliente: Ana Vargas · Factura REC-YEXRJM</span>
+    <span class="credit">Diseñado por <a href="https://dgpglobalgroup.com" target="_blank" rel="noopener">DGP Global Group</a></span>
+  </div>
+</footer>
+
+<script src="../assets/js/main.js" defer></script>
+<script>
+  // Escala los iframes de vista previa para simular escritorio y celular
+  (function () {
+    var boxes = document.querySelectorAll('.frame-box');
+    function fit() {
+      boxes.forEach(function (box) {
+        var f = box.querySelector('iframe');
+        var w = parseInt(box.getAttribute('data-w'), 10);
+        var s = box.clientWidth / w;
+        f.style.width = w + 'px';
+        f.style.height = (box.clientHeight / s) + 'px';
+        f.style.transform = 'scale(' + s + ')';
+      });
+    }
+    fit();
+    window.addEventListener('resize', fit);
+  })();
+</script>
+</body>
+</html>
