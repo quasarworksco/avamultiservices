@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /propuesta/
+Disallow: /gracias.html
+
+Sitemap: https://avamultiservices.dgp-link.com/sitemap.xml
