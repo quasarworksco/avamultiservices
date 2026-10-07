@@ -14,7 +14,9 @@
     'skip': 'Skip to content',
     'nav.home': 'Home', 'nav.services': 'Services', 'nav.about': 'About', 'nav.process': 'Process', 'nav.faq': 'FAQ', 'nav.contact': 'Contact', 'nav.cta': 'Book an appointment',
     'cta.whatsapp': 'Message us on WhatsApp', 'cta.services': 'View services',
-    'hero.eyebrow': 'Dallas, Texas · In-person and online service',
+    'hero.eyebrow': 'In-person and online service',
+    'mf.1': 'Your documents, your taxes and your business deserve', 'mf.2': 'the same care', 'mf.3': 'you give your family.',
+    'swipe': 'Swipe to see more',
     'hero.t1': 'Your paperwork,', 'hero.t2': 'in hands', 'hero.t3': 'you can trust.',
     'hero.lead': 'Immigration documents, taxes, LLC formation, notary services and credit repair. We guide you every step of the way, in Spanish or English, with complete clarity.',
     'hero.trust1': 'Service in Spanish', 'hero.trust2': 'Personalized attention', 'hero.trust3': '5 services in one place',
@@ -127,11 +129,13 @@
   var nav = document.getElementById('nav');
   var progress = document.querySelector('.progress');
   var waFloat = document.querySelector('.wa-float');
+  var mBar = document.querySelector('.m-bar');
   var ticking = false;
   function onScroll() {
     var y = window.scrollY;
     if (nav) nav.classList.toggle('scrolled', y > 24);
     if (waFloat) waFloat.classList.toggle('show', y > 420);
+    if (mBar) mBar.classList.toggle('show', y > 320);
     if (progress) {
       var max = document.documentElement.scrollHeight - window.innerHeight;
       progress.style.transform = 'scaleX(' + (max > 0 ? y / max : 0) + ')';
@@ -175,14 +179,43 @@
 
   /* ---------- Revelado al hacer scroll ---------- */
   var revealEls = document.querySelectorAll('.reveal, .reveal-scale');
+  var carousels = document.querySelectorAll('.services-grid, .steps');
   if ('IntersectionObserver' in window && !reduceMotion) {
     var obs = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add('in'); obs.unobserve(en.target); } });
+      entries.forEach(function (en) {
+        if (!en.isIntersecting) return;
+        // En un carrusel se revelan todas las tarjetas a la vez
+        var group = en.target.matches('.services-grid, .steps') ? en.target.querySelectorAll('.reveal, .reveal-scale') : [en.target];
+        Array.prototype.forEach.call(group, function (el) { el.classList.add('in'); });
+        en.target.classList.add('in');
+        obs.unobserve(en.target);
+      });
     }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-    revealEls.forEach(function (el) { obs.observe(el); });
+    var mobile = window.matchMedia('(max-width: 680px)').matches;
+    revealEls.forEach(function (el) {
+      if (mobile && el.closest('.services-grid, .steps')) return;
+      obs.observe(el);
+    });
+    if (mobile) carousels.forEach(function (c) { obs.observe(c); });
   } else {
     revealEls.forEach(function (el) { el.classList.add('in'); });
   }
+
+  /* ---------- Indicadores de los carruseles (móvil) ---------- */
+  document.querySelectorAll('.swipe-dots').forEach(function (dots) {
+    var track = document.getElementById(dots.getAttribute('data-for'));
+    if (!track) return;
+    var items = track.children;
+    for (var i = 0; i < items.length; i++) dots.appendChild(document.createElement('i'));
+    var marks = dots.children;
+    function update() {
+      var max = track.scrollWidth - track.clientWidth;
+      var idx = max > 0 ? Math.round((track.scrollLeft / max) * (items.length - 1)) : 0;
+      for (var j = 0; j < marks.length; j++) marks[j].classList.toggle('on', j === idx);
+    }
+    track.addEventListener('scroll', function () { requestAnimationFrame(update); }, { passive: true });
+    update();
+  });
 
   /* ---------- Contadores ---------- */
   var counters = document.querySelectorAll('[data-count]');
