@@ -13,7 +13,7 @@
   <link rel="canonical" href="https://avamultiservices.dgp-link.com/">
   <link rel="alternate" hreflang="es-US" href="https://avamultiservices.dgp-link.com/">
   <link rel="alternate" hreflang="x-default" href="https://avamultiservices.dgp-link.com/">
-  <meta name="theme-color" content="#1438cc">
+  <meta name="theme-color" content="#2a2a2a">
   <meta name="format-detection" content="telephone=yes">
 
   <!-- Geo -->
@@ -27,7 +27,7 @@
   <meta property="og:locale" content="es_US">
   <meta property="og:locale:alternate" content="en_US">
   <meta property="og:site_name" content="AVA Multiservices">
-  <meta property="og:title" content="AVA Multiservices | Tus trámites, en manos confiables">
+  <meta property="og:title" content="AVA Multiservices | Más que servicios, soluciones claras">
   <meta property="og:description" content="Documentos migratorios, taxes, LLC, notaría y reparación de crédito en Dallas, Texas. Atención personalizada en español.">
   <meta property="og:url" content="https://avamultiservices.dgp-link.com/">
   <meta property="og:image" content="https://avamultiservices.dgp-link.com/assets/img/og-image.jpg">
@@ -39,7 +39,7 @@
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="AVA Multiservices | Tus trámites, en manos confiables">
+  <meta name="twitter:title" content="AVA Multiservices | Más que servicios, soluciones claras">
   <meta name="twitter:description" content="Documentos migratorios, taxes, LLC, notaría y reparación de crédito en Dallas, Texas. Atención personalizada en español.">
   <meta name="twitter:image" content="https://avamultiservices.dgp-link.com/assets/img/og-image.jpg">
   <meta name="twitter:image:alt" content="AVA Multiservices — Dallas, Texas">
@@ -53,7 +53,7 @@
   <!-- Fuentes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700&display=swap">
 
   <link rel="stylesheet" href="assets/css/styles.css">
 
@@ -139,7 +139,17 @@
     ]
   }
   </script>
-  <script>document.documentElement.classList.remove('no-js');</script>
+  <script>
+    (function (d) {
+      d.classList.remove('no-js');
+      try {
+        if (window.self === window.top && !sessionStorage.getItem('ava-intro') && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          d.classList.add('intro-on');
+          sessionStorage.setItem('ava-intro', '1');
+        }
+      } catch (e) { /* sin almacenamiento: se omite la intro */ }
+    })(document.documentElement);
+  </script>
 </head>
 <body>
 <svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
@@ -186,6 +196,11 @@
   <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
 </svg>
 
+<div class="intro" aria-hidden="true">
+  <div class="intro-word"><span>AVA</span></div>
+  <div class="intro-sub">More than services · Clear solutions</div>
+</div>
+
 <a class="skip-link" href="#main" data-i18n="skip">Saltar al contenido</a>
 <div class="progress" aria-hidden="true"></div>
 
@@ -194,8 +209,7 @@
   <div class="container">
     <div class="nav-inner">
       <a href="#inicio" class="brand" aria-label="AVA Multiservices — Inicio">
-        <img class="brand-mark" src="assets/img/logo-mark.svg" alt="" width="38" height="38">
-        <span class="brand-text"><span class="brand-name">AVA</span><span class="brand-sub">Multiservices</span></span>
+        <span class="brand-word">AVA</span><span class="brand-divider"></span><span class="brand-sub">Multi<br>services</span>
       </a>
 
       <nav class="nav-links" aria-label="Principal">
@@ -233,7 +247,7 @@
 
   <!-- ============ Hero ============ -->
   <section class="hero" id="inicio" aria-labelledby="hero-title">
-    <div class="hero-grid-bg" aria-hidden="true"></div>
+    <div class="hero-word" aria-hidden="true" data-parallax="0.12">AVA</div>
     <div class="blob blob-1" aria-hidden="true"></div>
     <div class="blob blob-2" aria-hidden="true"></div>
 
@@ -246,8 +260,8 @@
         </a>
 
         <h1 class="hero-title" id="hero-title">
-          <span class="line"><span style="--d:.05s" data-i18n="hero.t1">Tus trámites,</span></span>
-          <span class="line"><span style="--d:.15s"><span data-i18n="hero.t2">en manos</span> <span class="serif grad-text" data-i18n="hero.t3">confiables.</span></span></span>
+          <span class="line"><span style="--d:.05s" data-i18n="hero.t1">Más que servicios,</span></span>
+          <span class="line"><span style="--d:.15s"><span class="serif" data-i18n="hero.t3">soluciones claras.</span></span></span>
         </h1>
 
         <p class="hero-lead reveal" style="--d:.3s" data-i18n="hero.lead">Documentos migratorios, taxes, formación de LLC, notaría y reparación de crédito. Te acompañamos en cada paso, en español y con total claridad.</p>
@@ -267,10 +281,13 @@
       </div>
 
       <div class="hero-visual reveal-scale" style="--d:.2s" aria-hidden="true">
-        <div class="hv-orb">
-          <div class="hv-mark"><div class="big">AVA</div><div class="small">Multiservices</div></div>
+        <div class="hv-stone"></div>
+        <div class="hv-arch reveal-mask" style="--d:.25s">
+          <div class="hv-arch-word">AVA</div>
+          <div class="hv-arch-sub">Multiservices</div>
           <svg class="skyline hv-skyline" aria-hidden="true"><use href="#i-skyline"/></svg>
         </div>
+        <div class="hv-tagline">More than services.<br>Clear solutions.</div>
 
         <div class="hv-card glass hv-status" data-depth="18">
           <div class="hc-head">
@@ -285,15 +302,15 @@
           <div class="hv-bar"><i></i></div>
         </div>
 
-        <div class="hv-card glass-dark hv-tax" data-depth="30">
+        <div class="hv-card glass hv-tax" data-depth="30">
           <div class="hc-head">
-            <span class="hc-ico" style="background:#fff;color:var(--blue)"><svg class="icon"><use href="#i-calculator"/></svg></span>
+            <span class="hc-ico"><svg class="icon"><use href="#i-calculator"/></svg></span>
             <div><div class="hc-title">Taxes</div><div class="hc-sub" data-i18n="hv.tax.s">Declaración lista</div></div>
           </div>
           <svg class="hv-spark" viewBox="0 0 200 44" preserveAspectRatio="none" fill="none">
-            <defs><linearGradient id="sg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#9db0ff" stop-opacity=".55"/><stop offset="1" stop-color="#9db0ff" stop-opacity="0"/></linearGradient></defs>
+            <defs><linearGradient id="sg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#a4a294" stop-opacity=".45"/><stop offset="1" stop-color="#a4a294" stop-opacity="0"/></linearGradient></defs>
             <path d="M0 36 C 25 34, 35 26, 55 28 S 90 14, 110 18 S 150 6, 170 9 S 195 3, 200 2 L200 44 L0 44Z" fill="url(#sg)"/>
-            <path d="M0 36 C 25 34, 35 26, 55 28 S 90 14, 110 18 S 150 6, 170 9 S 195 3, 200 2" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+            <path d="M0 36 C 25 34, 35 26, 55 28 S 90 14, 110 18 S 150 6, 170 9 S 195 3, 200 2" stroke="#736251" stroke-width="2" stroke-linecap="round"/>
           </svg>
           <div class="hc-sub" style="margin-top:6px;display:flex;align-items:center;gap:6px"><svg class="icon icon-sm"><use href="#i-shield"/></svg><span data-i18n="hv.tax.f">E-file seguro</span></div>
         </div>
@@ -345,6 +362,7 @@
       <div class="services-grid" id="services-grid">
         <!-- Migratorios -->
         <article class="service-card wide feature reveal">
+          <span class="sc-bg" aria-hidden="true">AVA</span>
           <div class="sc-top"><span class="sc-ico"><svg class="icon icon-lg"><use href="#i-passport"/></svg></span><span class="sc-num">01</span></div>
           <h3 class="sc-title" data-i18n="svc.imm">Documentos migratorios</h3>
           <div class="sc-tags"><span>USCIS</span></div>
@@ -440,8 +458,8 @@
   <section class="section" id="nosotros" aria-labelledby="about-title">
     <div class="container">
       <div class="about-grid">
-        <div class="about-visual reveal-scale">
-          <div class="about-card">
+        <div class="about-visual">
+          <div class="about-card reveal-mask">
             <div class="about-ring r2" aria-hidden="true"></div>
             <div class="about-ring r1" aria-hidden="true"></div>
             <div class="about-monogram" aria-hidden="true">AV</div>
@@ -452,7 +470,7 @@
           </div>
           <div class="about-float glass">
             <div class="t" data-i18n="about.float.t">Nuestra promesa</div>
-            <div class="v"><svg class="icon" style="color:var(--blue)"><use href="#i-shield"/></svg><span data-i18n="about.float.v">Confianza y claridad</span></div>
+            <div class="v"><svg class="icon" style="color:var(--accent)"><use href="#i-shield"/></svg><span data-i18n="about.float.v">Confianza y claridad</span></div>
           </div>
         </div>
 
@@ -633,7 +651,6 @@
       </div>
 
       <div class="form-wrap reveal" style="--d:.1s">
-        <div class="blob blob-1" aria-hidden="true" style="right:-120px;top:-60px;width:360px;height:360px"></div>
         <form class="form-card glass" id="contact-form" action="https://formsubmit.co/anavargasdoria@gmail.com" method="POST" novalidate>
           <div class="form-head">
             <h3 data-i18n="form.title">Solicita tu cita</h3>
@@ -714,8 +731,7 @@
     <div class="footer-grid">
       <div>
         <a href="#inicio" class="brand" aria-label="AVA Multiservices">
-          <img class="brand-mark" src="assets/img/logo-mark.svg" alt="" width="38" height="38">
-          <span class="brand-text"><span class="brand-name">AVA</span><span class="brand-sub">Multiservices</span></span>
+          <span class="brand-word">AVA</span><span class="brand-divider"></span><span class="brand-sub">Multi<br>services</span>
         </a>
         <p class="footer-about" data-i18n="foot.about">Documentos migratorios, taxes, LLC, notaría y reparación de crédito en Dallas, Texas. Atención personalizada en español.</p>
         <div class="socials">
@@ -769,7 +785,7 @@
       <span class="credit"><span data-i18n="foot.credit">Diseñado por</span> <a href="https://dgpglobalgroup.com" target="_blank" rel="noopener">DGP Global Group</a></span>
     </div>
   </div>
-  <div class="footer-word" aria-hidden="true">AVA</div>
+  <div class="footer-word" aria-hidden="true" data-parallax="-0.08">AVA</div>
 </footer>
 
 <div class="m-bar" aria-label="Contacto rápido">
