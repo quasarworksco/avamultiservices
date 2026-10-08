@@ -95,6 +95,16 @@
     .logo-row img { width: 120px; height: auto; }
     .swatch .chip-c { border-radius: 14px; }
     .logo-row p { font-size: 14px; color: var(--muted); }
+    .logo-variants { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
+    .lv { display: grid; place-items: center; align-content: center; gap: 6px; aspect-ratio: 1; min-width: 0; border-radius: 16px; padding: 14px; }
+    .lv img { width: 78%; height: auto; }
+    .lv span { font-size: 8.5px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; color: var(--accent); }
+    .lv-stone { background: var(--stone); }
+    .lv-brown { background: var(--accent); }
+    .lv-brown img { width: 70%; border-radius: 14px; }
+    .lv-dark { background: var(--charcoal); }
+    .mockups { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+    .mockups img { width: 100%; height: auto; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 16px; }
 
     /* Vista previa social */
     .social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
@@ -218,7 +228,7 @@
   <div class="container">
     <div class="nav-inner">
       <a href="../" class="brand" aria-label="AVA Multiservices">
-        <span class="brand-word">AVA</span><span class="brand-divider"></span><span class="brand-sub">Propuesta<br>web</span>
+        <img class="brand-logo" src="../assets/img/logo.svg" alt="AVA" width="72" height="34"><span class="brand-divider"></span><span class="brand-sub">Propuesta<br>web</span>
       </a>
       <nav class="nav-links" aria-label="Secciones de la propuesta">
         <a href="#vista">Vista previa</a>
@@ -347,10 +357,12 @@
             <div class="swatch"><div class="chip-c" style="background:#ffffff"></div><div class="n">Pure White</div><div class="h">#FFFFFF</div></div>
           </div>
           <h3 style="margin-top:30px">Marca</h3>
-          <div class="logo-row">
-            <img src="../assets/img/logo.svg" alt="Logotipo AVA Multiservices" width="120" height="43">
-            <p>Wordmark AVA recreado en vector según tu manual de marca. Si nos envías el archivo original, lo sustituimos al instante.</p>
+          <div class="logo-variants">
+            <div class="lv lv-stone"><img src="../assets/img/logo-brown.svg" alt="Logotipo AVA en Heritage Brown" width="480" height="227"><span>Multiservices</span></div>
+            <div class="lv lv-brown"><img src="../assets/img/favicon.svg" alt="Isotipo A." width="64" height="64"></div>
+            <div class="lv lv-dark"><img src="../assets/img/logo-light.svg" alt="Logotipo AVA en Warm Stone" width="480" height="227"></div>
           </div>
+          <p style="margin-top:12px;font-size:14px;color:var(--muted)">Tu logotipo oficial «AVA.» y el isotipo «A.» vectorizados desde tu manual: nítidos en cualquier tamaño y pantalla.</p>
           <h3 style="margin-top:30px">Identidad local</h3>
           <div style="margin-top:16px;padding:18px 18px 0;border-radius:16px;background:linear-gradient(160deg,#3a3835,#1b1b1a);color:rgba(210,209,205,.5);overflow:hidden">
             <svg class="skyline" style="width:100%;height:auto;aspect-ratio:1200/180;stroke-width:2.4" aria-hidden="true"><use href="#i-skyline"/></svg>
@@ -361,6 +373,12 @@
           <h3>Tipografía</h3>
           <div class="type-sample"><div class="big serif">Bochan Serif</div><div class="meta-t">Títulos · elegancia y carácter sofisticado (en la web se usa Cormorant Garamond, su equivalente más cercano)</div></div>
           <div class="type-sample"><div class="big">Manrope</div><div class="meta-t">Subtítulos y textos · limpia, contemporánea y de fácil lectura</div></div>
+          <h3 style="margin-top:26px">Fotografía de marca</h3>
+          <div class="mockups">
+            <picture><source srcset="../assets/img/photos/escritorio-hola-ana.webp" type="image/webp"><img src="../assets/img/photos/escritorio-hola-ana.jpg" alt="Escritorio con la laptop mostrando Hola, soy Ana" width="960" height="1440" loading="lazy"></picture>
+            <picture><source srcset="../assets/img/photos/celular-logo.webp" type="image/webp"><img src="../assets/img/photos/celular-logo.jpg" alt="Celular con el logotipo AVA" width="800" height="1199" loading="lazy"></picture>
+          </div>
+          <p style="margin-top:12px;font-size:14px;color:var(--muted)">Las imágenes de tu manual ya están integradas en el sitio (portada y sección «¡Hola, soy Ana!»).</p>
           <h3 style="margin-top:26px">Iconografía</h3>
           <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;color:var(--accent)">
             <span class="sc-ico" style="width:48px;height:48px"><svg class="icon"><use href="#i-passport"/></svg></span>
@@ -445,8 +463,8 @@
       </div>
       <ol class="next">
         <li class="glass-dark reveal"><span class="n">1</span><div><h3>Revisa el sitio y envíanos tus comentarios</h3><p>Textos, lista de servicios y cualquier ajuste que quieras hacer.</p></div></li>
-        <li class="glass-dark reveal"><span class="n">2</span><div><h3>Archivos originales de marca <span class="tag">Recomendado</span></h3><p>El logo en SVG o PNG y la fuente Bochan Serif (archivo .woff2 u .otf con su licencia web) para usarla tal cual en el sitio.</p></div></li>
-        <li class="glass-dark reveal"><span class="n">3</span><div><h3>Fotografías de tu manual <span class="tag">Opcional</span></h3><p>Las fotos de tu identidad visual (laptop, celular, espacio de trabajo) le darán aún más cercanía y confianza al sitio.</p></div></li>
+        <li class="glass-dark reveal"><span class="n">2</span><div><h3>Fuente Bochan Serif <span class="tag">Recomendado</span></h3><p>Si tienes el archivo de la fuente con licencia web (.woff2 u .otf), lo instalamos para que los títulos usen exactamente la tipografía del manual.</p></div></li>
+        <li class="glass-dark reveal"><span class="n">3</span><div><h3>Fotografías propias <span class="tag">Opcional</span></h3><p>Una foto profesional tuya o de tu oficina haría la sección «¡Hola, soy Ana!» todavía más cercana.</p></div></li>
         <li class="glass-dark reveal"><span class="n">4</span><div><h3>Activar el formulario</h3><p>Al primer envío llegará un correo de confirmación a anavargasdoria@gmail.com; solo debes hacer clic en «Activate».</p></div></li>
         <li class="glass-dark reveal"><span class="n">5</span><div><h3>Publicación y Google</h3><p>Publicamos en avamultiservices.dgp-link.com y lo registramos en Google Search Console.</p></div></li>
       </ol>
