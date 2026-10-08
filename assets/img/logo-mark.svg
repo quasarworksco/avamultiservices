@@ -1,11 +1,4 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="AVA Multiservices">
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#2a55ff"/>
-      <stop offset="1" stop-color="#1438cc"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="16" fill="url(#g)"/>
-  <path d="M17 46 L32 16 L47 46" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M23.5 36.5 L29.5 41 L40.5 30" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" opacity=".92"/>
+  <rect width="64" height="64" rx="14" fill="#2a2a2a"/>
+  <path fill="#d2d1cd" transform="translate(13.2 49) scale(0.0545)" d="M187 -261 199 -283H471L478 -261ZM704 -12Q709 -12 709.0 -6.0Q709 0 704 0Q675 0 644.5 -2.0Q614 -4 585 -4Q553 -4 529.5 -2.0Q506 0 477 0Q473 0 473.0 -6.0Q473 -12 477 -12Q526 -12 537.0 -27.5Q548 -43 526 -89L311 -536L343 -584L148 -132Q122 -71 145.0 -41.5Q168 -12 231 -12Q236 -12 236.0 -6.0Q236 0 231 0Q201 0 176.0 -2.0Q151 -4 113 -4Q76 -4 53.5 -2.0Q31 0 -1 0Q-5 0 -5.0 -6.0Q-5 -12 -1 -12Q26 -12 46.0 -22.5Q66 -33 84.5 -61.0Q103 -89 125 -141L338 -632Q339 -635 345.0 -635.5Q351 -636 352 -632L592 -137Q616 -88 633.5 -60.5Q651 -33 668.0 -22.5Q685 -12 704 -12Z"/>
 </svg>

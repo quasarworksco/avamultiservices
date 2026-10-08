@@ -6,7 +6,7 @@
   <title>Propuesta de Sitio Web · AVA Multiservices | DGP Global Group</title>
   <meta name="description" content="Presentación del nuevo sitio web de AVA Multiservices: diseño, funcionalidades, SEO y próximos pasos. Factura REC-YEXRJM.">
   <meta name="robots" content="noindex, nofollow">
-  <meta name="theme-color" content="#1438cc">
+  <meta name="theme-color" content="#2a2a2a">
   <link rel="canonical" href="https://avamultiservices.dgp-link.com/propuesta/">
 
   <meta property="og:type" content="website">
@@ -28,11 +28,11 @@
   <link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="../assets/css/styles.css">
   <style>
     .p-hero { padding-bottom: clamp(50px, 7vw, 90px); text-align: center; }
-    .p-hero .hero-title { margin-inline: auto; max-width: 820px; font-size: clamp(36px, 5.2vw, 66px); }
+    .p-hero .hero-title { margin-inline: auto; max-width: 860px; font-size: clamp(44px, 5.6vw, 76px); }
     .p-hero .hero-lead { margin-inline: auto; }
     .p-hero .hero-actions { justify-content: center; }
     .p-hero .eyebrow-pro { margin-inline: auto; }
@@ -41,13 +41,13 @@
     .meta > div { padding: 20px 22px; border-right: 1px solid var(--line); }
     .meta > div:last-child { border-right: 0; }
     .meta .l { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-    .meta .l .icon { width: 15px; height: 15px; color: var(--blue); }
+    .meta .l .icon { width: 15px; height: 15px; color: var(--accent); }
     .meta .v { margin-top: 6px; font-weight: 700; font-size: 16px; word-break: break-word; }
     .status { display: inline-flex; align-items: center; gap: 8px; }
 
     /* Vista previa */
     .preview { position: relative; display: grid; grid-template-columns: 1fr 260px; gap: 30px; align-items: end; }
-    .browser { border-radius: 20px; overflow: hidden; background: #fff; border: 1px solid var(--line-strong); box-shadow: 0 60px 120px -50px rgba(20, 56, 204, 0.55), 0 10px 30px -15px rgba(11, 21, 51, 0.25); }
+    .browser { border-radius: 20px; overflow: hidden; background: #fff; border: 1px solid var(--line-strong); box-shadow: 0 60px 120px -50px rgba(115, 98, 81, 0.55), 0 10px 30px -15px rgba(42, 42, 42, 0.25); }
     .browser-bar { display: flex; align-items: center; gap: 14px; height: 46px; padding: 0 16px; background: var(--soft); border-bottom: 1px solid var(--line); }
     .dots { display: flex; gap: 7px; }
     .dots i { width: 11px; height: 11px; border-radius: 50%; background: #e2e8f0; }
@@ -56,25 +56,25 @@
     .url .icon { width: 14px; height: 14px; color: #16a34a; }
     .frame-box { position: relative; width: 100%; aspect-ratio: 16 / 10; overflow: hidden; background: #f6f8fc; }
     .frame-box iframe { position: absolute; top: 0; left: 0; border: 0; transform-origin: 0 0; pointer-events: auto; }
-    .phone { position: relative; padding: 10px; border-radius: 42px; background: #0b1533; box-shadow: 0 50px 90px -40px rgba(11, 21, 51, 0.7); }
-    .phone::before { content: ""; position: absolute; top: 18px; left: 50%; width: 80px; height: 22px; margin-left: -40px; border-radius: 20px; background: #0b1533; z-index: 2; }
+    .phone { position: relative; padding: 10px; border-radius: 42px; background: var(--charcoal); box-shadow: 0 50px 90px -40px rgba(42, 42, 42, 0.7); }
+    .phone::before { content: ""; position: absolute; top: 18px; left: 50%; width: 80px; height: 22px; margin-left: -40px; border-radius: 20px; background: var(--charcoal); z-index: 2; }
     .phone .frame-box { aspect-ratio: 9 / 19.5; border-radius: 32px; }
     .preview-note { margin-top: 18px; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
 
     /* Secciones construidas */
     .built { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: b; }
     .built li { position: relative; padding: 24px; border-radius: var(--radius-lg); background: #fff; border: 1px solid var(--line); transition: transform 0.4s var(--ease), border-color 0.3s; }
-    .built li:hover { transform: translateY(-4px); border-color: rgba(20, 56, 204, 0.25); }
+    .built li:hover { transform: translateY(-4px); border-color: rgba(115, 98, 81, 0.25); }
     .built .b-top { display: flex; align-items: center; justify-content: space-between; }
-    .built .b-ico { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 13px; background: var(--blue-50); color: var(--blue); }
-    .built .b-n { font-size: 12px; font-weight: 700; color: rgba(11, 21, 51, 0.3); letter-spacing: 0.1em; }
+    .built .b-ico { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 13px; background: var(--soft); color: var(--accent); }
+    .built .b-n { font-size: 12px; font-weight: 700; color: rgba(42, 42, 42, 0.3); letter-spacing: 0.1em; }
     .built h3 { margin-top: 16px; font-size: 18px; }
     .built p { margin-top: 6px; font-size: 14.5px; color: var(--muted); }
 
     /* Funcionalidades */
     .features { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
     .feature { padding: 24px; border-radius: var(--radius-lg); }
-    .feature .f-ico { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 13px; background: #fff; color: var(--blue); }
+    .feature .f-ico { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 13px; background: #fff; color: var(--accent); }
     .feature h3 { margin-top: 18px; font-size: 17px; }
     .feature p { margin-top: 6px; font-size: 14px; color: rgba(255, 255, 255, 0.72); }
 
@@ -82,22 +82,23 @@
     .brand-grid { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; }
     .panel { padding: clamp(24px, 3.5vw, 36px); border-radius: var(--radius-lg); background: #fff; border: 1px solid var(--line); }
     .panel h3 { font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
-    .swatches { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 20px; }
+    .swatches { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 20px; }
     .swatch .chip-c { height: 120px; border-radius: 16px; border: 1px solid var(--line); }
     .swatch .n { margin-top: 10px; font-weight: 700; font-size: 14px; }
     .swatch .h { font-size: 13px; color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     .type-sample { margin-top: 20px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
     .type-sample:last-child { border-bottom: 0; padding-bottom: 0; }
-    .type-sample .big { font-size: 44px; font-weight: 800; letter-spacing: -0.04em; line-height: 1.05; }
-    .type-sample .big.serif { font-weight: 400; color: var(--blue); }
+    .type-sample .big { font-size: 40px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.05; }
+    .type-sample .big.serif { font-family: var(--font-serif); font-style: normal; font-weight: 500; font-size: 52px; color: var(--charcoal); }
     .type-sample .meta-t { margin-top: 6px; font-size: 13px; color: var(--muted); }
     .logo-row { display: flex; align-items: center; gap: 18px; margin-top: 20px; padding: 18px; border-radius: 16px; background: var(--soft); }
-    .logo-row img { width: 64px; height: 64px; border-radius: 16px; box-shadow: 0 10px 24px -10px rgba(20, 56, 204, 0.6); }
+    .logo-row img { width: 120px; height: auto; }
+    .swatch .chip-c { border-radius: 14px; }
     .logo-row p { font-size: 14px; color: var(--muted); }
 
     /* Vista previa social */
     .social-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start; }
-    .og-card { border-radius: 18px; overflow: hidden; background: #fff; border: 1px solid var(--line-strong); box-shadow: 0 30px 60px -36px rgba(11, 21, 51, 0.45); }
+    .og-card { border-radius: 18px; overflow: hidden; background: #fff; border: 1px solid var(--line-strong); box-shadow: 0 30px 60px -36px rgba(42, 42, 42, 0.45); }
     .og-card img { width: 100%; height: auto; aspect-ratio: 1200 / 630; object-fit: cover; }
     .og-card .og-body { padding: 14px 16px 16px; background: var(--soft); }
     .og-card .og-d { font-size: 12px; text-transform: uppercase; color: var(--muted); letter-spacing: 0.04em; }
@@ -130,7 +131,7 @@
     /* Próximos pasos */
     .next { display: grid; gap: 12px; }
     .next li { display: flex; gap: 18px; align-items: flex-start; padding: 22px 24px; border-radius: var(--radius-lg); }
-    .next .n { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 12px; background: #fff; color: var(--blue); font-weight: 800; }
+    .next .n { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 12px; background: #fff; color: var(--accent); font-weight: 800; }
     .next h3 { font-size: 17px; }
     .next p { margin-top: 4px; font-size: 14.5px; color: rgba(255, 255, 255, 0.72); }
     .next .tag { display: inline-block; margin-left: 8px; padding: 2px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; letter-spacing: 0.04em; vertical-align: middle; background: rgba(255, 255, 255, 0.14); color: #c7d2ff; }
@@ -140,7 +141,7 @@
     .p-footer-cta .cta-box p { margin-inline: auto; }
     .p-footer-cta .cta-actions { justify-content: center; }
 
-    .p-foot { padding: 34px 0; background: #050f3d; color: rgba(255, 255, 255, 0.7); font-size: 14px; }
+    .p-foot { padding: 34px 0; background: var(--charcoal-2); color: rgba(255, 255, 255, 0.7); font-size: 14px; }
     .p-foot .row { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
     .p-foot .brand { color: #fff; }
     .p-foot .brand-sub { color: rgba(255, 255, 255, 0.55); }
@@ -217,8 +218,7 @@
   <div class="container">
     <div class="nav-inner">
       <a href="../" class="brand" aria-label="AVA Multiservices">
-        <img class="brand-mark" src="../assets/img/logo-mark.svg" alt="" width="38" height="38">
-        <span class="brand-text"><span class="brand-name">AVA</span><span class="brand-sub">Propuesta web</span></span>
+        <span class="brand-word">AVA</span><span class="brand-divider"></span><span class="brand-sub">Propuesta<br>web</span>
       </a>
       <nav class="nav-links" aria-label="Secciones de la propuesta">
         <a href="#vista">Vista previa</a>
@@ -242,10 +242,10 @@
     <div class="blob blob-1" aria-hidden="true"></div>
     <div class="blob blob-2" aria-hidden="true"></div>
     <div class="container" style="position:relative">
-      <a href="#vista" class="eyebrow-pro reveal"><span class="eb-badge"><svg class="icon"><use href="#i-file"/></svg>REC-YEXRJM</span><span class="eb-text"><span class="pulse"></span>Propuesta de diseño y desarrollo web</span><svg class="icon eb-arrow"><use href="#i-arrow-right"/></svg></a>
+      <a href="#vista" class="eyebrow-pro reveal"><span class="eb-badge"><svg class="icon"><use href="#i-file"/></svg>REC-YEXRJM</span><span class="eb-text"><span class="pulse"></span>Propuesta de sitio web</span><svg class="icon eb-arrow"><use href="#i-arrow-right"/></svg></a>
       <h1 class="hero-title" id="p-title">
         <span class="line"><span style="--d:.05s">Hola Ana, tu nuevo</span></span>
-        <span class="line"><span style="--d:.15s">sitio web está <span class="serif grad-text">listo.</span></span></span>
+        <span class="line"><span style="--d:.15s">sitio web está <span class="serif">listo.</span></span></span>
       </h1>
       <p class="hero-lead reveal" style="--d:.3s">Diseñamos para <strong>AVA Multiservices</strong> una presencia digital profesional, moderna y pensada para que tus clientes conozcan tus servicios y te contacten en segundos.</p>
       <div class="hero-actions reveal" style="--d:.4s">
@@ -333,35 +333,36 @@
     <div class="container">
       <div class="section-head reveal">
         <span class="script-kicker">Identidad visual</span>
-        <h2 class="section-title" id="i-title">Minimalista, <span class="serif">confiable y elegante</span></h2>
-        <p class="section-lead">Usamos tu paleta personalizada para transmitir seriedad y confianza, con acentos tipográficos que aportan calidez.</p>
+        <h2 class="section-title" id="i-title">Cálida, <span class="serif">elegante y profesional</span></h2>
+        <p class="section-lead">Aplicamos tu manual de identidad: tonos piedra y salvia, el café Heritage como acento y Charcoal para dar profundidad. El resultado es una presencia sobria, cercana y premium.</p>
       </div>
       <div class="brand-grid">
         <div class="panel reveal">
           <h3>Paleta de colores</h3>
-          <div class="swatches">
-            <div class="swatch"><div class="chip-c" style="background:#1438cc"></div><div class="n">Azul AVA</div><div class="h">#1438CC</div></div>
-            <div class="swatch"><div class="chip-c" style="background:#ffffff"></div><div class="n">Blanco</div><div class="h">#FFFFFF</div></div>
-            <div class="swatch"><div class="chip-c" style="background:#f1f5f9"></div><div class="n">Gris niebla</div><div class="h">#F1F5F9</div></div>
-            <div class="swatch"><div class="chip-c" style="background:#0b1533"></div><div class="n">Tinta (texto)</div><div class="h">#0B1533</div></div>
+          <div class="swatches swatches-5">
+            <div class="swatch"><div class="chip-c" style="background:#d2d1cd"></div><div class="n">Warm Stone</div><div class="h">#D2D1CD</div></div>
+            <div class="swatch"><div class="chip-c" style="background:#a4a294"></div><div class="n">Sage Taupe</div><div class="h">#A4A294</div></div>
+            <div class="swatch"><div class="chip-c" style="background:#736251"></div><div class="n">Heritage Brown</div><div class="h">#736251</div></div>
+            <div class="swatch"><div class="chip-c" style="background:#2a2a2a"></div><div class="n">Charcoal</div><div class="h">#2A2A2A</div></div>
+            <div class="swatch"><div class="chip-c" style="background:#ffffff"></div><div class="n">Pure White</div><div class="h">#FFFFFF</div></div>
           </div>
           <h3 style="margin-top:30px">Marca</h3>
           <div class="logo-row">
-            <img src="../assets/img/logo-mark.svg" alt="Isotipo provisional de AVA Multiservices" width="64" height="64">
-            <p>Isotipo provisional. Lo reemplazaremos por tu logo oficial en cuanto nos lo envíes en alta resolución.</p>
+            <img src="../assets/img/logo.svg" alt="Logotipo AVA Multiservices" width="120" height="43">
+            <p>Wordmark AVA recreado en vector según tu manual de marca. Si nos envías el archivo original, lo sustituimos al instante.</p>
           </div>
           <h3 style="margin-top:30px">Identidad local</h3>
-          <div style="margin-top:16px;padding:18px 18px 0;border-radius:16px;background:linear-gradient(160deg,#1d44e0,#071552);color:rgba(255,255,255,.55);overflow:hidden">
+          <div style="margin-top:16px;padding:18px 18px 0;border-radius:16px;background:linear-gradient(160deg,#3a3835,#1b1b1a);color:rgba(210,209,205,.5);overflow:hidden">
             <svg class="skyline" style="width:100%;height:auto;aspect-ratio:1200/180;stroke-width:2.4" aria-hidden="true"><use href="#i-skyline"/></svg>
           </div>
           <p style="margin-top:12px;font-size:14px;color:var(--muted)">Silueta de Dallas (Reunion Tower y el puente Margaret Hunt Hill) creada a medida para conectar la marca con su ciudad.</p>
         </div>
         <div class="panel reveal" style="--d:.08s">
           <h3>Tipografía</h3>
-          <div class="type-sample"><div class="big">Plus Jakarta Sans</div><div class="meta-t">Títulos y textos · moderna, clara y profesional</div></div>
-          <div class="type-sample"><div class="big serif">Instrument Serif</div><div class="meta-t">Acentos · aporta elegancia y un toque humano</div></div>
+          <div class="type-sample"><div class="big serif">Bochan Serif</div><div class="meta-t">Títulos · elegancia y carácter sofisticado (en la web se usa Cormorant Garamond, su equivalente más cercano)</div></div>
+          <div class="type-sample"><div class="big">Manrope</div><div class="meta-t">Subtítulos y textos · limpia, contemporánea y de fácil lectura</div></div>
           <h3 style="margin-top:26px">Iconografía</h3>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;color:var(--blue)">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;color:var(--accent)">
             <span class="sc-ico" style="width:48px;height:48px"><svg class="icon"><use href="#i-passport"/></svg></span>
             <span class="sc-ico" style="width:48px;height:48px"><svg class="icon"><use href="#i-calculator"/></svg></span>
             <span class="sc-ico" style="width:48px;height:48px"><svg class="icon"><use href="#i-building"/></svg></span>
@@ -444,8 +445,8 @@
       </div>
       <ol class="next">
         <li class="glass-dark reveal"><span class="n">1</span><div><h3>Revisa el sitio y envíanos tus comentarios</h3><p>Textos, lista de servicios y cualquier ajuste que quieras hacer.</p></div></li>
-        <li class="glass-dark reveal"><span class="n">2</span><div><h3>Logo oficial en alta resolución <span class="tag">Pendiente</span></h3><p>Preferiblemente en PNG con fondo transparente o en formato vectorial (SVG, AI o PDF).</p></div></li>
-        <li class="glass-dark reveal"><span class="n">3</span><div><h3>Fotos profesionales <span class="tag">Opcional</span></h3><p>Una foto tuya y de tu oficina le darán aún más cercanía y confianza al sitio.</p></div></li>
+        <li class="glass-dark reveal"><span class="n">2</span><div><h3>Archivos originales de marca <span class="tag">Recomendado</span></h3><p>El logo en SVG o PNG y la fuente Bochan Serif (archivo .woff2 u .otf con su licencia web) para usarla tal cual en el sitio.</p></div></li>
+        <li class="glass-dark reveal"><span class="n">3</span><div><h3>Fotografías de tu manual <span class="tag">Opcional</span></h3><p>Las fotos de tu identidad visual (laptop, celular, espacio de trabajo) le darán aún más cercanía y confianza al sitio.</p></div></li>
         <li class="glass-dark reveal"><span class="n">4</span><div><h3>Activar el formulario</h3><p>Al primer envío llegará un correo de confirmación a anavargasdoria@gmail.com; solo debes hacer clic en «Activate».</p></div></li>
         <li class="glass-dark reveal"><span class="n">5</span><div><h3>Publicación y Google</h3><p>Publicamos en avamultiservices.dgp-link.com y lo registramos en Google Search Console.</p></div></li>
       </ol>

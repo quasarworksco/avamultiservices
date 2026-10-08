@@ -17,7 +17,7 @@
     'hero.eyebrow': 'In-person and online service',
     'mf.1': 'Your documents, your taxes and your business deserve', 'mf.2': 'the same care', 'mf.3': 'you give your family.',
     'swipe': 'Swipe to see more',
-    'hero.t1': 'Your paperwork,', 'hero.t2': 'in hands', 'hero.t3': 'you can trust.',
+    'hero.t1': 'More than services,', 'hero.t3': 'clear solutions.',
     'hero.lead': 'Immigration documents, taxes, LLC formation, notary services and credit repair. We guide you every step of the way, in Spanish or English, with complete clarity.',
     'hero.trust1': 'Service in Spanish', 'hero.trust2': 'Personalized attention', 'hero.trust3': '5 services in one place',
     'hv.status.t': 'Immigration filing', 'hv.status.s': 'Case in preparation', 'hv.step1': 'Documents received', 'hv.step2': 'Forms reviewed', 'hv.step3': 'Ready to submit',
@@ -118,8 +118,18 @@
   var savedLang = storageGet('ava-lang');
   if (savedLang === 'en') applyLang('en');
 
-  /* ---------- Carga ---------- */
-  requestAnimationFrame(function () { requestAnimationFrame(function () { doc.classList.add('loaded'); }); });
+  /* ---------- Carga e intro de marca ---------- */
+  function markLoaded() { requestAnimationFrame(function () { requestAnimationFrame(function () { doc.classList.add('loaded'); }); }); }
+  var intro = document.querySelector('.intro');
+  if (intro && doc.classList.contains('intro-on')) {
+    setTimeout(function () {
+      intro.classList.add('leave');
+      setTimeout(markLoaded, 250);
+      setTimeout(function () { doc.classList.remove('intro-on'); }, 950);
+    }, 1350);
+  } else {
+    markLoaded();
+  }
 
   /* ---------- Año ---------- */
   var yearEl = document.getElementById('year');
@@ -131,9 +141,24 @@
   var waFloat = document.querySelector('.wa-float');
   var mBar = document.querySelector('.m-bar');
   var ticking = false;
+  var lastY = window.scrollY;
+  var parallaxEls = reduceMotion ? [] : document.querySelectorAll('[data-parallax]');
   function onScroll() {
     var y = window.scrollY;
-    if (nav) nav.classList.toggle('scrolled', y > 24);
+    if (nav) {
+      nav.classList.toggle('scrolled', y > 24);
+      // Oculta la barra al bajar y la muestra al subir
+      var goingDown = y > lastY + 4, goingUp = y < lastY - 4;
+      if (goingDown && y > 560 && !nav.classList.contains('open')) nav.classList.add('hide');
+      else if (goingUp || y < 560) nav.classList.remove('hide');
+    }
+    lastY = y;
+    for (var i = 0; i < parallaxEls.length; i++) {
+      var el = parallaxEls[i], r = el.getBoundingClientRect();
+      if (r.bottom < -200 || r.top > window.innerHeight + 200) continue;
+      var offset = (r.top + r.height / 2 - window.innerHeight / 2) * parseFloat(el.getAttribute('data-parallax'));
+      el.style.translate = '0 ' + offset.toFixed(1) + 'px';
+    }
     if (waFloat) waFloat.classList.toggle('show', y > 420);
     if (mBar) mBar.classList.toggle('show', y > 320);
     if (progress) {
@@ -178,7 +203,7 @@
   }
 
   /* ---------- Revelado al hacer scroll ---------- */
-  var revealEls = document.querySelectorAll('.reveal, .reveal-scale');
+  var revealEls = document.querySelectorAll('.reveal, .reveal-scale, .reveal-mask');
   var carousels = document.querySelectorAll('.services-grid, .steps');
   if ('IntersectionObserver' in window && !reduceMotion) {
     var obs = new IntersectionObserver(function (entries) {
@@ -187,6 +212,8 @@
         // En un carrusel se revelan todas las tarjetas a la vez
         var group = en.target.matches('.services-grid, .steps') ? en.target.querySelectorAll('.reveal, .reveal-scale') : [en.target];
         Array.prototype.forEach.call(group, function (el) { el.classList.add('in'); });
+        // Las máscaras con clip-path no cuentan como visibles: se revelan desde su contenedor
+        Array.prototype.forEach.call(en.target.querySelectorAll(':scope > .reveal-mask'), function (el) { el.classList.add('in'); });
         en.target.classList.add('in');
         obs.unobserve(en.target);
       });
@@ -194,7 +221,7 @@
     var mobile = window.matchMedia('(max-width: 680px)').matches;
     revealEls.forEach(function (el) {
       if (mobile && el.closest('.services-grid, .steps')) return;
-      obs.observe(el);
+      obs.observe(el.classList.contains('reveal-mask') ? el.parentElement : el);
     });
     if (mobile) carousels.forEach(function (c) { obs.observe(c); });
   } else {
