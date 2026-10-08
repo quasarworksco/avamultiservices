@@ -845,14 +845,16 @@ body::before {
   .hv-card .hc-ico { width: 32px; height: 32px; border-radius: 10px; }
   .hv-card .hc-title { font-size: 12.5px; }
   .hv-card .hc-sub { font-size: 10.5px; }
-  .hv-status { width: 178px; right: 0; left: auto; top: 3%; }
+  .hv-status { width: 178px; right: 8px; left: auto; top: 3%; }
   .hv-status .hc-sub { display: none; }
   .hv-steps { margin-top: 11px; gap: 7px; }
   .hv-step { font-size: 11.5px; }
   .hv-tax { display: none; }
-  .hv-llc { width: 190px; right: 0; bottom: 0; }
-  .hv-llc .seal { font-size: 10.5px; }
-  .hv-chip { left: 0; bottom: 4%; font-size: 11px; padding: 6px 12px 6px 6px; }
+  .hv-llc { width: auto; max-width: calc(100% - 24px); right: 8px; bottom: 4%; }
+  .hv-llc .hc-sub { display: none; }
+  .hv-llc .seal { margin-top: 10px; padding: 7px 10px; font-size: 11px; justify-content: flex-start; }
+  .hv-llc .seal > span { display: none; }
+  .hv-chip { display: none; }
   .hv-chip .av { width: 26px; height: 26px; font-size: 12px; }
 
   .marquee { padding: 16px 0; }
@@ -955,8 +957,7 @@ body::before {
 
 @media (max-width: 360px) {
   .hero-title { font-size: 38px; }
-  .hv-status { width: 196px; }
-  .hv-llc { width: 178px; }
+  .hv-status { width: 164px; }
   .eb-text > span:last-child { max-width: 140px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 }
 
