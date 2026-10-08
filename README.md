@@ -13,7 +13,9 @@ Dominio: https://avamultiservices.dgp-link.com — Diseñado por [DGP Global Gro
 | `404.html` | Página de error |
 | `assets/css/styles.css` | Estilos con la identidad de marca: Warm Stone `#D2D1CD`, Sage Taupe `#A4A294`, Heritage Brown `#736251`, Charcoal `#2A2A2A`, Pure White `#FFFFFF` |
 | `assets/js/main.js` | Animaciones, menú, idioma ES/EN y validación del formulario |
-| `assets/img/` | Wordmark `logo.svg` / `logo-light.svg`, favicons, `og-image.jpg` (1200×630) e `icons.svg` (fuente del sprite) |
+| `assets/img/` | Logotipo oficial vectorizado (`logo.svg`, `logo-light.svg`, `logo-brown.svg`), isotipo `isotipo.svg`, lockup `tagline.svg`, favicons, `og-image.jpg` (1200×630) e `icons.svg` (fuente del sprite) |
+| `assets/img/photos/` | Fotos del manual de marca (JPG + WebP) |
+| `assets/img/brand/` | PNG originales del logo y el eslogan entregados por la clienta |
 | `robots.txt`, `sitemap.xml`, `site.webmanifest` | SEO / PWA |
 
 ## Formulario
@@ -24,9 +26,8 @@ Después de activarlo, se puede reemplazar el correo del `action` por el alias a
 
 ## Pendientes del cliente
 
-- Archivos originales del logo (para sustituir `assets/img/logo.svg`).
 - Fuente **Bochan Serif** con licencia web: copiar el `.woff2` a `assets/fonts/` y declararla con `@font-face`; la variable `--font-serif` ya la prioriza. Mientras tanto se usa Cormorant Garamond.
-- Fotografías del manual de marca (opcional).
+- Fotografías propias de Ana o de la oficina (opcional).
 - Confirmar la lista de servicios y los textos.
 
 ## Íconos
