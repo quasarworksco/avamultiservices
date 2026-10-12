@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="es" class="no-js">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Propuesta CRM · AVA Multiservices | DGP Global Group</title>
+  <meta name="description" content="Propuesta para convertir el panel de AVA Multiservices en un CRM completo: clientes, casos por servicio, seguimiento de crédito, taxes, cobros, usuarios y permisos.">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#2a2a2a">
+  <link rel="canonical" href="https://avamultiservices.com/propuesta/crm/">
+
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_US">
+  <meta property="og:site_name" content="AVA Multiservices">
+  <meta property="og:title" content="Propuesta: CRM para AVA Multiservices">
+  <meta property="og:description" content="Todo tu negocio en un solo lugar: clientes, casos, crédito, taxes, cobros y equipo.">
+  <meta property="og:url" content="https://avamultiservices.com/propuesta/crm/">
+  <meta property="og:image" content="https://avamultiservices.com/assets/img/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://avamultiservices.com/assets/img/og-image.jpg">
+
+  <link rel="icon" href="../../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="../../assets/img/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="../../assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="../../assets/css/styles.css">
+  <style>
+    .p-hero { text-align: center; padding-bottom: clamp(50px, 6vw, 84px); }
+    .p-hero .hero-title { margin-inline: auto; max-width: 900px; font-size: clamp(42px, 5.6vw, 76px); }
+    .p-hero .hero-lead { margin-inline: auto; max-width: 620px; }
+    .p-hero .hero-actions { justify-content: center; }
+    .p-hero .eyebrow-pro { margin-inline: auto; }
+    .meta { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); max-width: 960px; margin: 40px auto 0; border-radius: 24px; overflow: hidden; text-align: left; }
+    .meta > div { padding: 20px 22px; border-right: 1px solid var(--line); }
+    .meta > div:last-child { border-right: 0; }
+    .meta .l { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+    .meta .l .icon { width: 15px; height: 15px; color: var(--accent); }
+    .meta .v { margin-top: 6px; font-weight: 700; font-size: 16px; }
+
+    /* Antes / después */
+    .ba { display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: stretch; }
+    .ba-card { padding: 28px; border-radius: var(--radius-xl); background: #fff; border: 1px solid var(--line); }
+    .ba-card.after { background: var(--charcoal); color: var(--stone); border-color: transparent; }
+    .ba-card .k { font-size: 10.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+    .ba-card.after .k { color: var(--sage); }
+    .ba-card h3 { margin-top: 8px; font-family: var(--font-serif); font-size: 32px; font-weight: 500; }
+    .ba-card.after h3 { color: #fff; }
+    .ba-card ul { margin-top: 16px; display: grid; gap: 10px; }
+    .ba-card li { display: flex; gap: 10px; font-size: 14.5px; color: var(--muted); }
+    .ba-card.after li { color: rgba(255, 255, 255, 0.78); }
+    .ba-card li .icon { width: 16px; height: 16px; margin-top: 3px; color: var(--sage-600); }
+    .ba-card.after li .icon { color: var(--sage); }
+    .ba-arrow { display: grid; place-items: center; }
+    .ba-arrow span { display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; background: var(--accent); color: #fff; }
+
+    /* Vista previa del CRM */
+    .mock { border-radius: 22px; overflow: hidden; border: 1px solid var(--line-strong); background: #fff; box-shadow: 0 60px 120px -60px rgba(42, 42, 42, 0.6); }
+    .mock-bar { display: flex; align-items: center; gap: 12px; height: 42px; padding: 0 16px; background: var(--soft); border-bottom: 1px solid var(--line); }
+    .mock-bar .dots { display: flex; gap: 6px; }
+    .mock-bar .dots i { width: 10px; height: 10px; border-radius: 50%; background: #e1ded8; }
+    .mock-bar .url { flex: 1; height: 26px; display: flex; align-items: center; gap: 6px; padding: 0 12px; border-radius: 8px; background: #fff; border: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+    .mock-body { display: grid; grid-template-columns: 210px 1fr; min-height: 520px; }
+    .m-side { padding: 18px 14px; background: var(--charcoal); color: rgba(255, 255, 255, 0.7); }
+    .m-side img { width: 64px; height: auto; margin: 4px 8px 18px; }
+    .m-nav { display: grid; gap: 2px; font-size: 13px; font-weight: 600; }
+    .m-nav span { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; }
+    .m-nav span .icon { width: 16px; height: 16px; }
+    .m-nav span.on { background: rgba(255, 255, 255, 0.1); color: #fff; }
+    .m-user { margin-top: 26px; padding: 10px; border-radius: 12px; background: rgba(255, 255, 255, 0.06); font-size: 11.5px; }
+    .m-user b { display: block; color: #fff; font-size: 12.5px; }
+    .m-main { padding: 20px 22px; background: var(--stone-50); min-width: 0; }
+    .m-h { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+    .m-h h4 { font-family: var(--font-serif); font-size: 26px; font-weight: 500; }
+    .m-h span { font-size: 12px; color: var(--muted); }
+    .m-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }
+    .m-kpi { padding: 12px 14px; border-radius: 14px; background: #fff; border: 1px solid var(--line); }
+    .m-kpi .n { font-family: var(--font-serif); font-size: 26px; line-height: 1; }
+    .m-kpi .t { margin-top: 4px; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .m-kpi .d { margin-top: 2px; font-size: 11px; color: #3f7a4a; font-weight: 700; }
+    .m-grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 12px; margin-top: 12px; }
+    .m-card { padding: 14px; border-radius: 14px; background: #fff; border: 1px solid var(--line); min-width: 0; }
+    .m-card .ct { font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+    .kanban { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+    .kcol { padding: 8px; border-radius: 10px; background: var(--soft); }
+    .kcol .kh { font-size: 10px; font-weight: 800; color: var(--ink-2); margin-bottom: 6px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .kc { padding: 7px 8px; margin-top: 6px; border-radius: 8px; background: #fff; border: 1px solid var(--line); font-size: 10.5px; font-weight: 600; }
+    .kc em { display: block; font-style: normal; font-weight: 500; color: var(--muted); font-size: 9.5px; }
+    .tag { display: inline-block; padding: 1px 6px; border-radius: 6px; font-size: 9px; font-weight: 800; margin-top: 4px; }
+    .tag.cr { background: var(--accent-50); color: var(--accent); }
+    .tag.tx { background: var(--sage-50); color: #6c6a5c; }
+    .m-chart svg { width: 100%; height: auto; margin-top: 8px; }
+    .m-legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 10px; color: var(--muted); margin-top: 4px; }
+    .m-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: 0; }
+    .m-today { margin-top: 12px; }
+    .m-today li { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 11.5px; }
+    .m-today li:last-child { border-bottom: 0; }
+    .m-today b { font-weight: 600; }
+    .m-today span { color: var(--muted); white-space: nowrap; }
+    .mock-note { margin-top: 12px; text-align: center; font-size: 12.5px; color: var(--muted); }
+
+    /* Módulos */
+    .mods { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .mod { position: relative; padding: 26px; border-radius: var(--radius-lg); background: #fff; border: 1px solid var(--line); transition: transform 0.5s var(--ease), border-color 0.3s; }
+    .mod:hover { transform: translateY(-4px); border-color: rgba(115, 98, 81, 0.3); }
+    .mod.star { background: var(--accent); color: #fff; border-color: transparent; }
+    .mod .mi { display: flex; justify-content: space-between; align-items: center; }
+    .mod .ico { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--soft); color: var(--accent); }
+    .mod.star .ico { background: rgba(255, 255, 255, 0.15); color: #fff; }
+    .mod .n { font-family: var(--font-serif); font-style: italic; font-size: 22px; color: var(--sage-600); }
+    .mod.star .n { color: var(--stone); }
+    .mod h3 { margin-top: 16px; font-family: var(--font-serif); font-size: 26px; font-weight: 500; }
+    .mod p { margin-top: 6px; font-size: 14px; color: var(--muted); }
+    .mod.star p { color: rgba(255, 255, 255, 0.82); }
+    .mod ul { margin-top: 12px; display: grid; gap: 6px; }
+    .mod li { display: flex; gap: 8px; font-size: 13.5px; color: var(--ink-2); }
+    .mod.star li { color: #fff; }
+    .mod li .icon { width: 14px; height: 14px; margin-top: 4px; color: var(--accent); stroke-width: 2.2; }
+    .mod.star li .icon { color: var(--stone); }
+    .new-badge { position: absolute; top: 18px; right: 18px; padding: 3px 9px; border-radius: 999px; background: var(--charcoal); color: var(--stone); font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+
+    /* Etapas */
+    .pipes { display: grid; gap: 12px; }
+    .pipe { display: grid; grid-template-columns: 170px 1fr; gap: 16px; align-items: center; padding: 16px 20px; border-radius: 16px; background: #fff; border: 1px solid var(--line); }
+    .pipe b { font-family: var(--font-serif); font-size: 22px; font-weight: 500; }
+    .stages { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+    .stages span { padding: 5px 11px; border-radius: 999px; background: var(--soft); font-size: 12.5px; font-weight: 600; color: var(--ink-2); }
+    .stages i { width: 14px; height: 1px; background: var(--sage); }
+
+    /* Usuarios y permisos */
+    .perm-wrap { display: grid; grid-template-columns: 0.9fr 1.1fr; gap: clamp(30px, 5vw, 60px); align-items: start; }
+    .perm-points { margin-top: 24px; display: grid; gap: 14px; }
+    .perm-points li { display: flex; gap: 14px; }
+    .perm-points .pi { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--stone); color: var(--charcoal); }
+    .perm-points b { display: block; font-size: 15.5px; color: #fff; }
+    .perm-points p { margin-top: 2px; font-size: 14px; color: rgba(255, 255, 255, 0.7); }
+    .perm-table { border-radius: 20px; overflow: hidden; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.14); }
+    .perm-table table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .perm-table th { padding: 14px 16px; text-align: left; font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sage); background: rgba(255, 255, 255, 0.04); }
+    .perm-table th:not(:first-child), .perm-table td:not(:first-child) { text-align: center; }
+    .perm-table td { padding: 12px 16px; border-top: 1px solid rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.85); }
+    .yes, .opt, .no { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; }
+    .yes { background: var(--stone); color: var(--charcoal); }
+    .opt { border: 1.5px solid var(--sage); color: var(--sage); font-size: 11px; font-weight: 800; }
+    .no { color: rgba(255, 255, 255, 0.35); }
+    .yes .icon { width: 13px; height: 13px; stroke-width: 2.6; }
+    .perm-legend { display: flex; gap: 16px; flex-wrap: wrap; padding: 12px 16px; font-size: 12px; color: rgba(255, 255, 255, 0.6); border-top: 1px solid rgba(255, 255, 255, 0.08); }
+    .perm-legend span { display: inline-flex; align-items: center; gap: 6px; }
+
+    /* Cronograma */
+    .timeline { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .tl { padding: 26px; border-radius: var(--radius-lg); background: #fff; border: 1px solid var(--line); }
+    .tl .w { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); }
+    .tl h3 { margin-top: 8px; font-family: var(--font-serif); font-size: 26px; font-weight: 500; }
+    .tl ul { margin-top: 12px; display: grid; gap: 6px; }
+    .tl li { display: flex; gap: 8px; font-size: 14px; color: var(--muted); }
+    .tl li .icon { width: 14px; height: 14px; margin-top: 4px; color: var(--accent); stroke-width: 2.2; }
+
+    /* Inversión */
+    .price-hero { display: grid; grid-template-columns: 1fr 1.3fr; gap: 20px; align-items: stretch; }
+    .price-main { position: relative; overflow: hidden; padding: clamp(28px, 4vw, 44px); border-radius: var(--radius-xl); color: #fff;
+      background: radial-gradient(80% 100% at 100% 0%, rgba(164, 162, 148, 0.35), transparent 55%), linear-gradient(135deg, #85725f, var(--accent) 55%, var(--accent-700)); }
+    .price-main .k { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--stone); }
+    .price-main .amt { margin-top: 10px; font-family: var(--font-serif); font-size: clamp(64px, 8vw, 96px); line-height: 0.9; }
+    .price-main .amt small { font-family: var(--font-sans); font-size: 18px; font-weight: 600; margin-left: 6px; opacity: 0.8; }
+    .price-main p { margin-top: 14px; color: rgba(255, 255, 255, 0.85); font-size: 15px; }
+    .price-main ul { margin-top: 18px; display: grid; gap: 8px; }
+    .price-main li { display: flex; gap: 10px; font-size: 14px; }
+    .price-main li .icon { width: 16px; height: 16px; margin-top: 3px; color: var(--stone); }
+    .plans { display: grid; gap: 12px; }
+    .plan { position: relative; display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; align-items: center; padding: 20px 22px; border-radius: 20px; background: #fff; border: 1.5px solid var(--line); }
+    .plan.pop { border-color: var(--accent); box-shadow: 0 24px 50px -34px rgba(115, 98, 81, 0.8); }
+    .plan .pn { font-weight: 700; font-size: 16px; }
+    .plan .pd { font-size: 13.5px; color: var(--muted); grid-column: 1; }
+    .plan .pp { grid-row: 1 / span 2; grid-column: 2; text-align: right; font-family: var(--font-serif); font-size: 36px; line-height: 1; }
+    .plan .pp small { display: block; margin-top: 4px; font-family: var(--font-sans); font-size: 11.5px; font-weight: 700; color: var(--muted); letter-spacing: 0.04em; }
+    .plan .badge { position: absolute; top: -11px; left: 20px; padding: 3px 10px; border-radius: 999px; background: var(--accent); color: #fff; font-size: 10.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+
+    .sched { margin-top: 18px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .sched-card { border-radius: 20px; background: #fff; border: 1px solid var(--line); overflow: hidden; }
+    .sched-card h4 { padding: 16px 20px; font-size: 14px; font-weight: 700; background: var(--soft); border-bottom: 1px solid var(--line); }
+    .sched-card table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .sched-card td { padding: 11px 20px; border-top: 1px solid var(--line); }
+    .sched-card tr:first-child td { border-top: 0; }
+    .sched-card td:last-child { text-align: right; font-weight: 700; }
+    .sched-card td .s { display: block; font-size: 12px; color: var(--muted); font-weight: 500; }
+    .sched-card tfoot td { background: var(--stone-50); font-weight: 800; }
+
+    .extras { margin-top: 18px; border-radius: 20px; background: #fff; border: 1px solid var(--line); overflow: hidden; }
+    .extras table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    .extras th { padding: 12px 20px; text-align: left; font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); background: var(--soft); }
+    .extras td { padding: 13px 20px; border-top: 1px solid var(--line); vertical-align: top; }
+    .extras td:last-child, .extras th:last-child { text-align: right; white-space: nowrap; font-weight: 700; }
+    .extras td b { font-weight: 600; }
+    .extras td span { display: block; font-size: 13px; color: var(--muted); }
+
+    .terms { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .term { display: flex; gap: 14px; padding: 18px 20px; border-radius: 16px; background: #fff; border: 1px solid var(--line); }
+    .term .ti { display: grid; place-items: center; width: 38px; height: 38px; flex: none; border-radius: 50%; background: var(--soft); color: var(--accent); }
+    .term b { display: block; font-size: 15px; }
+    .term p { margin-top: 2px; font-size: 14px; color: var(--muted); }
+
+    .p-cta .cta-box { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+    .p-cta .cta-box p { margin-inline: auto; }
+    .p-cta .cta-actions { justify-content: center; }
+    .p-foot { padding: 34px 0; background: var(--charcoal-2); color: rgba(255, 255, 255, 0.7); font-size: 14px; }
+    .p-foot .row { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+
+    .req-wrap { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: clamp(30px, 5vw, 64px); align-items: start; }
+    .req-intro { position: sticky; top: calc(var(--nav-h) + 30px); }
+    .req-steps { margin-top: 24px; display: grid; gap: 10px; }
+    .req-steps li { display: flex; align-items: center; gap: 12px; font-size: 14.5px; font-weight: 600; }
+    .req-steps span { display: grid; place-items: center; width: 30px; height: 30px; flex: none; border-radius: 50%; background: var(--accent); color: #fff; font-size: 13px; font-weight: 800; }
+    .req-form { padding: clamp(22px, 3.5vw, 36px); border-radius: var(--radius-xl); background: #fff; border: 1px solid var(--line); box-shadow: 0 40px 80px -56px rgba(42, 42, 42, 0.5); }
+    .rq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .rq-grid .full { grid-column: 1 / -1; border: 0; padding: 0; margin: 0; }
+    .req-form .field > label, .req-form .field-legend { text-transform: none; letter-spacing: 0; font-size: 14px; font-weight: 600; color: var(--ink); }
+    .req-form select.input { appearance: none; -webkit-appearance: none; padding-right: 40px; background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236e6a63' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center / 16px; }
+    .req-form input[type=checkbox].chip-input:checked + .chip { background: var(--accent); border-color: var(--accent); }
+    .rq-status { display: none; margin-top: 12px; padding: 12px 14px; border-radius: 12px; font-size: 14px; font-weight: 500; }
+    .rq-status.show { display: block; }
+    .rq-status.error { background: #fbeee9; color: #b4472f; }
+    .req-done { grid-column: 2; padding: 40px 32px; border-radius: var(--radius-xl); background: #fff; border: 1px solid var(--line); text-align: center; }
+    .rd-ico { display: inline-grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; background: var(--accent); color: #fff; }
+    .rd-ico .icon { width: 28px; height: 28px; stroke-width: 2.4; }
+    .req-done h3 { margin-top: 18px; font-family: var(--font-serif); font-size: 32px; font-weight: 500; }
+    .req-done p { margin-top: 8px; color: var(--muted); }
+    @media (max-width: 1080px) { .req-wrap { grid-template-columns: 1fr; } .req-intro { position: static; } .req-done { grid-column: 1; } }
+    @media (max-width: 680px) { .rq-grid { grid-template-columns: 1fr; } .req-form .input { font-size: 16px; } }
+
+    /* Animaciones del tablero */
+    .mock.reveal-scale { transform: perspective(1800px) rotateX(12deg) scale(0.94); transform-origin: 50% 0; transition: opacity 1.2s var(--ease), transform 1.6s var(--ease); }
+    .mock.reveal-scale.in { transform: none; }
+    .mock .draw { stroke-dasharray: 420; stroke-dashoffset: 420; transition: stroke-dashoffset 2.2s var(--ease) 0.6s; }
+    .mock .draw.d2 { transition-delay: 0.85s; }
+    .mock.in .draw { stroke-dashoffset: 0; }
+    .mock .kc { opacity: 0; transform: translateY(8px); transition: opacity 0.6s var(--ease), transform 0.6s var(--ease); }
+    .mock.in .kc { opacity: 1; transform: none; }
+    .mock.in .kcol:nth-child(1) .kc { transition-delay: 0.5s; } .mock.in .kcol:nth-child(2) .kc { transition-delay: 0.65s; }
+    .mock.in .kcol:nth-child(3) .kc { transition-delay: 0.8s; } .mock.in .kcol:nth-child(4) .kc { transition-delay: 0.95s; }
+    .mock .m-kpi { transition: transform 0.4s var(--ease), box-shadow 0.4s; }
+    .mock .m-kpi:hover { transform: translateY(-3px); box-shadow: 0 14px 30px -20px rgba(42, 42, 42, 0.5); }
+    .mod .new-badge { animation: badge 2.6s ease-in-out infinite; }
+    @keyframes badge { 50% { transform: translateY(-2px); } }
+
+    /* Sitio y contenido */
+    .show { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .show-card { padding: clamp(22px, 3vw, 32px); border-radius: var(--radius-xl); background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.14); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
+    .sh-top { display: flex; align-items: center; gap: 14px; }
+    .sh-ico { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--stone); color: var(--charcoal); }
+    .sh-k { font-size: 10.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sage); }
+    .show-card h3 { font-family: var(--font-serif); font-size: 30px; font-weight: 500; color: #fff; }
+    .sh-list { margin-top: 18px; display: grid; gap: 9px; }
+    .sh-list li { display: flex; gap: 10px; font-size: 14px; color: rgba(255, 255, 255, 0.78); }
+    .sh-list .icon { width: 16px; height: 16px; margin-top: 3px; color: var(--sage); }
+    .site-mock { margin-top: 20px; padding: 14px; border-radius: 16px; background: var(--paper); color: var(--ink); }
+    .sm-row { display: grid; grid-template-columns: 1.4fr 1fr auto; gap: 10px; align-items: center; padding: 9px 4px; border-bottom: 1px solid var(--line); font-size: 13px; }
+    .sm-row:first-child { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+    .sm-row b { font-weight: 600; }
+    .sm-in { padding: 5px 10px; border-radius: 8px; border: 1px solid var(--line-strong); color: var(--muted); font-size: 12px; }
+    .tgl { position: relative; width: 34px; height: 20px; border-radius: 999px; background: var(--line-strong); }
+    .tgl::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform 0.4s var(--ease); }
+    .tgl.on { background: var(--accent); }
+    .tgl.on::after { transform: translateX(14px); }
+    .sm-ann { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: var(--accent-50); font-size: 12.5px; }
+    .sm-ann .icon { color: var(--accent); }
+    .sm-ann span:nth-child(2) { flex: 1; }
+    .sm-sync { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12px; font-weight: 600; color: #3f7a4a; }
+    .sm-sync .pulse { background: #3f7a4a; }
+    .sm-sync .pulse::after { border-color: #3f7a4a; }
+    .nav-links a { white-space: nowrap; }
+    .mod-more { display: flex; flex-direction: column; border: 1.5px dashed var(--line-strong); background: transparent; box-shadow: none; text-decoration: none; color: inherit; }
+    .mod-more:hover { border-color: var(--accent); background: rgba(255,255,255,.5); }
+    .mod-more .more-link { margin-top: auto; padding-top: 18px; display: inline-flex; align-items: center; gap: 8px; color: var(--accent); font-weight: 600; font-size: 14px; }
+    .mod-more:hover .more-link svg { transform: translateX(4px); }
+    .mod-more .more-link svg { transition: transform .3s var(--ease); }
+    .cal { margin-top: 14px; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; padding: 12px; border-radius: 14px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); }
+    .cal-d { min-height: 54px; display: flex; flex-direction: column; gap: 5px; align-items: center; }
+    .cal-d span { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: rgba(255,255,255,.55); }
+    .cal-d i { width: 100%; height: 7px; border-radius: 4px; transform: scaleX(0); transform-origin: left; transition: transform .8s var(--ease) .5s; }
+    .cal-d i.c1 { background: #A4A294; } .cal-d i.c2 { background: #D2D1CD; } .cal-d i.c3 { background: #9b836b; }
+    .show-card.in .cal-d i { transform: scaleX(1); }
+    .show-card.in .cal-d:nth-child(3) i { transition-delay: .7s; } .show-card.in .cal-d:nth-child(5) i { transition-delay: .9s; }
+    .posts { margin-top: 20px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+    .post { position: relative; aspect-ratio: 4 / 5; padding: 12px; border-radius: 14px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; font-size: 12px; transition: transform 0.5s var(--ease); }
+    .post:hover { transform: translateY(-4px) rotate(-1deg); }
+    .post b { font-family: var(--font-serif); font-size: 17px; font-weight: 500; line-height: 1.05; }
+    .post em { font-size: 11px; font-style: normal; color: var(--accent); }
+    .post img { width: 60%; height: auto; }
+    .p1 { background: var(--charcoal); color: #fff; } .p1 img { width: 70%; }
+    .p2 { background: var(--stone); color: var(--charcoal); } .p2 img { width: 34%; align-self: flex-end; }
+    .p3 { background: var(--paper); color: var(--charcoal); }
+    .p4 { background: var(--accent); color: #fff; } .p4 img { filter: brightness(0) invert(1); opacity: .9; }
+    .st { align-self: flex-start; padding: 2px 8px; border-radius: 999px; font-family: var(--font-sans); font-size: 9.5px; font-weight: 800; }
+    .st.ok { background: #e8f2ea; color: #3f7a4a; } .st.wait { background: #f6ede4; color: #a2622a; } .st.pub { background: var(--charcoal); color: var(--stone); }
+    .posts .post { opacity: 0; transform: translateY(14px) scale(.97); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+    .show-card.in .post { opacity: 1; transform: none; }
+    .show-card.in .post:nth-child(2) { transition-delay: .12s; } .show-card.in .post:nth-child(3) { transition-delay: .24s; } .show-card.in .post:nth-child(4) { transition-delay: .36s; }
+    @media (max-width: 1080px) { .show { grid-template-columns: 1fr; } }
+    @media (max-width: 680px) { .posts { grid-template-columns: repeat(2, minmax(0, 1fr)); } .post b { font-size: 15px; } }
+    @media (max-width: 1080px) {
+      .mods { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .perm-wrap, .price-hero { grid-template-columns: 1fr; }
+      .mock-body { grid-template-columns: 1fr; }
+      .m-side { display: none; }
+    }
+    @media (max-width: 760px) {
+      .meta { grid-template-columns: 1fr 1fr; }
+      .meta > div:nth-child(2) { border-right: 0; }
+      .meta > div:nth-child(-n + 2) { border-bottom: 1px solid var(--line); }
+      .ba { grid-template-columns: 1fr; }
+      .ba-arrow span { transform: rotate(90deg); }
+      .mods, .timeline, .sched, .terms { grid-template-columns: 1fr; }
+      .pipe { grid-template-columns: 1fr; gap: 8px; }
+      .m-kpis { grid-template-columns: 1fr 1fr; }
+      .m-grid { grid-template-columns: 1fr; }
+      .kanban { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .perm-table th, .perm-table td { padding: 10px 8px; font-size: 12.5px; }
+      .extras td, .extras th { padding: 12px 14px; }
+    }
+  </style>
+</head>
+<body>
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true">
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+  <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 7h10v10"/><path d="M7 17 17 7"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></symbol>
+  <symbol id="i-instagram" viewBox="0 0 24 24"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><path d="M17.5 6.5h.01"/></symbol>
+  <symbol id="i-whatsapp" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></symbol>
+  <symbol id="i-passport" viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><circle cx="12" cy="10" r="4"/><path d="M8 10h8"/><path d="M12 6c1.3 1.3 1.3 6.7 0 8"/><path d="M12 6c-1.3 1.3-1.3 6.7 0 8"/><path d="M9 18h6"/></symbol>
+  <symbol id="i-calculator" viewBox="0 0 24 24"><rect width="16" height="20" x="4" y="2" rx="2"/><path d="M8 6h8"/><path d="M16 14v4"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></symbol>
+  <symbol id="i-building" viewBox="0 0 24 24"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></symbol>
+  <symbol id="i-stamp" viewBox="0 0 24 24"><path d="M5 22h14"/><path d="M19.27 13.73A2.5 2.5 0 0 0 17.5 13h-11A2.5 2.5 0 0 0 4 15.5V17a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.5c0-.66-.26-1.3-.73-1.77Z"/><path d="M14 13V8.5C14 7 15 7 15 5a3 3 0 0 0-3-3c-1.66 0-3 1-3 3s1 2 1 3.5V13"/></symbol>
+  <symbol id="i-trending" viewBox="0 0 24 24"><path d="M22 7 13.5 15.5 8.5 10.5 2 17"/><path d="M16 7h6v6"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-message" viewBox="0 0 24 24"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M4.27 21a2 2 0 0 0 1.73 1H18a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v3"/><path d="m9 18-1.5-1.5"/><circle cx="5" cy="14" r="3"/></symbol>
+  <symbol id="i-clipboard" viewBox="0 0 24 24"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></symbol>
+  <symbol id="i-badge" viewBox="0 0 24 24"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></symbol>
+  <symbol id="i-languages" viewBox="0 0 24 24"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol>
+  <symbol id="i-send" viewBox="0 0 24 24"><path d="M14.54 21.69a.5.5 0 0 0 .94-.03l6.5-19a.5.5 0 0 0-.64-.63l-19 6.5a.5.5 0 0 0-.02.93l7.93 3.18a2 2 0 0 1 1.11 1.11z"/><path d="m21.85 2.15-10.94 10.94"/></symbol>
+  <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="M9.94 15.5A2 2 0 0 0 8.5 14.06l-6.14-1.58a.5.5 0 0 1 0-.96L8.5 9.94A2 2 0 0 0 9.94 8.5l1.58-6.14a.5.5 0 0 1 .96 0l1.58 6.14a2 2 0 0 0 1.44 1.44l6.14 1.58a.5.5 0 0 1 0 .96l-6.14 1.58a2 2 0 0 0-1.44 1.44l-1.58 6.14a.5.5 0 0 1-.96 0z"/></symbol>
+  <symbol id="i-devices" viewBox="0 0 24 24"><path d="M18 8V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h8"/><path d="M10 19v-4"/><path d="M7 19h5"/><rect width="6" height="10" x="16" y="12" rx="2"/></symbol>
+  <symbol id="i-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .71-1.53l7-6a2 2 0 0 1 2.58 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-layout" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="m16 18 6-6-6-6"/><path d="m8 6-6 6 6 6"/></symbol>
+  <symbol id="i-zap" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol>
+  <symbol id="i-smartphone" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98"/><path d="m15.41 6.51-6.82 3.98"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.13a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.56-2.5 5.56-5.55C21.97 6.01 17.46 2 12 2z"/></symbol>
+  <symbol id="i-accessibility" viewBox="0 0 24 24"><circle cx="16" cy="4" r="1"/><path d="m18 19 1-7-6 1"/><path d="m5 8 3-3 5.5 3-2.36 3.5"/><path d="M4.24 14.5a5 5 0 0 0 6.88 6"/><path d="M13.76 17.5a5 5 0 0 0-6.88-6"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></symbol>
+  <symbol id="i-skyline" viewBox="0 0 1200 180"><path d="M0 178V132H34V178 M38 178V114H64V178 M68 178V124H112V178 M116 178V92H146V178 M150 178V106H190V178 M196 178V32H204V24H230V32H238V178 M204 32V178M230 32V178 M244 178V80H272V178 M278 178V60L304 42L330 60V178 M338 178V46H374V178M342 46L356 28L370 46M356 28V16 M380 178V94H408V178 M414 178V68L438 28L466 74V178M438 28V178 M472 178V74H510V178 M514 178V108H540V178 M546 178V50Q568 38 590 50V178M560 66H576V82H560Z M596 178V88H630V178 M634 178V116H686V178 M690 178V130H720V178 M754 178V82M762 178V82M750 82H766 M740 64A18 18 0 1 0 776 64A18 18 0 1 0 740 64M741 58H775M741 70H775M758 46V32 M784 178V138H814V178 M820 166H1200M840 166Q1010 58 1180 166 M868 149V166 M897 136V166 M925 126V166 M953 118V166 M982 113V166 M1010 112V166 M1038 114V166 M1067 118V166 M1095 126V166 M1123 136V166 M1152 149V166 M0 178H1200"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></symbol>
+</svg>
+<div class="progress" aria-hidden="true"></div>
+
+<header class="nav" id="nav">
+  <div class="container">
+    <div class="nav-inner">
+      <a href="../../" class="brand" aria-label="AVA Multiservices">
+        <img class="brand-logo" src="../../assets/img/logo.svg" alt="AVA" width="72" height="34"><span class="brand-divider"></span><span class="brand-sub">Propuesta<br>CRM</span>
+      </a>
+      <nav class="nav-links" aria-label="Secciones de la propuesta">
+        <a href="#modulos">Módulos</a>
+        <a href="#equipo">Equipo</a>
+        <a href="#marca">Contenido</a>
+        <a href="#cronograma">Cronograma</a>
+        <a href="#inversion">Inversión</a>
+        <a href="#requerimientos">Requerimientos</a>
+      </nav>
+      <div class="nav-cta">
+        <a href="#requerimientos" class="btn btn-primary btn-sm"><span>Mis requerimientos</span><svg class="icon icon-sm arrow"><use href="#i-arrow-right"/></svg></a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- Hero -->
+  <section class="hero p-hero" aria-labelledby="p-title">
+    <img class="hero-word" src="../../assets/img/logo-brown.svg" alt="" aria-hidden="true" width="480" height="227">
+    <div class="blob blob-1" aria-hidden="true"></div>
+    <div class="container" style="position:relative">
+      <a href="#inversion" class="eyebrow-pro reveal"><span class="eb-badge"><svg class="icon"><use href="#i-sparkles"/></svg>Fase 2</span><span class="eb-text"><span class="pulse"></span>Propuesta de CRM a medida</span><svg class="icon eb-arrow"><use href="#i-arrow-right"/></svg></a>
+      <h1 class="hero-title" id="p-title">
+        <span class="line"><span style="--d:.05s">Todo tu negocio,</span></span>
+        <span class="line"><span style="--d:.15s"><span class="serif">en un solo lugar.</span></span></span>
+      </h1>
+      <p class="hero-lead reveal" style="--d:.3s">Ana, te proponemos convertir tu panel de solicitudes en un <strong>CRM completo</strong> para AVA Multiservices: tus clientes, cada servicio, el avance de su crédito, sus taxes, tus cobros, tu equipo, <strong>tu sitio web</strong> y tu <strong>contenido digital</strong>, organizados y seguros.</p>
+      <div class="hero-actions reveal" style="--d:.4s">
+        <a href="#vista" class="btn btn-primary"><svg class="icon"><use href="#i-layout"/></svg><span>Ver cómo se vería</span></a>
+        <a href="#inversion" class="btn btn-ghost"><span>Opciones de pago</span><svg class="icon icon-sm arrow"><use href="#i-arrow-right"/></svg></a>
+      </div>
+
+      <div class="meta glass reveal" style="--d:.5s">
+        <div><div class="l"><svg class="icon"><use href="#i-users"/></svg>Cliente</div><div class="v">Ana Vargas</div></div>
+        <div><div class="l"><svg class="icon"><use href="#i-layout"/></svg>Proyecto</div><div class="v">CRM AVA Multiservices</div></div>
+        <div><div class="l"><svg class="icon"><use href="#i-file"/></svg>Inversión</div><div class="v">$575 · inicial $110</div></div>
+        <div><div class="l"><svg class="icon"><use href="#i-clock"/></svg>Entrega</div><div class="v">2 a 3 semanas</div></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      <div class="marquee-group">
+        <span class="marquee-item"><svg class="icon"><use href="#i-users"/></svg>Clientes</span><span class="marquee-sep"></span>
+        <span class="marquee-item"><svg class="icon"><use href="#i-gauge"/></svg>Crédito</span><span class="marquee-sep"></span>
+        <span class="marquee-item"><svg class="icon"><use href="#i-calculator"/></svg>Taxes</span><span class="marquee-sep"></span>
+        <span class="marquee-item"><svg class="icon"><use href="#i-file"/></svg>Cobros</span><span class="marquee-sep"></span>
+        <span class="marquee-item"><svg class="icon"><use href="#i-shield"/></svg>Equipo</span><span class="marquee-sep"></span>
+        <span class="marquee-item"><svg class="icon"><use href="#i-globe"/></svg>Sitio web</span><span class="marquee-sep"></span>
+        <span class="marquee-item"><svg class="icon"><use href="#i-sparkles"/></svg>Contenido digital</span><span class="marquee-sep"></span>
+      </div>
+      <div class="marquee-group">
+        <span class="marquee-item"><svg class="icon"><use href="#i-users"/></svg>Clientes</span><span class="marquee-sep"></span>
+        <span class="marquee-item"><svg class="icon"><use href="#i-gauge"/></svg>Crédito</span><span class="marquee-sep"></span>
+        <span class="marquee-item"><svg class="icon"><use href="#i-calculator"/></svg>Taxes</span><span class="marquee-sep"></span>
+        <span class="marquee-item"><svg class="icon"><use href="#i-file"/></svg>Cobros</span><span class="marquee-sep"></span>
+        <span class="marquee-item"><svg class="icon"><use href="#i-shield"/></svg>Equipo</span><span class="marquee-sep"></span>
+        <span class="marquee-item"><svg class="icon"><use href="#i-globe"/></svg>Sitio web</span><span class="marquee-sep"></span>
+        <span class="marquee-item"><svg class="icon"><use href="#i-sparkles"/></svg>Contenido digital</span><span class="marquee-sep"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- De panel a CRM -->
+  <section class="section section-soft" aria-labelledby="ba-title">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="script-kicker">La evolución</span>
+        <h2 class="section-title" id="ba-title">De recibir solicitudes a <span class="serif">dirigir tu negocio</span></h2>
+        <p class="section-lead">Aprovechamos todo lo que ya construimos (tu formulario, tu panel y tu base de datos segura) y lo llevamos al siguiente nivel.</p>
+      </div>
+      <div class="ba">
+        <div class="ba-card reveal">
+          <div class="k">Hoy</div>
+          <h3>Panel de solicitudes</h3>
+          <ul>
+            <li><svg class="icon"><use href="#i-check"/></svg>Recibes los formularios de inicio</li>
+            <li><svg class="icon"><use href="#i-check"/></svg>Ves los datos y documentos de cada solicitud</li>
+            <li><svg class="icon"><use href="#i-check"/></svg>Marcas un estado y escribes notas</li>
+            <li><svg class="icon"><use href="#i-check"/></svg>Una sola usuaria</li>
+          </ul>
+        </div>
+        <div class="ba-arrow reveal" aria-hidden="true"><span><svg class="icon"><use href="#i-arrow-right"/></svg></span></div>
+        <div class="ba-card after reveal" style="--d:.1s">
+          <div class="k">Con el CRM</div>
+          <h3>Tu negocio completo</h3>
+          <ul>
+            <li><svg class="icon"><use href="#i-check"/></svg>Fichas de clientes con todo su historial</li>
+            <li><svg class="icon"><use href="#i-check"/></svg>Cada servicio con sus propias etapas</li>
+            <li><svg class="icon"><use href="#i-check"/></svg>Crédito, taxes, cobros y vencimientos bajo control</li>
+            <li><svg class="icon"><use href="#i-check"/></svg>Tu compañera con su propio acceso y permisos</li>
+            <li><svg class="icon"><use href="#i-check"/></svg>Tu sitio web y tu contenido, desde el mismo panel</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vista previa -->
+  <section class="section" id="vista" aria-labelledby="v-title">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="script-kicker">Así se vería</span>
+        <h2 class="section-title" id="v-title">Tu tablero de <span class="serif">cada mañana</span></h2>
+        <p class="section-lead">Al entrar verás de un vistazo cómo va tu negocio, en qué etapa está cada cliente y qué tienes pendiente hoy.</p>
+      </div>
+      <div class="mock reveal-scale" aria-label="Vista ilustrativa del CRM">
+        <div class="mock-bar"><div class="dots"><i></i><i></i><i></i></div><div class="url"><svg class="icon icon-sm"><use href="#i-lock"/></svg>avamultiservices.com/admin</div></div>
+        <div class="mock-body">
+          <aside class="m-side">
+            <img src="../../assets/img/logo-light.svg" alt="" width="64" height="30">
+            <div class="m-nav">
+              <span class="on"><svg class="icon"><use href="#i-layout"/></svg>Inicio</span>
+              <span><svg class="icon"><use href="#i-users"/></svg>Clientes</span>
+              <span><svg class="icon"><use href="#i-list"/></svg>Casos</span>
+              <span><svg class="icon"><use href="#i-gauge"/></svg>Crédito</span>
+              <span><svg class="icon"><use href="#i-calculator"/></svg>Taxes</span>
+              <span><svg class="icon"><use href="#i-file"/></svg>Cobros</span>
+              <span><svg class="icon"><use href="#i-clock"/></svg>Tareas</span>
+              <span><svg class="icon"><use href="#i-mail"/></svg>Solicitudes</span>
+              <span><svg class="icon"><use href="#i-globe"/></svg>Sitio web</span>
+              <span><svg class="icon"><use href="#i-sparkles"/></svg>Contenido</span>
+              <span><svg class="icon"><use href="#i-shield"/></svg>Equipo</span>
+            </div>
+            <div class="m-user"><b>Ana Vargas</b>Administradora</div>
+          </aside>
+          <div class="m-main">
+            <div class="m-h"><h4>Buenos días, Ana</h4><span>Lunes · datos de ejemplo</span></div>
+            <div class="m-kpis">
+              <div class="m-kpi"><div class="n">38</div><div class="t">Clientes activos</div><div class="d">+6 este mes</div></div>
+              <div class="m-kpi"><div class="n">$4,250</div><div class="t">Cobrado este mes</div><div class="d">$1,100 pendiente</div></div>
+              <div class="m-kpi"><div class="n">+62</div><div class="t">Puntos promedio</div><div class="d">en crédito</div></div>
+              <div class="m-kpi"><div class="n">7</div><div class="t">Vencen esta semana</div><div class="d" style="color:#a2622a">3 disputas</div></div>
+            </div>
+            <div class="m-grid">
+              <div class="m-card">
+                <div class="ct">Casos por etapa</div>
+                <div class="kanban">
+                  <div class="kcol"><div class="kh">Análisis</div><div class="kc">María G.<em>Reporte recibido</em><span class="tag cr">Crédito</span></div><div class="kc">José R.<em>Faltan docs</em><span class="tag tx">Taxes</span></div></div>
+                  <div class="kcol"><div class="kh">Disputas R1</div><div class="kc">Luis P.<em>Enviadas 3 oct</em><span class="tag cr">Crédito</span></div></div>
+                  <div class="kcol"><div class="kh">En proceso</div><div class="kc">Carmen V.<em>Preparando 1040</em><span class="tag tx">Taxes</span></div><div class="kc">Pedro M.<em>Ronda 2</em><span class="tag cr">Crédito</span></div></div>
+                  <div class="kcol"><div class="kh">Completado</div><div class="kc">Ana T.<em>+84 puntos</em><span class="tag cr">Crédito</span></div></div>
+                </div>
+              </div>
+              <div class="m-card m-chart">
+                <div class="ct">Puntaje de crédito · María G.</div>
+                <svg viewBox="0 0 300 120" fill="none" role="img" aria-label="Gráfica de puntaje subiendo de 560 a 648">
+                  <g stroke="rgba(42,42,42,.08)"><path d="M0 20H300M0 60H300M0 100H300"/></g>
+                  <path class="draw" d="M5 100 C 60 96, 90 80, 130 72 S 210 48, 295 30" stroke="#736251" stroke-width="2.5" stroke-linecap="round"/>
+                  <path class="draw d2" d="M5 104 C 60 100, 95 88, 130 82 S 210 58, 295 40" stroke="#a4a294" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M5 108 C 60 104, 95 96, 130 90 S 210 70, 295 52" stroke="#2a2a2a" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 4"/>
+                  <text x="295" y="24" text-anchor="end" font-size="11" font-weight="700" fill="#736251">648</text>
+                  <text x="5" y="116" font-size="10" fill="#6e6a63">Jul</text><text x="150" y="116" font-size="10" fill="#6e6a63" text-anchor="middle">Ago</text><text x="295" y="116" font-size="10" fill="#6e6a63" text-anchor="end">Oct</text>
+                </svg>
+                <div class="m-legend"><span><i style="background:#736251"></i>Equifax</span><span><i style="background:#a4a294"></i>Experian</span><span><i style="background:#2a2a2a"></i>TransUnion</span></div>
+              </div>
+            </div>
+            <div class="m-card m-today">
+              <div class="ct">Para hoy</div>
+              <ul>
+                <li><b>Vence respuesta del buró · Luis P.</b><span>Disputa R1 · 30 días</span></li>
+                <li><b>Llamar a José R. por documentos de taxes</b><span>Asignado a: compañera</span></li>
+                <li><b>Cobrar segunda cuota · Carmen V.</b><span>$150</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="mock-note">Vista ilustrativa con datos de ejemplo. El diseño final seguirá la identidad de AVA Multiservices.</p>
+    </div>
+  </section>
+
+  <!-- Módulos -->
+  <section class="section section-soft" id="modulos" aria-labelledby="m-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="script-kicker">Qué incluye</span>
+        <h2 class="section-title" id="m-title">11 módulos pensados <span class="serif">para tu negocio</span></h2>
+        <p class="section-lead">Diseñados para los servicios que ofreces en EE. UU.: crédito, taxes, inmigración, LLC y notaría, y conectados con tu sitio web y tu marca.</p>
+      </div>
+      <div class="mods">
+        <article class="mod reveal"><div class="mi"><span class="ico"><svg class="icon"><use href="#i-users"/></svg></span><span class="n">01</span></div><h3>Clientes</h3><p>Una ficha por cliente con todo en un solo lugar.</p><ul><li><svg class="icon"><use href="#i-check"/></svg>Contacto, documentos, notas y etiquetas</li><li><svg class="icon"><use href="#i-check"/></svg>Historial de todos sus servicios</li><li><svg class="icon"><use href="#i-check"/></svg>Convierte una solicitud en cliente con 1 clic</li><li><svg class="icon"><use href="#i-check"/></svg>Aviso si el cliente ya existe</li></ul></article>
+        <article class="mod reveal" style="--d:.06s"><div class="mi"><span class="ico"><svg class="icon"><use href="#i-list"/></svg></span><span class="n">02</span></div><h3>Casos por servicio</h3><p>Cada servicio que contrata un cliente es un caso con sus propias etapas.</p><ul><li><svg class="icon"><use href="#i-check"/></svg>Tablero visual por etapas</li><li><svg class="icon"><use href="#i-check"/></svg>Responsable asignado a cada caso</li><li><svg class="icon"><use href="#i-check"/></svg>Fechas de inicio y entrega</li></ul></article>
+        <article class="mod star reveal" style="--d:.12s"><div class="mi"><span class="ico"><svg class="icon"><use href="#i-gauge"/></svg></span><span class="n">03</span></div><h3>Seguimiento de crédito</h3><p>Lo que más te diferencia: muestra resultados reales.</p><ul><li><svg class="icon"><use href="#i-check"/></svg>Puntaje por buró con gráfica de avance</li><li><svg class="icon"><use href="#i-check"/></svg>Registro de disputas por ronda</li><li><svg class="icon"><use href="#i-check"/></svg>Alerta de los 30 días de respuesta</li><li><svg class="icon"><use href="#i-check"/></svg>Fecha de contrato y periodo de cancelación de 3 días</li></ul></article>
+        <article class="mod reveal"><div class="mi"><span class="ico"><svg class="icon"><use href="#i-calculator"/></svg></span><span class="n">04</span></div><h3>Taxes</h3><p>Control de cada declaración, temporada tras temporada.</p><ul><li><svg class="icon"><use href="#i-check"/></svg>Año fiscal y tipo de declaración</li><li><svg class="icon"><use href="#i-check"/></svg>Estado: preparación, enviada, aceptada</li><li><svg class="icon"><use href="#i-check"/></svg>Reembolso o monto a pagar</li></ul></article>
+        <article class="mod reveal" style="--d:.06s"><div class="mi"><span class="ico"><svg class="icon"><use href="#i-file"/></svg></span><span class="n">05</span></div><h3>Cobros</h3><p>Sabe siempre cuánto has cobrado y quién te debe.</p><ul><li><svg class="icon"><use href="#i-check"/></svg>Precio de cada servicio y pagos recibidos</li><li><svg class="icon"><use href="#i-check"/></svg>Saldo pendiente por cliente</li><li><svg class="icon"><use href="#i-check"/></svg>Ingresos del mes y método de pago</li></ul></article>
+        <article class="mod reveal" style="--d:.12s"><div class="mi"><span class="ico"><svg class="icon"><use href="#i-clock"/></svg></span><span class="n">06</span></div><h3>Tareas y vencimientos</h3><p>Nada se te olvida.</p><ul><li><svg class="icon"><use href="#i-check"/></svg>Pantalla «Para hoy»</li><li><svg class="icon"><use href="#i-check"/></svg>Tareas asignadas a ti o a tu compañera</li><li><svg class="icon"><use href="#i-check"/></svg>Fechas límite de disputas y taxes</li></ul></article>
+        <article class="mod reveal"><div class="mi"><span class="ico"><svg class="icon"><use href="#i-layout"/></svg></span><span class="n">07</span></div><h3>Dashboard</h3><p>Tu negocio en números.</p><ul><li><svg class="icon"><use href="#i-check"/></svg>Clientes activos y casos por servicio</li><li><svg class="icon"><use href="#i-check"/></svg>Ingresos y saldos pendientes</li><li><svg class="icon"><use href="#i-check"/></svg>Puntos de crédito ganados en promedio</li></ul></article>
+        <article class="mod reveal" style="--d:.06s"><div class="mi"><span class="ico"><svg class="icon"><use href="#i-upload"/></svg></span><span class="n">08</span></div><h3>Documentos</h3><p>Todos los archivos de cada cliente, privados.</p><ul><li><svg class="icon"><use href="#i-check"/></svg>Sube archivos desde el panel</li><li><svg class="icon"><use href="#i-check"/></svg>Los del formulario se agregan solos</li><li><svg class="icon"><use href="#i-check"/></svg>Enlaces que caducan al abrirlos</li></ul></article>
+        <article class="mod reveal" style="--d:.12s"><span class="new-badge">Incluido</span><div class="mi"><span class="ico"><svg class="icon"><use href="#i-shield"/></svg></span><span class="n">09</span></div><h3>Equipo y permisos</h3><p>Agrega a tu compañera y decide qué puede ver y hacer.</p><ul><li><svg class="icon"><use href="#i-check"/></svg>Invitar y desactivar usuarios</li><li><svg class="icon"><use href="#i-check"/></svg>Permisos por usuario</li><li><svg class="icon"><use href="#i-check"/></svg>Registro de actividad</li></ul></article>
+        <article class="mod reveal"><span class="new-badge">Nuevo</span><div class="mi"><span class="ico"><svg class="icon"><use href="#i-globe"/></svg></span><span class="n">10</span></div><h3>Sitio web conectado</h3><p>Tu panel y avamultiservices.com trabajan juntos.</p><ul><li><svg class="icon"><use href="#i-check"/></svg>Todos los formularios del sitio llegan al CRM</li><li><svg class="icon"><use href="#i-check"/></svg>Edita servicios, precios y anuncios</li><li><svg class="icon"><use href="#i-check"/></svg>Publica testimonios y preguntas frecuentes</li></ul></article>
+        <article class="mod star reveal" style="--d:.06s"><span class="new-badge" style="background:#fff;color:var(--accent)">Nuevo</span><div class="mi"><span class="ico"><svg class="icon"><use href="#i-sparkles"/></svg></span><span class="n">11</span></div><h3>Contenido digital</h3><p>Tu biblioteca de posts y diseños para redes.</p><ul><li><svg class="icon"><use href="#i-check"/></svg>Recibe los diseños que preparamos para tu marca</li><li><svg class="icon"><use href="#i-check"/></svg>Aprueba, comenta y descarga en un clic</li><li><svg class="icon"><use href="#i-check"/></svg>Calendario de publicaciones</li></ul></article>
+        <a href="#requerimientos" class="mod mod-more reveal" style="--d:.12s"><div class="mi"><span class="ico"><svg class="icon"><use href="#i-message"/></svg></span><span class="n">+</span></div><h3>¿Te falta algo?</h3><p>Escríbelo en tus requerimientos y lo evaluamos dentro del presupuesto o como extra.</p><span class="more-link">Escribir mis requerimientos<svg class="icon icon-sm"><use href="#i-arrow-right"/></svg></span></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sitio web y contenido -->
+  <section class="section section-dark" id="marca" aria-labelledby="w-title">
+    <div class="container" style="position:relative">
+      <div class="section-head center reveal">
+        <span class="script-kicker light">Tu marca, conectada</span>
+        <h2 class="section-title" id="w-title">Tu sitio web y tu contenido, <span class="serif">desde el mismo panel</span></h2>
+        <p class="section-lead">El CRM no vive aislado: se conecta con avamultiservices.com y se convierte en tu centro de marketing.</p>
+      </div>
+
+      <div class="show">
+        <div class="show-card reveal">
+          <div class="sh-top"><span class="sh-ico"><svg class="icon"><use href="#i-globe"/></svg></span><div><div class="sh-k">Módulo 10</div><h3>Sitio web conectado</h3></div></div>
+          <div class="site-mock">
+            <div class="sm-row"><span>Servicio</span><span>Precio desde</span><span>Visible</span></div>
+            <div class="sm-row"><b>Reparación de crédito</b><span class="sm-in">Tu precio</span><span class="tgl on"></span></div>
+            <div class="sm-row"><b>Taxes personales</b><span class="sm-in">Tu precio</span><span class="tgl on"></span></div>
+            <div class="sm-row"><b>Formación de LLC</b><span class="sm-in">Tu precio</span><span class="tgl on"></span></div>
+            <div class="sm-ann"><svg class="icon icon-sm"><use href="#i-sparkles"/></svg><span><b>Anuncio en el sitio:</b> «¡Temporada de taxes abierta! Agenda tu cita»</span><span class="tgl on"></span></div>
+            <div class="sm-sync"><span class="pulse"></span>Cambios publicados en avamultiservices.com</div>
+          </div>
+          <ul class="sh-list">
+            <li><svg class="icon"><use href="#i-check"/></svg>Cada formulario del sitio (contacto e inicio) entra al CRM como cliente nuevo</li>
+            <li><svg class="icon"><use href="#i-check"/></svg>Cambias servicios, precios, anuncios, testimonios y preguntas sin depender de nadie</li>
+            <li><svg class="icon"><use href="#i-check"/></svg>Ves de dónde llegan tus clientes: sitio web, WhatsApp, redes o referidos</li>
+          </ul>
+        </div>
+
+        <div class="show-card reveal" style="--d:.1s">
+          <div class="sh-top"><span class="sh-ico"><svg class="icon"><use href="#i-sparkles"/></svg></span><div><div class="sh-k">Módulo 11</div><h3>Contenido digital</h3></div></div>
+          <div class="posts">
+            <div class="post p1"><img src="../../assets/img/logo-light.svg" alt=""><b>Temporada de taxes</b><span class="st ok">Aprobado</span></div>
+            <div class="post p2"><b>¿Sabías que tu crédito puede subir?</b><img src="../../assets/img/isotipo.svg" alt=""><span class="st wait">Por aprobar</span></div>
+            <div class="post p3"><b>More than services.</b><em>Clear solutions</em><span class="st pub">Publicado</span></div>
+            <div class="post p4"><b>Forma tu LLC en Texas</b><img src="../../assets/img/logo-brown.svg" alt=""><span class="st wait">Por aprobar</span></div>
+          </div>
+          <div class="cal" aria-label="Calendario de ejemplo">
+            <div class="cal-d"><span>Lun</span><i class="c1"></i></div>
+            <div class="cal-d"><span>Mar</span></div>
+            <div class="cal-d"><span>Mié</span><i class="c2"></i></div>
+            <div class="cal-d"><span>Jue</span></div>
+            <div class="cal-d"><span>Vie</span><i class="c3"></i><i class="c1"></i></div>
+            <div class="cal-d"><span>Sáb</span></div>
+            <div class="cal-d"><span>Dom</span></div>
+          </div>
+          <ul class="sh-list">
+            <li><svg class="icon"><use href="#i-check"/></svg>Te subimos posts, historias y flyers con la identidad de AVA</li>
+            <li><svg class="icon"><use href="#i-check"/></svg>Los apruebas o pides cambios con un comentario, y los descargas listos para Instagram</li>
+            <li><svg class="icon"><use href="#i-check"/></svg>Calendario para saber qué se publica cada semana</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Etapas -->
+  <section class="section" aria-labelledby="e-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="script-kicker">Etapas por servicio</span>
+        <h2 class="section-title" id="e-title">Cada servicio, <span class="serif">su propio camino</span></h2>
+        <p class="section-lead">Etapas iniciales sugeridas; las ajustamos contigo a tu forma de trabajar.</p>
+      </div>
+      <div class="pipes">
+        <div class="pipe reveal"><b>Crédito</b><div class="stages"><span>Contrato</span><i></i><span>Análisis</span><i></i><span>Disputas R1</span><i></i><span>R2</span><i></i><span>R3</span><i></i><span>Seguimiento</span><i></i><span>Completado</span></div></div>
+        <div class="pipe reveal"><b>Taxes</b><div class="stages"><span>Docs pendientes</span><i></i><span>En preparación</span><i></i><span>Revisión</span><i></i><span>Enviado al IRS</span><i></i><span>Aceptado</span><i></i><span>Reembolso</span></div></div>
+        <div class="pipe reveal"><b>Inmigración</b><div class="stages"><span>Consulta</span><i></i><span>Documentos</span><i></i><span>Preparación</span><i></i><span>Enviado</span><i></i><span>Seguimiento</span><i></i><span>Completado</span></div></div>
+        <div class="pipe reveal"><b>LLC</b><div class="stages"><span>Datos</span><i></i><span>Registro en Texas</span><i></i><span>EIN</span><i></i><span>Operating Agreement</span><i></i><span>Entregado</span></div></div>
+        <div class="pipe reveal"><b>Notaría</b><div class="stages"><span>Agendado</span><i></i><span>Firmado</span><i></i><span>Entregado</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Equipo y permisos -->
+  <section class="section section-dark" id="equipo" aria-labelledby="t-title">
+    <div class="container" style="position:relative">
+      <div class="perm-wrap">
+        <div class="reveal">
+          <span class="script-kicker light">Equipo y permisos</span>
+          <h2 class="section-title" id="t-title">Trabaja con tu compañera, <span class="serif">tú decides el acceso</span></h2>
+          <p class="section-lead">Desde tu panel podrás agregar usuarios y controlar exactamente qué puede ver y hacer cada uno.</p>
+          <ul class="perm-points">
+            <li><span class="pi"><svg class="icon"><use href="#i-users"/></svg></span><div><b>Agregar usuarios desde el panel</b><p>Escribes su correo, le llega una invitación y crea su propia contraseña.</p></div></li>
+            <li><span class="pi"><svg class="icon"><use href="#i-shield"/></svg></span><div><b>Permisos a tu medida</b><p>Activas o desactivas cada permiso con un interruptor, cuando quieras.</p></div></li>
+            <li><span class="pi"><svg class="icon"><use href="#i-lock"/></svg></span><div><b>Datos sensibles protegidos</b><p>El Seguro Social y las claves del monitor solo los ve quien tú autorices.</p></div></li>
+            <li><span class="pi"><svg class="icon"><use href="#i-eye"/></svg></span><div><b>Registro de actividad</b><p>Sabes quién creó, editó o eliminó cada cosa y cuándo.</p></div></li>
+            <li><span class="pi"><svg class="icon"><use href="#i-x"/></svg></span><div><b>Desactivar en un clic</b><p>Si alguien deja de trabajar contigo, le quitas el acceso al instante.</p></div></li>
+          </ul>
+        </div>
+        <div class="perm-table reveal" style="--d:.1s">
+          <table>
+            <thead><tr><th>Permiso</th><th>Ana<br>(administradora)</th><th>Compañera<br>(asistente)</th></tr></thead>
+            <tbody>
+              <tr><td>Ver clientes y casos</td><td><span class="yes"><svg class="icon"><use href="#i-check"/></svg></span></td><td><span class="yes"><svg class="icon"><use href="#i-check"/></svg></span></td></tr>
+              <tr><td>Crear y editar clientes y casos</td><td><span class="yes"><svg class="icon"><use href="#i-check"/></svg></span></td><td><span class="yes"><svg class="icon"><use href="#i-check"/></svg></span></td></tr>
+              <tr><td>Tareas y notas</td><td><span class="yes"><svg class="icon"><use href="#i-check"/></svg></span></td><td><span class="yes"><svg class="icon"><use href="#i-check"/></svg></span></td></tr>
+              <tr><td>Ver documentos</td><td><span class="yes"><svg class="icon"><use href="#i-check"/></svg></span></td><td><span class="opt">?</span></td></tr>
+              <tr><td>Ver SSN y claves del monitor</td><td><span class="yes"><svg class="icon"><use href="#i-check"/></svg></span></td><td><span class="opt">?</span></td></tr>
+              <tr><td>Ver y registrar cobros</td><td><span class="yes"><svg class="icon"><use href="#i-check"/></svg></span></td><td><span class="opt">?</span></td></tr>
+              <tr><td>Exportar información</td><td><span class="yes"><svg class="icon"><use href="#i-check"/></svg></span></td><td><span class="opt">?</span></td></tr>
+              <tr><td>Eliminar registros</td><td><span class="yes"><svg class="icon"><use href="#i-check"/></svg></span></td><td><span class="no">—</span></td></tr>
+              <tr><td>Gestionar usuarios y permisos</td><td><span class="yes"><svg class="icon"><use href="#i-check"/></svg></span></td><td><span class="no">—</span></td></tr>
+            </tbody>
+          </table>
+          <div class="perm-legend">
+            <span><span class="yes" style="width:18px;height:18px"><svg class="icon" style="width:10px;height:10px"><use href="#i-check"/></svg></span>Permitido</span>
+            <span><span class="opt" style="width:18px;height:18px;font-size:9px">?</span>Lo decides tú (interruptor)</span>
+            <span><span class="no">—</span>Solo administradora</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cronograma -->
+  <section class="section" id="cronograma" aria-labelledby="c-title">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="script-kicker">Cronograma</span>
+        <h2 class="section-title" id="c-title">Listo en <span class="serif">2 a 3 semanas</span></h2>
+        <p class="section-lead">Entregas por etapas: podrás ir usando cada parte en cuanto esté lista.</p>
+      </div>
+      <div class="timeline">
+        <article class="tl reveal"><div class="w">Semana 1</div><h3>Clientes, casos y equipo</h3><ul><li><svg class="icon"><use href="#i-check"/></svg>Fichas de clientes</li><li><svg class="icon"><use href="#i-check"/></svg>Casos y etapas por servicio</li><li><svg class="icon"><use href="#i-check"/></svg>Usuarios y permisos</li><li><svg class="icon"><use href="#i-check"/></svg>Migración de tus solicitudes actuales</li></ul></article>
+        <article class="tl reveal" style="--d:.06s"><div class="w">Semana 2</div><h3>Crédito, taxes y cobros</h3><ul><li><svg class="icon"><use href="#i-check"/></svg>Puntajes y disputas</li><li><svg class="icon"><use href="#i-check"/></svg>Declaraciones de taxes</li><li><svg class="icon"><use href="#i-check"/></svg>Pagos y saldos</li><li><svg class="icon"><use href="#i-check"/></svg>Documentos por cliente</li></ul></article>
+        <article class="tl reveal" style="--d:.12s"><div class="w">Semana 3</div><h3>Dashboard, sitio y contenido</h3><ul><li><svg class="icon"><use href="#i-check"/></svg>Tablero con indicadores</li><li><svg class="icon"><use href="#i-check"/></svg>Tareas y vencimientos</li><li><svg class="icon"><use href="#i-check"/></svg>Sitio web conectado y contenido digital</li><li><svg class="icon"><use href="#i-check"/></svg>Pruebas contigo y tu compañera</li><li><svg class="icon"><use href="#i-check"/></svg>Capacitación por videollamada</li></ul></article>
+      </div>
+    </div>
+  </section>
+
+  <!-- Inversión -->
+  <section class="section section-soft" id="inversion" aria-labelledby="i-title">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="script-kicker">Inversión</span>
+        <h2 class="section-title" id="i-title">Un solo precio, <span class="serif">pagos a tu ritmo</span></h2>
+        <p class="section-lead">Comienzas con un pago inicial de $110 y el resto en cuotas semanales, sin intereses. También puedes pagarlo de una vez.</p>
+      </div>
+
+      <div class="price-hero">
+        <div class="price-main reveal">
+          <div class="k">CRM AVA Multiservices</div>
+          <div class="amt">$575<small>USD</small></div>
+          <p>Todo lo de esta propuesta, sin costos ocultos. Comienzas con solo <strong>$110</strong>.</p>
+          <ul>
+            <li><svg class="icon"><use href="#i-check"/></svg>Los 11 módulos, incluidos Equipo, Sitio web y Contenido</li>
+            <li><svg class="icon"><use href="#i-check"/></svg>Hasta 2 usuarios: tú y tu compañera</li>
+            <li><svg class="icon"><use href="#i-check"/></svg>Migración de tus solicitudes actuales</li>
+            <li><svg class="icon"><use href="#i-check"/></svg>Capacitación y 30 días de ajustes</li>
+          </ul>
+        </div>
+        <div class="plans">
+          <div class="plan pop reveal"><span class="badge">Recomendado</span><div class="pn">Inicial + 5 cuotas semanales</div><div class="pd">$110 para iniciar y 5 cuotas de $93.</div><div class="pp">$93<small>× 5 semanas</small></div></div>
+          <div class="plan reveal" style="--d:.06s"><div class="pn">Inicial + 6 cuotas semanales</div><div class="pd">$110 para iniciar y 6 cuotas de $77.50.</div><div class="pp">$77.50<small>× 6 semanas</small></div></div>
+          <div class="plan reveal" style="--d:.12s"><div class="pn">Pago único</div><div class="pd">Un solo pago al iniciar el proyecto.</div><div class="pp">$575<small>1 pago</small></div></div>
+        </div>
+      </div>
+
+      <div class="sched">
+        <div class="sched-card reveal">
+          <h4>Inicial + 5 cuotas semanales</h4>
+          <table>
+            <tbody>
+              <tr><td>Pago inicial<span class="s">Al aprobar; comenzamos el proyecto</span></td><td>$110</td></tr>
+              <tr><td>Semana 1</td><td>$93</td></tr>
+              <tr><td>Semana 2</td><td>$93</td></tr>
+              <tr><td>Semana 3<span class="s">Entrega del CRM</span></td><td>$93</td></tr>
+              <tr><td>Semana 4</td><td>$93</td></tr>
+              <tr><td>Semana 5</td><td>$93</td></tr>
+            </tbody>
+            <tfoot><tr><td>Total</td><td>$575</td></tr></tfoot>
+          </table>
+        </div>
+        <div class="sched-card reveal" style="--d:.06s">
+          <h4>Inicial + 6 cuotas semanales</h4>
+          <table>
+            <tbody>
+              <tr><td>Pago inicial<span class="s">Al aprobar; comenzamos el proyecto</span></td><td>$110</td></tr>
+              <tr><td>Semana 1</td><td>$77.50</td></tr>
+              <tr><td>Semana 2</td><td>$77.50</td></tr>
+              <tr><td>Semana 3<span class="s">Entrega del CRM</span></td><td>$77.50</td></tr>
+              <tr><td>Semana 4</td><td>$77.50</td></tr>
+              <tr><td>Semana 5</td><td>$77.50</td></tr>
+              <tr><td>Semana 6</td><td>$77.50</td></tr>
+            </tbody>
+            <tfoot><tr><td>Total</td><td>$575</td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="extras reveal">
+        <table>
+          <thead><tr><th>Mejoras opcionales (no incluidas)</th><th>Precio</th></tr></thead>
+          <tbody>
+            <tr><td><b>Portal del cliente</b><span>Tus clientes entran y ven el avance de su caso y su puntaje.</span></td><td>$250</td></tr>
+            <tr><td><b>Recordatorios por WhatsApp o SMS</b><span>Avisos automáticos de citas, documentos y pagos (más el costo de los mensajes).</span></td><td>$150</td></tr>
+            <tr><td><b>Formularios adicionales</b><span>Formularios de inicio para Taxes, LLC o Inmigración, conectados al CRM.</span></td><td>$95 c/u</td></tr>
+            <tr><td><b>Usuarios adicionales</b><span>A partir del tercer usuario, con sus propios permisos.</span></td><td>$40 c/u</td></tr>
+            <tr><td><b>Plan de contenido mensual</b><span>Diseño de posts, historias y flyers para tus redes, entregados en tu sección de Contenido digital.</span></td><td>Según plan</td></tr>
+            <tr><td><b>Mantenimiento mensual</b><span>Soporte, ajustes menores y revisión de respaldos.</span></td><td>$45/mes</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Requerimientos -->
+  <section class="section" id="requerimientos" aria-labelledby="r-title">
+    <div class="container">
+      <div class="req-wrap">
+        <div class="req-intro reveal">
+          <span class="script-kicker">Tu turno</span>
+          <h2 class="section-title" id="r-title">Cuéntanos qué <span class="serif">necesitas</span></h2>
+          <p class="section-lead">Escribe con tus palabras todo lo que te gustaría que tu CRM hiciera. Lo revisamos y te confirmamos qué entra en los $575 y si algo necesitaría un ajuste.</p>
+          <ol class="req-steps">
+            <li><span>1</span>Llenas este formulario</li>
+            <li><span>2</span>Analizamos tus requerimientos</li>
+            <li><span>3</span>Te confirmamos el alcance final</li>
+            <li><span>4</span>Pagas el inicial de $110 y comenzamos</li>
+          </ol>
+        </div>
+
+        <form class="req-form" id="req-form" novalidate>
+          <div class="honey" aria-hidden="true"><label>No llenar <input type="text" name="_honey" tabindex="-1" autocomplete="off"></label></div>
+          <div class="rq-grid">
+            <div class="field"><label for="rq-nombre">Tu nombre <span class="req">*</span></label><input class="input" id="rq-nombre" type="text" value="Ana Vargas" required><span class="err">Escribe tu nombre.</span></div>
+            <div class="field"><label for="rq-email">Correo</label><input class="input" id="rq-email" type="email" value="anavargas@avamultiservices.com"></div>
+
+            <fieldset class="field full"><legend class="field-legend">Forma de pago que prefieres <span class="req">*</span></legend>
+              <div class="chips">
+                <input class="chip-input" type="radio" name="plan" id="pl1" value="inicial_5" checked><label class="chip" for="pl1">$110 + 5 cuotas de $93</label>
+                <input class="chip-input" type="radio" name="plan" id="pl2" value="inicial_6"><label class="chip" for="pl2">$110 + 6 cuotas de $77.50</label>
+                <input class="chip-input" type="radio" name="plan" id="pl3" value="unico"><label class="chip" for="pl3">Pago único de $575</label>
+                <input class="chip-input" type="radio" name="plan" id="pl4" value="por_definir"><label class="chip" for="pl4">Lo conversamos</label>
+              </div>
+            </fieldset>
+
+            <fieldset class="field full"><legend class="field-legend">¿Qué módulos son más importantes para ti?</legend>
+              <div class="chips">
+                <input class="chip-input" type="checkbox" name="mod" id="md1" value="Clientes" checked><label class="chip" for="md1">Clientes</label>
+                <input class="chip-input" type="checkbox" name="mod" id="md2" value="Casos por servicio" checked><label class="chip" for="md2">Casos por servicio</label>
+                <input class="chip-input" type="checkbox" name="mod" id="md3" value="Seguimiento de crédito" checked><label class="chip" for="md3">Seguimiento de crédito</label>
+                <input class="chip-input" type="checkbox" name="mod" id="md4" value="Taxes"><label class="chip" for="md4">Taxes</label>
+                <input class="chip-input" type="checkbox" name="mod" id="md5" value="Cobros"><label class="chip" for="md5">Cobros</label>
+                <input class="chip-input" type="checkbox" name="mod" id="md6" value="Tareas y vencimientos"><label class="chip" for="md6">Tareas y vencimientos</label>
+                <input class="chip-input" type="checkbox" name="mod" id="md7" value="Dashboard"><label class="chip" for="md7">Dashboard</label>
+                <input class="chip-input" type="checkbox" name="mod" id="md8" value="Documentos"><label class="chip" for="md8">Documentos</label>
+                <input class="chip-input" type="checkbox" name="mod" id="md9" value="Equipo y permisos" checked><label class="chip" for="md9">Equipo y permisos</label>
+                <input class="chip-input" type="checkbox" name="mod" id="md10" value="Sitio web conectado"><label class="chip" for="md10">Sitio web conectado</label>
+                <input class="chip-input" type="checkbox" name="mod" id="md11" value="Contenido digital"><label class="chip" for="md11">Contenido digital</label>
+              </div>
+            </fieldset>
+
+            <fieldset class="field full"><legend class="field-legend">¿Te interesa alguna mejora opcional?</legend>
+              <div class="chips">
+                <input class="chip-input" type="checkbox" name="ext" id="ex1" value="Portal del cliente"><label class="chip" for="ex1">Portal del cliente</label>
+                <input class="chip-input" type="checkbox" name="ext" id="ex2" value="Recordatorios WhatsApp/SMS"><label class="chip" for="ex2">Recordatorios WhatsApp/SMS</label>
+                <input class="chip-input" type="checkbox" name="ext" id="ex3" value="Formularios adicionales"><label class="chip" for="ex3">Formularios adicionales</label>
+                <input class="chip-input" type="checkbox" name="ext" id="ex4" value="Mantenimiento mensual"><label class="chip" for="ex4">Mantenimiento mensual</label>
+                <input class="chip-input" type="checkbox" name="ext" id="ex5" value="Plan de contenido mensual"><label class="chip" for="ex5">Plan de contenido mensual</label>
+              </div>
+            </fieldset>
+
+            <div class="field full"><label for="rq-req">¿Qué te gustaría que hiciera tu CRM? <span class="req">*</span></label>
+              <textarea class="input" id="rq-req" rows="7" required placeholder="Escribe todo lo que se te ocurra: cómo trabajas hoy, qué te gustaría controlar, qué información guardas de cada cliente, reportes que necesitas, cosas que hoy se te complican…"></textarea>
+              <span class="err">Cuéntanos al menos un poco de lo que necesitas.</span></div>
+
+            <div class="field full"><label for="rq-serv">¿Qué servicios manejas y cómo los cobras?</label>
+              <textarea class="input" id="rq-serv" rows="3" placeholder="Ej.: reparación de crédito $X al mes, taxes desde $X, LLC $X…"></textarea></div>
+
+            <div class="field full"><label for="rq-equipo">¿Qué hace tu compañera y qué debería poder ver?</label>
+              <textarea class="input" id="rq-equipo" rows="3" placeholder="Ej.: atiende clientes nuevos y sube documentos, pero no debería ver los cobros…"></textarea></div>
+
+            <div class="field"><label for="rq-control">¿Cómo llevas hoy el control?</label>
+              <select class="input" id="rq-control">
+                <option value="">Selecciona una opción</option>
+                <option>Excel o Google Sheets</option><option>Cuaderno o agenda</option><option>WhatsApp y notas del celular</option><option>Otro programa</option><option>No llevo un control formal</option>
+              </select></div>
+            <div class="field"><label for="rq-fecha">¿Para cuándo te gustaría tenerlo?</label>
+              <input class="input" id="rq-fecha" type="text" placeholder="Ej.: antes de la temporada de taxes"></div>
+          </div>
+
+          <button class="btn btn-primary btn-block" type="submit" id="rq-send" style="margin-top:22px"><span class="btn-label">Enviar mis requerimientos</span><svg class="icon icon-sm arrow"><use href="#i-send"/></svg><span class="spinner" aria-hidden="true"></span></button>
+          <div class="rq-status" role="status" aria-live="polite"></div>
+        </form>
+
+        <div class="req-done" id="req-done" hidden>
+          <span class="rd-ico"><svg class="icon"><use href="#i-check"/></svg></span>
+          <h3>¡Recibimos tus requerimientos!</h3>
+          <p>Los vamos a analizar y te confirmaremos el alcance final del CRM. Si todo está dentro del presupuesto, comenzamos con tu pago inicial de $110.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Condiciones -->
+  <section class="section" aria-labelledby="t2-title">
+    <div class="container">
+      <div class="section-head reveal">
+        <span class="script-kicker">Detalles</span>
+        <h2 class="section-title" id="t2-title">Lo que <span class="serif">debes saber</span></h2>
+      </div>
+      <div class="terms">
+        <div class="term reveal"><span class="ti"><svg class="icon"><use href="#i-clock"/></svg></span><div><b>Inicio</b><p>El proyecto inicia con el pago inicial de $110 (o el pago único) y la revisión de tus requerimientos.</p></div></div>
+        <div class="term reveal" style="--d:.06s"><span class="ti"><svg class="icon"><use href="#i-file"/></svg></span><div><b>Cuotas semanales</b><p>Sin intereses. Después del inicial, las cuotas se pagan una vez por semana hasta completar los $575.</p></div></div>
+        <div class="term reveal"><span class="ti"><svg class="icon"><use href="#i-shield"/></svg></span><div><b>Tus datos son tuyos</b><p>La información vive en tu propia base de datos, con la misma seguridad que ya tiene tu panel.</p></div></div>
+        <div class="term reveal" style="--d:.06s"><span class="ti"><svg class="icon"><use href="#i-sparkles"/></svg></span><div><b>30 días de ajustes</b><p>Después de la entrega, corregimos y ajustamos detalles sin costo durante 30 días.</p></div></div>
+        <div class="term reveal"><span class="ti"><svg class="icon"><use href="#i-lock"/></svg></span><div><b>Costo de plataforma (aparte)</b><p>Recomendamos el plan Pro de Supabase ($25 USD/mes, pagado directamente por ti): respaldos diarios y el sistema siempre activo.</p></div></div>
+        <div class="term reveal" style="--d:.06s"><span class="ti"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Vigencia</b><p>Esta propuesta es válida por 15 días a partir de su envío.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section p-cta" style="padding-top:0" aria-label="Aprobar propuesta">
+    <div class="container">
+      <div class="cta-box reveal-scale">
+        <svg class="skyline cta-skyline" aria-hidden="true"><use href="#i-skyline"/></svg>
+        <div>
+          <h2>¿Lista para <span class="serif">crecer con orden?</span></h2>
+          <p>Cuéntanos todo lo que te gustaría tener en tu CRM. Lo analizamos, te confirmamos si entra en el presupuesto y comenzamos con tu pago inicial de $110.</p>
+        </div>
+        <div class="cta-actions">
+          <a href="#requerimientos" class="btn btn-white"><svg class="icon"><use href="#i-send"/></svg>Enviar mis requerimientos</a>
+          <a href="../" class="btn btn-outline-light"><span>Ver propuesta del sitio web</span><svg class="icon icon-sm arrow"><use href="#i-arrow-right"/></svg></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="p-foot">
+  <div class="container row">
+    <span>Propuesta de CRM para <strong style="color:#fff">AVA Multiservices</strong> · Clienta: Ana Vargas · Octubre 2026</span>
+    <span class="credit">Diseñado por <a href="https://dgpglobalgroup.com" target="_blank" rel="noopener">DGP Global Group</a></span>
+  </div>
+</footer>
+
+<script src="../../assets/js/main.js" defer></script>
+<script src="../../assets/js/requerimientos.js" defer></script>
+</body>
+</html>
