@@ -1,0 +1,29 @@
+# Mantiene activo el proyecto de Supabase (el plan gratis se pausa tras 7 días sin actividad).
+name: Supabase keep-alive
+
+on:
+  schedule:
+    - cron: "17 14 */3 * *"   # cada 3 días, 14:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping a la base de datos
+        env:
+          SUPABASE_URL: https://szmkcwtkorsndvmxywai.supabase.co
+          # Llave pública (la misma que usa el sitio); solo puede ejecutar ping()
+          SUPABASE_KEY: sb_publishable_Ri5Pcd0a9dphA8W5qJ2YvQ_veqm7I26
+        run: |
+          for i in 1 2 3; do
+            code=$(curl -s -o /tmp/r -w '%{http_code}' -X POST "$SUPABASE_URL/rest/v1/rpc/ping" \
+              -H "apikey: $SUPABASE_KEY" -H "Authorization: Bearer $SUPABASE_KEY" -H "Content-Type: application/json" -d '{}')
+            echo "Intento $i: HTTP $code $(cat /tmp/r)"
+            [ "$code" = "200" ] && exit 0
+            sleep 20
+          done
+          exit 1

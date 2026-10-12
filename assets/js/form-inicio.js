@@ -1,32 +1,43 @@
-/* AVA Multiservices — Formulario de Inicio (reparación de crédito) */
+/* AVA Multiservices — Formulario de Inicio (reparación de crédito)
+   Los datos y documentos se guardan en Supabase (base de datos y almacenamiento privados).
+   La llave pública solo permite crear solicitudes y subir archivos; leerlos requiere iniciar sesión en /admin/. */
 (function () {
   'use strict';
 
-  // Cloudinary: subida sin firma con el preset de la cuenta
-  var CLOUDINARY = {
-    cloudName: 'bzrjdfnu',
-    uploadPreset: 'avamultiservices',
-    folder: 'formularios/inicio',
-    maxBytes: 10 * 1024 * 1024
+  var CONFIG = {
+    supabaseUrl: 'https://szmkcwtkorsndvmxywai.supabase.co',
+    supabaseKey: 'sb_publishable_Ri5Pcd0a9dphA8W5qJ2YvQ_veqm7I26',
+    bucket: 'documentos',
+    carpeta: 'inicio',
+    maxBytes: 10 * 1024 * 1024,
+    // Aviso por correo sin datos sensibles (FormSubmit)
+    avisoEmail: 'anavargasdoria@gmail.com',
+    panelUrl: 'https://avamultiservices.com/admin/'
   };
 
   var form = document.getElementById('form-inicio');
   if (!form) return;
 
+  var solicitudId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : uuidFallback();
   var sendBtn = document.getElementById('f-send');
   var statusEl = form.querySelector('.f-status');
   var pending = 0;
   var emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
-  // Redirección a la página de gracias del mismo dominio
-  var nextField = document.getElementById('form-next');
-  if (nextField && /^https?:$/.test(location.protocol)) nextField.value = location.origin + '/gracias.html';
-
-  function showStatus(msg, kind) {
-    statusEl.textContent = msg;
-    statusEl.className = 'f-status show ' + kind;
+  function uuidFallback() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+      var r = Math.random() * 16 | 0;
+      return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+    });
   }
+  function headers(extra) {
+    var h = { apikey: CONFIG.supabaseKey, Authorization: 'Bearer ' + CONFIG.supabaseKey };
+    for (var k in extra) h[k] = extra[k];
+    return h;
+  }
+  function showStatus(msg, kind) { statusEl.textContent = msg; statusEl.className = 'f-status show ' + kind; }
   function clearStatus() { statusEl.className = 'f-status'; }
+  function val(id) { return (form.querySelector(id).value || '').trim(); }
 
   /* ---------- Navegación por secciones ---------- */
   var stepLinks = document.querySelectorAll('.f-steps a');
@@ -37,7 +48,9 @@
         stepLinks.forEach(function (a) {
           var on = a.getAttribute('href') === '#' + en.target.id;
           a.classList.toggle('active', on);
-          if (on) a.scrollIntoView({ block: 'nearest', inline: 'center' });
+          if (on && a.parentNode.scrollWidth > a.parentNode.clientWidth) {
+            a.parentNode.scrollTo({ left: a.offsetLeft - 20, behavior: 'smooth' });
+          }
         });
       });
     }, { rootMargin: '-40% 0px -55% 0px' });
@@ -46,9 +59,9 @@
 
   function refreshDone() {
     var done = {
-      s1: !!(form.querySelector('#f-email').value && form.querySelector('#f-tel').value && form.querySelector('#f-empleador').value),
-      s2: !!(form.querySelector('#f-dir').value || form.querySelector('#f-ciudad').value),
-      s3: !!form.querySelector('#f-monitor').value,
+      s1: !!(val('#f-email') && val('#f-tel') && val('#f-empleador')),
+      s2: !!(val('#f-dir') || val('#f-ciudad')),
+      s3: !!val('#f-monitor'),
       s4: form.querySelectorAll('.drop.uploaded').length > 0,
       s5: form.querySelector('#c-credito').checked
     };
@@ -70,10 +83,20 @@
     ssn.type = ssn.type === 'password' ? 'text' : 'password';
   });
 
-  /* ---------- Subida de documentos a Cloudinary ---------- */
+  /* ---------- Documentos: subida al almacenamiento privado ---------- */
+  function extension(file) {
+    var m = /\.([a-z0-9]{2,5})$/i.exec(file.name);
+    if (m) return m[1].toLowerCase();
+    return ({ 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/heic': 'heic', 'application/pdf': 'pdf' })[file.type] || 'bin';
+  }
+  function contentType(file) {
+    if (file.type) return file.type;
+    var ext = extension(file);
+    return ext === 'heic' || ext === 'heif' ? 'image/' + ext : ext === 'pdf' ? 'application/pdf' : 'image/jpeg';
+  }
+
   function resetDrop(drop) {
-    var hidden = drop.nextElementSibling;
-    hidden.value = '';
+    drop.nextElementSibling.value = '';
     drop.classList.remove('has-file', 'uploaded', 'error', 'uploading');
     drop.querySelector('input[type=file]').value = '';
     drop.querySelector('.d-ico').innerHTML = '<svg class="icon icon-lg"><use href="#i-upload"/></svg>';
@@ -87,17 +110,12 @@
     var hidden = drop.nextElementSibling;
     var bar = drop.querySelector('.d-bar');
     var sub = drop.querySelector('.d-s');
-    var nombre = (form.querySelector('#f-nombre').value + ' ' + form.querySelector('#f-apellidos').value).trim();
-
-    var data = new FormData();
-    data.append('file', file);
-    data.append('upload_preset', CLOUDINARY.uploadPreset);
-    data.append('folder', CLOUDINARY.folder);
-    data.append('tags', 'formulario-inicio,' + drop.dataset.key);
-    data.append('context', 'documento=' + drop.dataset.label + (nombre ? '|cliente=' + nombre.replace(/[|=]/g, ' ') : ''));
+    var path = CONFIG.carpeta + '/' + solicitudId + '/' + drop.dataset.key + '-' + Date.now() + '.' + extension(file);
 
     var xhr = new XMLHttpRequest();
-    xhr.open('POST', 'https://api.cloudinary.com/v1_1/' + CLOUDINARY.cloudName + '/auto/upload');
+    xhr.open('POST', CONFIG.supabaseUrl + '/storage/v1/object/' + CONFIG.bucket + '/' + path);
+    var h = headers({ 'Content-Type': contentType(file), 'x-upsert': 'false' });
+    for (var k in h) xhr.setRequestHeader(k, h[k]);
     xhr.upload.addEventListener('progress', function (e) {
       if (e.lengthComputable) {
         var p = Math.round((e.loaded / e.total) * 100);
@@ -105,33 +123,31 @@
         sub.textContent = 'Subiendo… ' + p + '%';
       }
     });
-    xhr.onload = function () {
-      pending--;
-      drop.classList.remove('uploading');
-      var res = null;
-      try { res = JSON.parse(xhr.responseText); } catch (e) { /* respuesta inválida */ }
-      if (xhr.status >= 200 && xhr.status < 300 && res && res.secure_url) {
-        hidden.value = res.secure_url;
-        drop.classList.add('uploaded');
-        sub.textContent = 'Subido correctamente';
-        bar.style.width = '100%';
-      } else {
-        drop.classList.add('error');
-        sub.textContent = 'No se pudo subir. Quita el archivo e inténtalo de nuevo.';
-        bar.style.width = '0';
-      }
-      refreshDone();
-    };
-    xhr.onerror = function () {
+    function fail(msg) {
       pending--;
       drop.classList.remove('uploading');
       drop.classList.add('error');
-      sub.textContent = 'Error de conexión. Quita el archivo e inténtalo de nuevo.';
+      sub.textContent = msg;
       bar.style.width = '0';
+      refreshDone();
+    }
+    xhr.onload = function () {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        pending--;
+        drop.classList.remove('uploading');
+        hidden.value = path;
+        drop.classList.add('uploaded');
+        sub.textContent = 'Subido correctamente';
+        bar.style.width = '100%';
+        refreshDone();
+      } else {
+        fail('No se pudo subir. Quita el archivo e inténtalo de nuevo.');
+      }
     };
+    xhr.onerror = function () { fail('Error de conexión. Quita el archivo e inténtalo de nuevo.'); };
     pending++;
     drop.classList.add('uploading');
-    xhr.send(data);
+    xhr.send(file);
   }
 
   document.querySelectorAll('.drop').forEach(function (drop) {
@@ -145,17 +161,20 @@
     input.addEventListener('change', function () {
       var file = input.files && input.files[0];
       if (!file) return;
-      var okType = /^image\//.test(file.type) || file.type === 'application/pdf' || /\.(heic|heif|pdf)$/i.test(file.name);
+      var okType = /^image\//.test(file.type) || file.type === 'application/pdf' || /\.(heic|heif|pdf|jpe?g|png|webp)$/i.test(file.name);
       if (!okType) { showStatus('Solo se aceptan imágenes o PDF.', 'error'); input.value = ''; return; }
-      if (file.size > CLOUDINARY.maxBytes) { showStatus('El archivo "' + file.name + '" supera los 10 MB.', 'error'); input.value = ''; return; }
+      if (file.size > CONFIG.maxBytes) { showStatus('El archivo "' + file.name + '" supera los 10 MB.', 'error'); input.value = ''; return; }
       clearStatus();
 
       drop.classList.add('has-file');
       drop.querySelector('.d-t').textContent = file.name;
       var ico = drop.querySelector('.d-ico');
       if (/^image\/(jpeg|png|webp|gif)$/.test(file.type)) {
-        var url = URL.createObjectURL(file);
-        ico.innerHTML = '<img alt="" src="' + url + '">';
+        var img = document.createElement('img');
+        img.alt = '';
+        img.src = URL.createObjectURL(file);
+        ico.innerHTML = '';
+        ico.appendChild(img);
       } else {
         ico.innerHTML = '<svg class="icon icon-lg"><use href="#i-file"/></svg>';
       }
@@ -169,7 +188,7 @@
     });
   });
 
-  /* ---------- Validación y envío ---------- */
+  /* ---------- Validación ---------- */
   function setInvalid(el, bad) {
     var f = el.closest('.field');
     if (f) f.classList.toggle('invalid', bad);
@@ -181,17 +200,13 @@
 
   function validate() {
     var first = null;
-    var email = form.querySelector('#f-email');
-    var tel = form.querySelector('#f-tel');
-    var emp = form.querySelector('#f-empleador');
-    var cred = form.querySelector('#c-credito');
     var ssnDigits = ssn.value.replace(/\D/g, '');
     var checks = [
-      [email, emailRe.test(email.value.trim())],
-      [tel, tel.value.replace(/\D/g, '').length >= 10],
+      [form.querySelector('#f-email'), emailRe.test(val('#f-email'))],
+      [form.querySelector('#f-tel'), val('#f-tel').replace(/\D/g, '').length >= 10],
       [ssn, ssnDigits.length === 0 || ssnDigits.length === 9],
-      [emp, emp.value.trim().length >= 2],
-      [cred, cred.checked]
+      [form.querySelector('#f-empleador'), val('#f-empleador').length >= 2],
+      [form.querySelector('#c-credito'), form.querySelector('#c-credito').checked]
     ];
     checks.forEach(function (c) {
       setInvalid(c[0], !c[1]);
@@ -202,6 +217,59 @@
       setTimeout(function () { first.focus({ preventScroll: true }); }, 400);
     }
     return !first;
+  }
+
+  /* ---------- Envío ---------- */
+  function datos() {
+    var documentos = {};
+    form.querySelectorAll('.drop').forEach(function (d) {
+      var path = d.nextElementSibling.value;
+      if (path) documentos[d.dataset.key] = path;
+    });
+    var opt = function (v) { return v || null; };
+    return {
+      id: solicitudId,
+      formulario: 'inicio',
+      objetivos: Array.prototype.map.call(form.querySelectorAll('input[name="Objetivo"]:checked'), function (c) { return c.value; }),
+      nombre: opt(val('#f-nombre')),
+      apellidos: opt(val('#f-apellidos')),
+      email: val('#f-email').toLowerCase(),
+      telefono: val('#f-tel'),
+      fecha_nacimiento: opt(val('#f-nac')),
+      ssn: opt(ssn.value.trim()),
+      empleador: val('#f-empleador'),
+      direccion: opt(val('#f-dir')),
+      direccion_postal: opt(val('#f-dirpostal')),
+      pais: opt(val('#f-pais')),
+      region: opt(val('#f-estado')),
+      ciudad: opt(val('#f-ciudad')),
+      codigo_postal: opt(val('#f-zip')),
+      monitor_credito: opt(val('#f-monitor')),
+      documentos: documentos,
+      autoriza_credito: form.querySelector('#c-credito').checked,
+      acepta_marketing: form.querySelector('#c-marketing').checked
+    };
+  }
+
+  function avisar(d) {
+    // Solo datos de contacto: nada sensible viaja por correo
+    var nombre = [d.nombre, d.apellidos].filter(Boolean).join(' ') || 'Sin nombre';
+    var body = {
+      _subject: 'Nuevo formulario de inicio: ' + nombre,
+      _template: 'table',
+      _captcha: 'false',
+      Cliente: nombre,
+      Teléfono: d.telefono,
+      Email: d.email,
+      Objetivos: d.objetivos.join(', ') || 'No indicó',
+      Documentos: Object.keys(d.documentos).length + ' de 3',
+      'Ver en el panel': CONFIG.panelUrl + '#' + d.id
+    };
+    return fetch('https://formsubmit.co/ajax/' + CONFIG.avisoEmail, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      body: JSON.stringify(body)
+    }).catch(function () { /* el aviso es opcional: la solicitud ya quedó guardada */ });
   }
 
   var submitting = false;
@@ -216,27 +284,29 @@
     sendBtn.classList.add('loading');
     sendBtn.disabled = true;
 
-    var finish = function () {
-      if (pending > 0) { showStatus('Terminando de subir tus documentos…', 'info'); setTimeout(finish, 400); return; }
-      // Las opciones múltiples se envían como un solo campo
-      var objetivos = Array.prototype.map.call(form.querySelectorAll('input[name="Objetivo"]:checked'), function (c) { return c.value; });
-      var h = document.createElement('input');
-      h.type = 'hidden'; h.name = '¿Para qué quiere mejorar su crédito?'; h.value = objetivos.join(', ') || 'No indicó';
-      form.appendChild(h);
-      form.querySelectorAll('input[name="Objetivo"]').forEach(function (c) { c.disabled = true; });
-      // Los campos de archivo no se envían: solo los enlaces de Cloudinary
-      form.querySelectorAll('input[type=file]').forEach(function (f) { f.disabled = true; });
-      form.querySelectorAll('.drop + input[type=hidden]').forEach(function (h) { if (!h.value) h.value = 'No adjuntó'; });
-      showStatus('Enviando tu información…', 'info');
-      HTMLFormElement.prototype.submit.call(form);
+    var waitUploads = function (done) {
+      if (pending > 0) { showStatus('Terminando de subir tus documentos…', 'info'); setTimeout(function () { waitUploads(done); }, 400); return; }
+      done();
     };
-    finish();
-  });
 
-  window.addEventListener('pageshow', function () {
-    submitting = false;
-    sendBtn.classList.remove('loading');
-    sendBtn.disabled = false;
-    form.querySelectorAll('input[name="Objetivo"], input[type=file]').forEach(function (c) { c.disabled = false; });
+    waitUploads(function () {
+      showStatus('Enviando tu información de forma segura…', 'info');
+      var d = datos();
+      fetch(CONFIG.supabaseUrl + '/rest/v1/solicitudes', {
+        method: 'POST',
+        headers: headers({ 'Content-Type': 'application/json', Prefer: 'return=minimal' }),
+        body: JSON.stringify(d)
+      }).then(function (res) {
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return Promise.race([avisar(d), new Promise(function (r) { setTimeout(r, 4000); })]);
+      }).then(function () {
+        window.location.href = '/gracias.html';
+      }).catch(function () {
+        submitting = false;
+        sendBtn.classList.remove('loading');
+        sendBtn.disabled = false;
+        showStatus('No pudimos enviar tu información. Revisa tu conexión e inténtalo de nuevo, o escríbenos por WhatsApp al (786) 816-2430.', 'error');
+      });
+    });
   });
 })();
