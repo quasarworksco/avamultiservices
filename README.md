@@ -1,7 +1,7 @@
 # AVA Multiservices — Sitio web
 
 Sitio estático (HTML + CSS + JS, sin dependencias) para **AVA Multiservices**, Dallas, Texas.
-Dominio: https://avamultiservices.dgp-link.com — Diseñado por [DGP Global Group](https://dgpglobalgroup.com).
+Dominio: https://avamultiservices.com — Diseñado por [DGP Global Group](https://dgpglobalgroup.com).
 
 ## Estructura
 
