@@ -1,6 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /propuesta/
+Disallow: /entrega/
 Disallow: /gracias.html
 
 Sitemap: https://avamultiservices.com/sitemap.xml
