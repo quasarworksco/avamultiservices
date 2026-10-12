@@ -18,6 +18,13 @@
     .nf p { margin-top: 12px; color: var(--muted); }
     .nf .btn { margin-top: 30px; }
   </style>
+  <script>
+    (function () {
+      var p = location.pathname, low = p.toLowerCase();
+      if (low !== p) location.replace(low + location.search + location.hash);
+      else if (!/\/$/.test(p) && !/\.[a-z0-9]+$/i.test(p)) location.replace(p + '/' + location.search + location.hash);
+    })();
+  </script>
 </head>
 <body>
   <main class="nf hero">
