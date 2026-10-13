@@ -205,13 +205,18 @@
     ['sensibles', 'Datos sensibles', 'Ver SSN y claves del monitor de crédito'],
     ['clientes', 'Clientes', 'Crear, editar y eliminar clientes'],
     ['casos', 'Casos', 'Gestionar los casos y mover etapas'],
-    ['documentos', 'Documentos', 'Ver y subir documentos de clientes']
+    ['documentos', 'Documentos', 'Ver y subir documentos de clientes'],
+    ['cobros', 'Cobros', 'Registrar pagos y ver ingresos'],
+    ['tareas', 'Tareas', 'Crear y asignar tareas del equipo'],
+    ['sitio', 'Sitio web', 'Editar precios, anuncios y preguntas del sitio'],
+    ['contenido', 'Contenido digital', 'Ver, aprobar y comentar posts y diseños']
   ];
 
   /* ---------- Sesión y permisos ---------- */
   var me = null;
   function puede(m) {
     if (!me) return false;
+    if (!m) return true;
     if (me.rol === 'admin') return true;
     if (m === 'equipo') return false;
     return (me.permisos || []).indexOf(m) !== -1;
@@ -243,6 +248,8 @@
     show('view-panel');
     navegar();
     AVA.contarSolicitudes();
+    AVA.contarTareas();
+    AVA.contarContenido();
   }
 
   sb.auth.onAuthStateChange(function (event) {
@@ -289,12 +296,12 @@
     var partes = h.slice(2).split('/').filter(Boolean);
     var nombre = partes[0];
     if (!nombre || !vistas[nombre] || !puede(vistas[nombre].permiso)) {
-      var primera = ['solicitudes', 'clientes', 'casos'].filter(function (v) { return puede(vistas[v].permiso); })[0];
+      var primera = ['inicio', 'solicitudes', 'clientes', 'casos'].filter(function (v) { return vistas[v] && puede(vistas[v].permiso); })[0];
       if (!primera) { $('main').innerHTML = ''; $('main').appendChild(el('div', { class: 'empty' }, [el('b', { text: 'Aún no tienes secciones asignadas' }), 'Pide a la administradora que active tus permisos.'])); return; }
       location.replace('#/' + primera);
       return;
     }
-    document.querySelectorAll('.nav-item').forEach(function (a) { a.classList.toggle('on', a.dataset.route === nombre); });
+    document.querySelectorAll('.nav-item').forEach(function (a) { a.classList.toggle('on', a.dataset.route === nombre || a.dataset.alias === nombre); });
     cerrarDrawer();
     var main = $('main');
     main.innerHTML = '';
@@ -327,6 +334,8 @@
       return p.join(' · ');
     },
     contarSolicitudes: function () {},
+    contarTareas: function () {},
+    contarContenido: function () {},
     start: entrar
   };
 })();
