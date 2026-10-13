@@ -128,7 +128,7 @@
       if (!lista.length) lane.appendChild(el('div', { class: 'lane-empty', text: 'Arrastra un caso aquí' }));
       lista.forEach(function (k, i) {
         var tarde = k.fecha_entrega && k.fecha_entrega < hoy && k.estado === 'activo';
-        var card = el('button', { class: 'kcard', type: 'button', draggable: 'true', 'data-id': k.id, 'data-svc': k.servicio, style: 'animation-delay:' + Math.min(i * 40, 400) + 'ms', onclick: function () { A.editarCaso(k, null, cargar); } }, [
+        var card = el('button', { class: 'kcard', type: 'button', draggable: 'true', 'data-id': k.id, 'data-svc': k.servicio, style: 'animation-delay:' + Math.min(i * 40, 400) + 'ms', onclick: function () { A.verCaso(k.id, cargar); } }, [
           el('b', { text: A.nombreDe(k.clientes || {}) }),
           k.titulo ? el('div', { class: 'muted', text: k.titulo }) : null,
           el('div', { class: 'meta' }, [

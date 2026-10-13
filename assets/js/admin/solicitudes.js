@@ -13,9 +13,103 @@
 
   A.contarSolicitudes = async function () {
     if (!A.puede('solicitudes')) return;
-    var r = await sb.from('solicitudes').select('id', { count: 'exact', head: true }).eq('estado', 'nuevo');
-    document.getElementById('count-sol').textContent = r.count ? r.count : '';
+    var r = await Promise.all([
+      sb.from('solicitudes').select('id', { count: 'exact', head: true }).eq('estado', 'nuevo'),
+      sb.from('mensajes_web').select('id', { count: 'exact', head: true }).eq('estado', 'nuevo')
+    ]);
+    var n = (r[0].count || 0) + (r[1].count || 0);
+    document.getElementById('count-sol').textContent = n ? n : '';
+    A.nuevas = { solicitudes: r[0].count || 0, mensajes: r[1].count || 0 };
+    document.querySelectorAll('[data-tab-count]').forEach(function (x) { var c = A.nuevas[x.dataset.tabCount]; x.textContent = c ? c : ''; });
   };
+
+  A.pestanasEntrada = function (actual) {
+    return el('div', { class: 'tabs', style: 'margin-top:20px' }, [['solicitudes', 'Formulario de inicio'], ['mensajes', 'Mensajes de contacto']].map(function (t) {
+      return el('a', { class: 'tab' + (t[0] === actual ? ' on' : ''), href: '#/' + t[0] }, [t[1], el('span', { class: 'n', 'data-tab-count': t[0], text: A.nuevas && A.nuevas[t[0]] ? A.nuevas[t[0]] : '' })]);
+    }));
+  };
+
+  /* ---------- Mensajes del formulario de contacto del sitio ---------- */
+  var SERV_MAP = { 'Documentos migratorios': 'inmigracion', 'Taxes': 'taxes', 'LLC': 'llc', 'Notaría': 'notaria', 'Reparación de crédito': 'credito' };
+  var EST_M = { nuevo: 'Nuevo', atendido: 'Atendido', archivado: 'Archivado' };
+  var msjs = [];
+  var mui = {};
+  A.vista('mensajes', {
+    permiso: 'solicitudes',
+    render: function (cont) {
+      mui.list = el('div', { class: 'list' });
+      cont.appendChild(A.cabecera('Formularios del sitio', 'Solicitudes', 'recibidas', [
+        el('button', { class: 'btn btn-ghost btn-sm', onclick: cargarM }, [A.icon('i-refresh'), el('span', { text: 'Actualizar' })])
+      ]));
+      cont.appendChild(A.pestanasEntrada('mensajes'));
+      cont.appendChild(mui.list);
+      cargarM();
+    }
+  });
+  async function cargarM() {
+    mui.list.innerHTML = '';
+    mui.list.appendChild(el('div', { class: 'empty', text: 'Cargando…' }));
+    var r = await sb.from('mensajes_web').select('*').order('created_at', { ascending: false }).limit(1000);
+    msjs = r.data || [];
+    mui.list.innerHTML = '';
+    mui.list.appendChild(el('div', { class: 'row head' }, [el('span', { text: 'Persona' }), el('span', { class: 'hide-m', text: 'Correo' }), el('span', { class: 'hide-m', text: 'Servicio' }), el('span', { class: 'hide-m', text: 'Recibido' }), el('span', { text: 'Estado' })]));
+    if (!msjs.length) mui.list.appendChild(el('div', { class: 'empty' }, [el('b', { text: 'Aún no hay mensajes' }), 'Los mensajes del formulario «Solicita tu cita» de tu sitio llegarán aquí.']));
+    msjs.forEach(function (m) {
+      mui.list.appendChild(el('button', { class: 'row', type: 'button', onclick: function () { abrirM(m); } }, [
+        el('span', { class: 'who-cell' }, [el('span', { class: 'avatar', text: A.iniciales(m.nombre) }), el('div', null, [el('div', { class: 'name', text: m.nombre }), el('div', { class: 'muted', text: m.telefono })])]),
+        el('span', { class: 'muted hide-m', text: m.email || '—' }), el('span', { class: 'muted hide-m', text: m.servicio || '—' }),
+        el('span', { class: 'muted hide-m', text: A.hace(m.created_at) }),
+        el('span', null, [el('span', { class: 'pill ' + (m.estado === 'nuevo' ? 'nuevo' : m.estado === 'atendido' ? 'completado' : 'archivado'), text: EST_M[m.estado] })])
+      ]));
+    });
+    A.contarSolicitudes();
+  }
+  function abrirM(m) {
+    var estado = el('select', { class: 'input' }, Object.keys(EST_M).map(function (k) { return el('option', { value: k, text: EST_M[k] }); }));
+    estado.value = m.estado;
+    var tel = A.soloDigitos(m.telefono);
+    A.drawer({
+      titulo: m.nombre, meta: 'Mensaje de contacto · ' + A.fecha(m.created_at, true),
+      cuerpo: [
+        A.seccion('Datos', [['Teléfono', m.telefono], ['Correo', m.email], ['Servicio', m.servicio], ['Idioma', m.idioma]]),
+        A.seccion('Mensaje', [['Escribió', m.mensaje || '—']]),
+        el('div', { class: 'quick', style: 'margin-top:14px' }, [
+          tel.length >= 7 ? el('a', { href: 'https://wa.me/' + (tel.length === 10 ? '1' + tel : tel), target: '_blank', rel: 'noopener' }, [A.icon('i-whatsapp'), 'WhatsApp']) : null,
+          m.email ? el('a', { href: 'mailto:' + m.email }, [A.icon('i-mail'), 'Correo']) : null
+        ])
+      ],
+      pie: [
+        m.cliente_id ? el('a', { class: 'btn btn-ghost', href: '#/clientes/' + m.cliente_id }, [A.icon('i-users'), el('span', { text: 'Ver ficha del cliente' })])
+          : (A.puede('clientes') ? el('button', { class: 'btn btn-primary', type: 'button', onclick: function () { mACliente(m); } }, [A.icon('i-user-plus'), el('span', { text: 'Convertir en cliente' })]) : null),
+        el('div', { class: 'row2' }, [estado, el('button', { class: 'btn btn-dark', type: 'button', text: 'Guardar', onclick: async function () {
+          var r = await sb.from('mensajes_web').update({ estado: estado.value }).eq('id', m.id);
+          if (r.error) { A.toast('No se pudo guardar.', 'error'); return; }
+          m.estado = estado.value; A.toast('Estado guardado.'); A.cerrarDrawer(); cargarM();
+        } })]),
+        el('button', { type: 'button', class: 'link-btn danger', style: 'justify-self:start', text: 'Eliminar mensaje', onclick: async function () {
+          if (!confirm('¿Eliminar el mensaje de ' + m.nombre + '?')) return;
+          var r = await sb.from('mensajes_web').delete().eq('id', m.id);
+          if (!r.error) { A.cerrarDrawer(); cargarM(); }
+        } })
+      ]
+    });
+  }
+  async function mACliente(m) {
+    var d = await A.buscarDuplicado(m.email, m.telefono);
+    var id;
+    if (d && confirm('Ya existe un cliente parecido: ' + A.nombreDe(d) + '. ¿Vincular este mensaje a su ficha?')) id = d.id;
+    if (!id) {
+      var partes = m.nombre.trim().split(/\s+/);
+      var nuevo = await sb.from('clientes').insert({ nombre: partes[0], apellidos: partes.slice(1).join(' ') || null, email: m.email, telefono: m.telefono, origen: 'sitio_web', idioma: m.idioma === 'English' ? 'en' : 'es', notas: m.mensaje ? 'Mensaje del sitio: ' + m.mensaje : null }).select('id').single();
+      if (nuevo.error) { A.toast('No se pudo crear el cliente.', 'error'); return; }
+      id = nuevo.data.id;
+      var svc = SERV_MAP[m.servicio];
+      if (svc && A.puede('casos')) await sb.from('casos').insert({ cliente_id: id, servicio: svc, etapa: A.SERVICIOS[svc].etapas[0], responsable: A.yo().user_id });
+    }
+    await sb.from('mensajes_web').update({ cliente_id: id, estado: 'atendido' }).eq('id', m.id);
+    A.toast('Cliente listo.');
+    A.ir('clientes/' + id);
+  }
 
   A.vista('solicitudes', {
     permiso: 'solicitudes',
@@ -33,6 +127,7 @@
         el('button', { class: 'btn btn-ghost btn-sm', onclick: cargar }, [A.icon('i-refresh'), el('span', { text: 'Actualizar' })]),
         el('button', { class: 'btn btn-dark btn-sm', onclick: exportar }, [A.icon('i-download'), el('span', { text: 'Exportar CSV' })])
       ]));
+      cont.appendChild(A.pestanasEntrada('solicitudes'));
       cont.appendChild(ui.stats);
       cont.appendChild(el('div', { class: 'tools' }, [
         el('input', { class: 'input search', type: 'search', placeholder: 'Buscar por nombre, correo o teléfono', value: filtro.q, oninput: function () { filtro.q = this.value; pintar(); } }),

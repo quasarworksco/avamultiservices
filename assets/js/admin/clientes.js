@@ -187,7 +187,7 @@
     cont.appendChild(back);
     var tel = A.soloDigitos(c.telefono);
     var wa = tel.length === 10 ? '1' + tel : tel;
-    var recargar = function () { cont.innerHTML = ''; cont.appendChild(back); ficha(cont, c.id); };
+    var recargar = function () { cont.innerHTML = ''; ficha(cont, c.id); };
 
     cont.appendChild(el('div', { class: 'ph' }, [
       el('div', { class: 'profile' }, [
@@ -217,7 +217,7 @@
     if (!casos.length) casosCard.appendChild(el('div', { class: 'muted', text: 'Este cliente aún no tiene casos. Crea uno para darle seguimiento.' }));
     casos.forEach(function (k) {
       var s = A.SERVICIOS[k.servicio], idx = s.etapas.indexOf(k.etapa);
-      casosCard.appendChild(el('button', { class: 'caso', type: 'button', 'data-svc': k.servicio, onclick: function () { if (A.puede('casos')) A.editarCaso(k, null, recargar); } }, [
+      casosCard.appendChild(el('button', { class: 'caso', type: 'button', 'data-svc': k.servicio, onclick: function () { A.verCaso(k.id, recargar); } }, [
         el('div', { class: 'top' }, [el('b', { text: k.titulo || s.label }), el('span', { class: 'pill ' + k.estado, text: { activo: 'Activo', completado: 'Completado', cancelado: 'Cancelado' }[k.estado] })]),
         el('div', { class: 'sub', text: [s.corto + ' · ' + k.etapa, k.precio != null ? A.dinero(k.precio) : '', k.fecha_entrega ? 'Entrega ' + A.fecha(k.fecha_entrega) : ''].filter(Boolean).join(' · ') }),
         el('div', { class: 'steps' }, s.etapas.map(function (_, i) { return el('i', { class: i <= idx ? 'done' : '' }); }))
@@ -244,6 +244,37 @@
     });
     var derecha = [el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Datos de contacto' }), dl])];
 
+    // Tareas del cliente
+    var tareasCard = el('div', { class: 'card' });
+    (async function () {
+      var t = await sb.from('tareas').select('*').eq('cliente_id', c.id).eq('hecha', false).order('fecha', { nullsFirst: false });
+      tareasCard.appendChild(el('div', { class: 'card-h' }, [el('h3', { class: 't', text: 'Tareas pendientes · ' + (t.data || []).length }),
+        A.puede('tareas') ? el('button', { class: 'mini-btn', type: 'button', text: 'Nueva tarea', onclick: function () { A.editarTarea(null, recargar, { cliente_id: c.id }); } }) : null]));
+      var box = el('div', { class: 'tasks' });
+      (t.data || []).forEach(function (x) { box.appendChild(A.filaTarea(x, recargar)); });
+      if (!(t.data || []).length) box.appendChild(el('div', { class: 'muted', text: 'Nada pendiente con este cliente.' }));
+      tareasCard.appendChild(box);
+    })();
+
+    // Cobros del cliente
+    var cobrosCard = null;
+    if (A.puede('cobros')) {
+      cobrosCard = el('div', { class: 'card' });
+      (async function () {
+        var p = await sb.from('pagos').select('*').eq('cliente_id', c.id).order('fecha', { ascending: false });
+        var pagos = p.data || [];
+        var pagado = pagos.reduce(function (a, x) { return a + Number(x.monto); }, 0);
+        var total = casos.filter(function (k) { return k.estado !== 'cancelado' && k.precio != null; }).reduce(function (a, k) { return a + Number(k.precio); }, 0);
+        cobrosCard.appendChild(el('div', { class: 'card-h' }, [el('h3', { class: 't', text: 'Cobros' }), el('button', { class: 'mini-btn', type: 'button', text: 'Registrar pago', onclick: function () { A.registrarPago({ cliente_id: c.id }, recargar); } })]));
+        cobrosCard.appendChild(el('div', { class: 'tiles' }, [
+          el('div', { class: 'tile' }, [el('span', { class: 'k', text: 'Total servicios' }), el('b', { text: A.dinero(total) || '$0' })]),
+          el('div', { class: 'tile' }, [el('span', { class: 'k', text: 'Pagado' }), el('b', { text: A.dinero(pagado) || '$0' })]),
+          el('div', { class: 'tile' }, [el('span', { class: 'k', text: 'Saldo' }), el('b', { class: total - pagado > 0 ? 'debe' : '', text: A.dinero(Math.max(0, total - pagado)) || '$0' })])
+        ]));
+        pagos.slice(0, 6).forEach(function (x) { cobrosCard.appendChild(el('div', { class: 'pay' }, [el('span', { text: A.fecha(x.fecha) + ' · ' + A.METODOS[x.metodo] }), el('b', { text: A.dinero(x.monto) })])); });
+      })();
+    }
+
     if (c.solicitud_id && A.puede('solicitudes')) {
       var docsCard = el('div', { class: 'card' }, [el('div', { class: 'muted', text: 'Cargando documentos…' })]);
       derecha.push(docsCard);
@@ -253,6 +284,7 @@
         else docsCard.appendChild(el('div', { class: 'muted', text: 'La solicitud original ya no existe.' }));
       });
     }
+    if (A.puede('documentos')) derecha.push(A.tarjetaDocumentos(c.id));
     if (A.puede('equipo')) {
       var act = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Actividad' })]);
       derecha.push(act);
@@ -267,6 +299,6 @@
       });
     }
 
-    cont.appendChild(el('div', { class: 'cols' }, [el('div', null, [casosCard, notasCard]), el('div', null, derecha)]));
+    cont.appendChild(el('div', { class: 'cols' }, [el('div', null, [casosCard, tareasCard, cobrosCard, notasCard]), el('div', null, derecha)]));
   }
 })();
