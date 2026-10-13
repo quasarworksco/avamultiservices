@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Entrega: dominio y correo · AVA Multiservices | DGP Global Group</title>
-  <meta name="description" content="Checklist de la configuración del dominio avamultiservices.com, el correo corporativo de Google Workspace y el formulario. Factura REC-YEXRJM.">
+  <title>Entrega: CRM y sistema de clientes · AVA Multiservices | DGP Global Group</title>
+  <meta name="description" content="Entrega del CRM de AVA Multiservices: 11 módulos, cómo está hecho, guía de uso y checklist del dominio, correo y formularios.">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#2a2a2a">
   <link rel="canonical" href="https://avamultiservices.com/entrega/">
@@ -12,8 +12,8 @@
   <meta property="og:type" content="website">
   <meta property="og:locale" content="es_US">
   <meta property="og:site_name" content="AVA Multiservices">
-  <meta property="og:title" content="Entrega: dominio y correo · AVA Multiservices">
-  <meta property="og:description" content="Tu dominio avamultiservices.com y tu correo corporativo están listos.">
+  <meta property="og:title" content="Entrega: tu CRM · AVA Multiservices">
+  <meta property="og:description" content="Tu CRM, tu sitio conectado y tu sistema de clientes están listos.">
   <meta property="og:url" content="https://avamultiservices.com/entrega/">
   <meta property="og:image" content="https://avamultiservices.com/assets/img/og-image.jpg">
   <meta name="twitter:card" content="summary_large_image">
@@ -133,6 +133,87 @@
       .new-grid, .flow-steps, .sec-grid { grid-template-columns: 1fr; }
       .new-card h3 { font-size: 30px; }
     }
+
+    /* Navegación interna */
+    .e-nav { display: flex; gap: 4px; margin-right: 8px; }
+    .e-nav a { padding: 8px 12px; border-radius: 999px; font-size: 13.5px; font-weight: 500; color: var(--ink-2); transition: background 0.25s, color 0.25s; }
+    .e-nav a:hover { background: rgba(115, 98, 81, 0.08); color: var(--accent); }
+    @media (max-width: 900px) { .e-nav { display: none; } }
+
+    /* Módulos */
+    .mgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+    .mcard { position: relative; padding: 24px; border-radius: var(--radius-lg); background: #fff; border: 1px solid var(--line); transition: transform 0.5s var(--ease), box-shadow 0.5s var(--ease), border-color 0.3s; }
+    .mcard:hover { transform: translateY(-4px); border-color: rgba(115, 98, 81, 0.35); box-shadow: 0 30px 50px -36px rgba(42, 42, 42, 0.45); }
+    .mcard:nth-child(11) { background: var(--charcoal); border-color: transparent; color: var(--stone); }
+    .mcard:nth-child(11) h3 { color: #fff; }
+    .mcard:nth-child(11) p { color: rgba(255, 255, 255, 0.7); }
+    .mcard-cta { display: flex; flex-direction: column; border: 1.5px dashed var(--line-strong); background: transparent; }
+    .mcard-cta:hover { border-color: var(--accent); background: rgba(255, 255, 255, 0.6); }
+    .mcard:nth-child(11) .mc-ico { background: rgba(255, 255, 255, 0.08); color: var(--stone); }
+    .mc-ico { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; background: var(--accent-50); color: var(--accent); }
+    .mc-n { position: absolute; top: 24px; right: 24px; font-family: var(--font-serif); font-style: italic; font-size: 20px; color: var(--sage-600); }
+    .mcard h3 { margin-top: 18px; font-family: var(--font-serif); font-size: 26px; font-weight: 500; line-height: 1.1; }
+    .mcard p { margin-top: 6px; font-size: 14px; color: var(--muted); }
+
+    /* Cómo está hecho */
+    .arch { display: grid; grid-template-columns: 1fr 120px 1fr 120px 1fr; align-items: center; gap: 0; }
+    .arch-box { padding: 26px; border-radius: var(--radius-xl); background: #fff; border: 1px solid var(--line); height: 100%; box-shadow: 0 30px 60px -48px rgba(42, 42, 42, 0.5); }
+    .arch-box.dark { background: var(--charcoal); color: var(--stone); border-color: transparent; }
+    .arch-box.dark h3 { color: #fff; }
+    .arch-box.dark p { color: rgba(255, 255, 255, 0.72); }
+    .arch-box.dark .ab-ico { background: var(--accent); color: #fff; }
+    .ab-ico { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; background: var(--accent-50); color: var(--accent); }
+    .ab-k { margin-top: 18px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--sage-600); }
+    .arch-box h3 { margin-top: 4px; font-family: var(--font-serif); font-size: 28px; font-weight: 500; }
+    .arch-box p { margin-top: 8px; font-size: 14px; color: var(--muted); }
+    .arch-link { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 8px; font-size: 11px; font-weight: 600; color: var(--muted); text-align: center; }
+    .arch-link i { position: relative; display: block; width: 100%; height: 2px; background: linear-gradient(90deg, var(--sage), var(--accent)); border-radius: 2px; overflow: hidden; }
+    .arch-link i::after { content: ""; position: absolute; top: -2px; left: -30%; width: 30%; height: 6px; border-radius: 3px; background: #fff; opacity: 0.9; animation: flowdot 2.4s var(--ease-io) infinite; }
+    @keyframes flowdot { to { left: 100%; } }
+    .tech { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 26px; }
+    .tech-i { padding: 20px 22px; border-radius: var(--radius-lg); background: rgba(255, 255, 255, 0.6); border: 1px solid var(--line); }
+    .tech-i b { font-size: 15px; }
+    .tech-i p { margin-top: 4px; font-size: 13.5px; color: var(--muted); }
+
+    /* Guía */
+    .guide-aside { position: sticky; top: calc(var(--nav-h) + 24px); }
+    .g-tip { margin-top: 26px; padding: 16px 18px; border-radius: 16px; background: var(--accent-50); font-size: 14px; }
+    .g-tip p { margin-top: 2px; color: var(--ink-2); }
+    .g-list { border-top: 1px solid var(--line-strong); }
+    .g-item { border-bottom: 1px solid var(--line-strong); }
+    .g-item summary { display: flex; align-items: center; gap: 14px; padding: 18px 0; cursor: pointer; list-style: none; }
+    .g-item summary::-webkit-details-marker { display: none; }
+    .g-ico { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--soft); color: var(--accent); transition: background 0.3s, color 0.3s; }
+    .g-item[open] .g-ico { background: var(--accent); color: #fff; }
+    .g-t { flex: 1; font-family: var(--font-serif); font-size: 24px; font-weight: 500; }
+    .g-item .plus { position: relative; width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line-strong); flex: none; transition: transform 0.4s var(--ease), background 0.3s; }
+    .g-item .plus::before, .g-item .plus::after { content: ""; position: absolute; left: 50%; top: 50%; width: 11px; height: 1.5px; background: var(--ink); transform: translate(-50%, -50%); transition: transform 0.4s var(--ease); }
+    .g-item .plus::after { transform: translate(-50%, -50%) rotate(90deg); }
+    .g-item[open] .plus { background: var(--charcoal); border-color: var(--charcoal); }
+    .g-item[open] .plus::before, .g-item[open] .plus::after { background: #fff; }
+    .g-item[open] .plus::after { transform: translate(-50%, -50%) rotate(0deg); }
+    .g-steps { display: grid; gap: 4px; padding: 0 0 20px 54px; animation: gopen 0.5s var(--ease); }
+    @keyframes gopen { from { opacity: 0; transform: translateY(-6px); } }
+    .g-steps li { display: flex; gap: 14px; padding: 10px 0; }
+    .g-steps li > span { display: grid; place-items: center; width: 24px; height: 24px; flex: none; border-radius: 50%; border: 1px solid var(--line-strong); font-size: 12px; font-weight: 700; color: var(--accent); }
+    .g-steps b { font-size: 15px; }
+    .g-steps p { margin-top: 2px; font-size: 14px; color: var(--muted); }
+    .g-steps p b { font-size: inherit; color: var(--ink-2); }
+    @media (max-width: 980px) {
+      .mgrid, .tech { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .arch { grid-template-columns: 1fr; gap: 0; }
+      .arch-link { flex-direction: row; justify-content: center; padding: 12px 0; }
+      .arch-link i { width: 2px; height: 34px; background: linear-gradient(180deg, var(--sage), var(--accent)); }
+      .arch-link i::after { width: 6px; height: 30%; top: -30%; left: -2px; animation-name: flowdotv; }
+      .guide-aside { position: static; }
+    }
+    @keyframes flowdotv { to { top: 100%; } }
+    @media (max-width: 680px) {
+      .mgrid, .tech { grid-template-columns: 1fr; }
+      .g-steps { padding-left: 0; }
+      .g-t { font-size: 21px; }
+    }
+    @media (prefers-reduced-motion: reduce) { .arch-link i::after, .g-steps { animation: none; } }
     .e-foot { padding: 34px 0; background: var(--charcoal-2); color: rgba(255, 255, 255, 0.7); font-size: 14px; }
     .e-foot .row { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; }
 
@@ -206,8 +287,8 @@
         <img class="brand-logo" src="../assets/img/logo.svg" alt="AVA" width="72" height="34"><span class="brand-divider"></span><span class="brand-sub">Entrega<br>técnica</span>
       </a>
       <div class="nav-cta">
-        <a href="../propuesta/" class="btn btn-ghost btn-sm"><span>Ver propuesta</span></a>
-        <a href="../" target="_blank" rel="noopener" class="btn btn-primary btn-sm"><span>Ver sitio</span><svg class="icon icon-sm arrow"><use href="#i-arrow-up-right"/></svg></a>
+        <nav class="e-nav" aria-label="Secciones"><a href="#crm">Módulos</a><a href="#como">Cómo está hecho</a><a href="#guia">Guía</a><a href="#checklist">Checklist</a></nav>
+        <a href="../admin/" target="_blank" rel="noopener" class="btn btn-primary btn-sm"><span>Entrar al panel</span><svg class="icon icon-sm arrow"><use href="#i-arrow-up-right"/></svg></a>
       </div>
     </div>
   </div>
@@ -220,58 +301,97 @@
     <div class="container" style="position:relative">
       <span class="eyebrow-pro reveal"><span class="eb-badge"><svg class="icon"><use href="#i-file"/></svg>REC-YEXRJM</span><span class="eb-text"><span class="pulse"></span>Entrega técnica</span></span>
       <h1 class="hero-title" id="e-title">
-        <span class="line"><span style="--d:.05s">Tu sistema de clientes,</span></span>
-        <span class="line"><span style="--d:.15s"><span class="serif">listo para trabajar.</span></span></span>
+        <span class="line"><span style="--d:.05s">Todo tu negocio,</span></span>
+        <span class="line"><span style="--d:.15s"><span class="serif">en un solo panel.</span></span></span>
       </h1>
-      <p class="hero-lead reveal" style="--d:.3s">Además del dominio y el correo corporativo, ahora <strong>AVA Multiservices</strong> tiene su propio formulario de inicio para clientes de crédito y un panel privado para recibir, revisar y organizar cada solicitud.</p>
+      <p class="hero-lead reveal" style="--d:.3s"><strong>AVA Multiservices</strong> ya tiene su propio CRM: clientes, casos por servicio, seguimiento de crédito, taxes, cobros, tareas, documentos, equipo con permisos, tu sitio web conectado y tu contenido digital. Todo hecho a medida y en un solo lugar.</p>
 
       <div class="progress-card glass reveal" style="--d:.4s">
-        <div class="pc-top"><b>Entrega completada</b><span>19 de 19 tareas · 100%</span></div>
+        <div class="pc-top"><b>Entrega completada</b><span>11 de 11 módulos · 100%</span></div>
         <div class="pc-bar" style="--p:100%"><i></i></div>
         <div class="pc-legend">
-          <span><i class="dot ok"></i>Dominio</span>
-          <span><i class="dot ok"></i>Correo corporativo</span>
-          <span><i class="dot ok"></i>Formulario</span>
-          <span><i class="dot ok"></i>Panel privado</span>
+          <span><i class="dot ok"></i>Dominio y correo</span>
+          <span><i class="dot ok"></i>Formularios</span>
+          <span><i class="dot ok"></i>CRM · fase 1</span>
+          <span><i class="dot ok"></i>CRM · fase 2</span>
+          <span><i class="dot ok"></i>Sitio conectado</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Lo nuevo -->
-  <section class="section" id="nuevo" aria-labelledby="n-title">
+  <!-- Módulos -->
+  <section class="section" id="crm" aria-labelledby="n-title">
     <div class="container">
       <div class="section-head center reveal">
-        <span class="script-kicker">Lo nuevo</span>
-        <h2 class="section-title" id="n-title">Tus clientes envían, <span class="serif">tú lo recibes todo en orden</span></h2>
-        <p class="section-lead">Creamos un sistema completo para el proceso de reparación de crédito: el cliente llena el formulario desde su celular y tú lo recibes de forma segura en tu panel.</p>
+        <span class="script-kicker">Tu CRM</span>
+        <h2 class="section-title" id="n-title">11 módulos, <span class="serif">un solo lugar</span></h2>
+        <p class="section-lead">Todo lo de la propuesta ya está funcionando en tu panel, en computadora y en celular.</p>
       </div>
-
-      <div class="new-grid">
-        <a class="new-card dark reveal" href="../formularios/inicio/" target="_blank" rel="noopener">
-          <span class="nc-ico"><svg class="icon"><use href="#i-list"/></svg></span>
-          <span class="nc-k">Para tus clientes</span>
-          <h3>Formulario de inicio</h3>
-          <p>Datos personales, Seguro Social, empleador, dirección, monitor de crédito, sus documentos (ID, factura y tarjeta del Seguro Social) y sus autorizaciones. Funciona perfecto en celular.</p>
-          <span class="nc-url">avamultiservices.com/formularios/inicio <svg class="icon icon-sm"><use href="#i-arrow-up-right"/></svg></span>
-        </a>
-        <a class="new-card reveal" style="--d:.08s" href="../admin/" target="_blank" rel="noopener">
-          <span class="nc-ico"><svg class="icon"><use href="#i-lock"/></svg></span>
-          <span class="nc-k">Solo para ti</span>
-          <h3>Panel privado</h3>
-          <p>Entras con tu correo <strong>anavargas@avamultiservices.com</strong> y tu contraseña. Ves la lista de clientes, el detalle de cada uno, sus documentos y el estado de su caso.</p>
-          <span class="nc-url">avamultiservices.com/admin <svg class="icon icon-sm"><use href="#i-arrow-up-right"/></svg></span>
-        </a>
+      <div class="mgrid">
+          <article class="mcard reveal" style="--d:0.00s"><span class="mc-ico"><svg class="icon"><use href="#i-home"/></svg></span><span class="mc-n">01</span><h3>Inicio</h3><p>Tus números del negocio y la lista «Para hoy» con tareas, plazos y entregas.</p></article>
+          <article class="mcard reveal" style="--d:0.06s"><span class="mc-ico"><svg class="icon"><use href="#i-users"/></svg></span><span class="mc-n">02</span><h3>Clientes</h3><p>Una ficha por cliente: contacto, casos, notas, tareas, cobros y documentos.</p></article>
+          <article class="mcard reveal" style="--d:0.12s"><span class="mc-ico"><svg class="icon"><use href="#i-layout"/></svg></span><span class="mc-n">03</span><h3>Casos por servicio</h3><p>Tablero por etapas para Crédito, Taxes, Inmigración, LLC y Notaría.</p></article>
+          <article class="mcard reveal" style="--d:0.00s"><span class="mc-ico"><svg class="icon"><use href="#i-gauge"/></svg></span><span class="mc-n">04</span><h3>Seguimiento de crédito</h3><p>Puntajes por buró con gráfica, disputas por ronda y alerta de 30 días.</p></article>
+          <article class="mcard reveal" style="--d:0.06s"><span class="mc-ico"><svg class="icon"><use href="#i-calculator"/></svg></span><span class="mc-n">05</span><h3>Taxes</h3><p>Año fiscal, tipo de declaración y si sale reembolso o hay que pagar.</p></article>
+          <article class="mcard reveal" style="--d:0.12s"><span class="mc-ico"><svg class="icon"><use href="#i-trending"/></svg></span><span class="mc-n">06</span><h3>Cobros</h3><p>Pagos, ingresos del mes y quién te debe, con su avance.</p></article>
+          <article class="mcard reveal" style="--d:0.00s"><span class="mc-ico"><svg class="icon"><use href="#i-clipboard"/></svg></span><span class="mc-n">07</span><h3>Tareas y vencimientos</h3><p>Tareas para ti o tu compañera con fecha límite y aviso.</p></article>
+          <article class="mcard reveal" style="--d:0.06s"><span class="mc-ico"><svg class="icon"><use href="#i-file"/></svg></span><span class="mc-n">08</span><h3>Documentos</h3><p>Archivos privados por cliente que se abren con un enlace temporal.</p></article>
+          <article class="mcard reveal" style="--d:0.12s"><span class="mc-ico"><svg class="icon"><use href="#i-shield"/></svg></span><span class="mc-n">09</span><h3>Equipo y permisos</h3><p>Invita a tu compañera y decide qué puede ver y hacer.</p></article>
+          <article class="mcard reveal" style="--d:0.00s"><span class="mc-ico"><svg class="icon"><use href="#i-globe"/></svg></span><span class="mc-n">10</span><h3>Sitio web conectado</h3><p>Cambia precios, anuncios, testimonios y preguntas de tu sitio.</p></article>
+          <article class="mcard reveal" style="--d:0.06s"><span class="mc-ico"><svg class="icon"><use href="#i-sparkles"/></svg></span><span class="mc-n">11</span><h3>Contenido digital</h3><p>Los diseños que DGP crea para ti, listos para aprobar y descargar.</p></article>
+        <a class="mcard mcard-cta reveal" style="--d:.12s" href="../admin/" target="_blank" rel="noopener"><span class="mc-ico"><svg class="icon"><use href="#i-lock"/></svg></span><h3>Entra y pruébalo</h3><p>Todo está listo en avamultiservices.com/admin con tu correo y contraseña.</p><span class="nc-url">Entrar al panel <svg class="icon icon-sm"><use href="#i-arrow-up-right"/></svg></span></a>
       </div>
 
       <div class="flow reveal">
-        <div class="flow-h">Así funciona</div>
+        <div class="flow-h">Así fluye un cliente</div>
         <ol class="flow-steps">
-          <li><span class="fs-n">1</span><b>El cliente llena el formulario</b><p>Desde el enlace que le envías por WhatsApp o redes.</p></li>
-          <li><span class="fs-n">2</span><b>Se guarda de forma segura</b><p>Sus datos y documentos quedan en tu sistema privado.</p></li>
-          <li><span class="fs-n">3</span><b>Te llega un aviso</b><p>Un correo a anavargas@avamultiservices.com con el nombre del cliente.</p></li>
-          <li><span class="fs-n">4</span><b>Lo revisas en tu panel</b><p>Abres el caso, ves sus documentos y actualizas su estado.</p></li>
+          <li><span class="fs-n">1</span><b>Llega por tu sitio</b><p>Llena el formulario de inicio o «Solicita tu cita». También puedes crearlo tú si llega por WhatsApp.</p></li>
+          <li><span class="fs-n">2</span><b>Entra a tu panel</b><p>Te llega un correo de aviso y lo conviertes en cliente con un clic.</p></li>
+          <li><span class="fs-n">3</span><b>Avanza su caso</b><p>Mueves sus etapas, registras puntajes, disputas, pagos y tareas.</p></li>
+          <li><span class="fs-n">4</span><b>Ves resultados</b><p>En Inicio ves cuánto cobraste, quién te debe y cuántos puntos ganan tus clientes.</p></li>
         </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cómo está hecho -->
+  <section class="section section-soft" id="como" aria-labelledby="c-title">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="script-kicker">Cómo está hecho</span>
+        <h2 class="section-title" id="c-title">Tres piezas <span class="serif">que trabajan juntas</span></h2>
+        <p class="section-lead">Tu sistema es tuyo y está hecho a medida: sin plantillas ni mensualidades de programas de terceros.</p>
+      </div>
+      <div class="arch reveal">
+        <div class="arch-box">
+          <span class="ab-ico"><svg class="icon"><use href="#i-globe"/></svg></span>
+          <div class="ab-k">Lo que ven tus clientes</div>
+          <h3>Tu sitio web</h3>
+          <p>avamultiservices.com, el formulario de inicio y el de contacto. Publicado en GitHub Pages con conexión segura.</p>
+        </div>
+        <div class="arch-link" aria-hidden="true"><span>envía</span><i></i><span>muestra precios y anuncios</span></div>
+        <div class="arch-box dark">
+          <span class="ab-ico"><svg class="icon"><use href="#i-lock"/></svg></span>
+          <div class="ab-k">El corazón</div>
+          <h3>Base de datos privada</h3>
+          <p>Supabase guarda clientes, casos, pagos y documentos. Cada persona solo puede ver lo que su permiso le deja.</p>
+        </div>
+        <div class="arch-link" aria-hidden="true"><span>lee y guarda</span><i></i><span>con tu usuario</span></div>
+        <div class="arch-box">
+          <span class="ab-ico"><svg class="icon"><use href="#i-layout"/></svg></span>
+          <div class="ab-k">Solo para ti y tu equipo</div>
+          <h3>Tu panel</h3>
+          <p>avamultiservices.com/admin: donde trabajas cada día. Funciona en computadora, tablet y celular.</p>
+        </div>
+      </div>
+      <div class="tech">
+        <div class="tech-i reveal"><b>Hecho a medida</b><p>Diseñado con la identidad de AVA: tus colores, tu tipografía y tus servicios.</p></div>
+        <div class="tech-i reveal" style="--d:.06s"><b>Seguridad en el servidor</b><p>Los permisos se revisan en la base de datos, no solo en la pantalla. Aunque alguien intente entrar por otro lado, no ve nada que no le corresponda.</p></div>
+        <div class="tech-i reveal" style="--d:.12s"><b>Archivos privados</b><p>Documentos y diseños se guardan en carpetas privadas; nunca tienen un enlace público.</p></div>
+        <div class="tech-i reveal"><b>Invitaciones seguras</b><p>Solo tú puedes invitar usuarios; la invitación llega por correo y cada persona crea su propia contraseña.</p></div>
+        <div class="tech-i reveal" style="--d:.06s"><b>Siempre activo</b><p>Una tarea automática revisa el sistema cada 3 días para que nunca se pause.</p></div>
+        <div class="tech-i reveal" style="--d:.12s"><b>Crece contigo</b><p>Se pueden sumar módulos (portal del cliente, más formularios, más usuarios) sin rehacer nada.</p></div>
       </div>
     </div>
   </section>
@@ -282,42 +402,49 @@
       <div class="section-head center reveal">
         <span class="script-kicker light">Seguridad</span>
         <h2 class="section-title" id="sec-title">La información de tus clientes, <span class="serif">protegida</span></h2>
-        <p class="section-lead">Como el formulario recibe datos muy sensibles, lo construimos para que nada quede expuesto.</p>
+        <p class="section-lead">Tu negocio maneja datos muy sensibles, así que lo construimos para que nada quede expuesto.</p>
       </div>
       <div class="sec-grid">
-        <div class="sec-item glass-dark reveal"><span class="si-ico"><svg class="icon"><use href="#i-lock"/></svg></span><h3>Datos cifrados</h3><p>Todo se guarda cifrado en una base de datos privada (Supabase) y viaja con conexión segura.</p></div>
-        <div class="sec-item glass-dark reveal" style="--d:.06s"><span class="si-ico"><svg class="icon"><use href="#i-shield"/></svg></span><h3>Nadie más puede leerlos</h3><p>Desde la web solo se pueden <em>enviar</em> solicitudes. Para verlas hay que entrar al panel con tu usuario.</p></div>
-        <div class="sec-item glass-dark reveal" style="--d:.12s"><span class="si-ico"><svg class="icon"><use href="#i-file"/></svg></span><h3>Documentos privados</h3><p>Las fotos de ID y Seguro Social no tienen enlace público: se abren desde el panel con un enlace que caduca en 2 minutos.</p></div>
-        <div class="sec-item glass-dark reveal" style="--d:.18s"><span class="si-ico"><svg class="icon"><use href="#i-eye"/></svg></span><h3>Datos ocultos en pantalla</h3><p>El Seguro Social y las claves del monitor aparecen ocultos hasta que tocas «Mostrar».</p></div>
-        <div class="sec-item glass-dark reveal"><span class="si-ico"><svg class="icon"><use href="#i-mail"/></svg></span><h3>Avisos sin datos sensibles</h3><p>El correo de aviso solo trae nombre, teléfono y objetivo; lo demás se ve únicamente en el panel.</p></div>
-        <div class="sec-item glass-dark reveal" style="--d:.06s"><span class="si-ico"><svg class="icon"><use href="#i-clock"/></svg></span><h3>Siempre activo</h3><p>Una tarea automática revisa el sistema cada 3 días para que nunca se pause.</p></div>
+        <div class="sec-item glass-dark reveal"><span class="si-ico"><svg class="icon"><use href="#i-lock"/></svg></span><h3>Datos cifrados</h3><p>Todo se guarda cifrado en una base de datos privada y viaja con conexión segura.</p></div>
+        <div class="sec-item glass-dark reveal" style="--d:.06s"><span class="si-ico"><svg class="icon"><use href="#i-users"/></svg></span><h3>Permisos por persona</h3><p>Tú decides qué ve tu compañera. Si no tiene un permiso, el sistema no le entrega esa información.</p></div>
+        <div class="sec-item glass-dark reveal" style="--d:.12s"><span class="si-ico"><svg class="icon"><use href="#i-eye"/></svg></span><h3>Datos sensibles bajo llave</h3><p>El Seguro Social y las claves del monitor solo los ve quien tenga el permiso, y cada vez que alguien los abre queda registrado.</p></div>
+        <div class="sec-item glass-dark reveal" style="--d:.18s"><span class="si-ico"><svg class="icon"><use href="#i-file"/></svg></span><h3>Documentos privados</h3><p>Se abren desde el panel con un enlace que caduca en 2 minutos.</p></div>
+        <div class="sec-item glass-dark reveal"><span class="si-ico"><svg class="icon"><use href="#i-clipboard"/></svg></span><h3>Registro de actividad</h3><p>Sabes quién creó, editó o eliminó cada cliente, caso, pago o documento, y cuándo.</p></div>
+        <div class="sec-item glass-dark reveal" style="--d:.06s"><span class="si-ico"><svg class="icon"><use href="#i-mail"/></svg></span><h3>Avisos sin datos sensibles</h3><p>Los correos de aviso solo traen nombre y teléfono; lo demás se ve únicamente en el panel.</p></div>
       </div>
     </div>
   </section>
 
-  <!-- Guía del panel -->
-  <section class="section" aria-labelledby="g-title">
+  <!-- Guía de uso -->
+  <section class="section" id="guia" aria-labelledby="g-title">
     <div class="container">
       <div class="guide">
-        <div class="reveal">
-          <span class="script-kicker">Guía rápida</span>
-          <h2 class="section-title" id="g-title">Cómo usar <span class="serif">tu panel</span></h2>
-          <p class="section-lead">Todo lo que necesitas para atender a cada cliente desde un solo lugar.</p>
+        <div class="guide-aside reveal">
+          <span class="script-kicker">Guía de uso</span>
+          <h2 class="section-title" id="g-title">Cómo usar <span class="serif">tu CRM</span></h2>
+          <p class="section-lead">Paso a paso, módulo por módulo. Toca cada tema para abrirlo.</p>
           <a href="../admin/" target="_blank" rel="noopener" class="btn btn-primary" style="margin-top:24px"><svg class="icon"><use href="#i-lock"/></svg><span>Entrar al panel</span></a>
+          <div class="g-tip"><b>Consejo</b><p>Guarda avamultiservices.com/admin en la pantalla de inicio de tu celular para abrirlo como una app.</p></div>
         </div>
-        <ol class="guide-list">
-          <li class="reveal"><span>01</span><div><b>Entra</b><p>Ve a avamultiservices.com/admin con tu correo y contraseña. Si la olvidas, toca «Olvidé mi contraseña».</p></div></li>
-          <li class="reveal"><span>02</span><div><b>Revisa las nuevas</b><p>Arriba verás cuántas solicitudes son nuevas, están en proceso o completadas. Toca un número para filtrar.</p></div></li>
-          <li class="reveal"><span>03</span><div><b>Abre un cliente</b><p>Toca su nombre para ver toda su información y abrir sus documentos con el botón «Ver».</p></div></li>
-          <li class="reveal"><span>04</span><div><b>Organiza el caso</b><p>Cambia el estado (Nueva, En proceso, Completada, Archivada) y escribe notas internas que solo tú ves.</p></div></li>
-          <li class="reveal"><span>05</span><div><b>Busca y exporta</b><p>Encuentra clientes por nombre, correo o teléfono y descarga la lista en Excel (CSV) cuando la necesites.</p></div></li>
-          <li class="reveal"><span>06</span><div><b>Comparte el formulario</b><p>Envía a tus clientes el enlace avamultiservices.com/formularios/inicio por WhatsApp o redes.</p></div></li>
-        </ol>
+        <div class="g-list">
+          <details class="g-item reveal" open><summary><span class="g-ico"><svg class="icon"><use href="#i-lock"/></svg></span><span class="g-t">Primeros pasos</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Entra</b><p>Ve a <b>avamultiservices.com/admin</b> con tu correo <b>anavargas@avamultiservices.com</b> y tu contraseña. Si la olvidas, escribe tu correo y toca «Olvidé mi contraseña».</p></div></li><li><span>2</span><div><b>Muévete por el menú</b><p>En computadora el menú está a la izquierda; en el celular, abajo (deslízalo para ver todas las secciones). Los números en el menú son pendientes nuevos.</p></div></li><li><span>3</span><div><b>Empieza por Inicio</b><p>Cada mañana revisa «Para hoy»: tareas vencidas, disputas que llegan a los 30 días, entregas próximas y clientes en periodo de cancelación.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-message"/></svg></span><span class="g-t">Solicitudes y mensajes</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Formulario de inicio</b><p>En <b>Solicitudes</b> llegan los clientes de crédito que llenan avamultiservices.com/formularios/inicio. Toca uno para ver sus datos y documentos.</p></div></li><li><span>2</span><div><b>Mensajes de contacto</b><p>En la pestaña <b>Mensajes de contacto</b> llegan los mensajes de «Solicita tu cita» de tu sitio. Escríbeles por WhatsApp o correo con un clic.</p></div></li><li><span>3</span><div><b>Conviértelos en clientes</b><p>Toca <b>Convertir en cliente</b>: se crea su ficha y su caso automáticamente. Si ya existe alguien con ese correo o teléfono, el panel te avisa.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-users"/></svg></span><span class="g-t">Clientes</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Crear un cliente</b><p>En <b>Clientes → Nuevo cliente</b> escribe sus datos, cómo llegó (WhatsApp, referido, redes…) y etiquetas como «VIP».</p></div></li><li><span>2</span><div><b>Su ficha</b><p>Ves sus casos con barra de avance, tareas, cobros, documentos y notas. Usa los botones de WhatsApp, Llamar o Correo para contactarlo.</p></div></li><li><span>3</span><div><b>Buscar y exportar</b><p>Busca por nombre, teléfono, correo o etiqueta, filtra por servicio y descarga la lista en Excel (CSV).</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-layout"/></svg></span><span class="g-t">Casos y etapas</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Abrir un caso</b><p>Desde la ficha del cliente toca <b>Nuevo caso</b>, elige el servicio, el precio, la fecha de entrega y la responsable.</p></div></li><li><span>2</span><div><b>Mover etapas</b><p>En <b>Casos</b> elige el servicio arriba y arrastra la tarjeta a la siguiente etapa (en el celular, abre el caso y cambia la etapa). Al llegar a la última, se marca como completado.</p></div></li><li><span>3</span><div><b>Ver todo del caso</b><p>Toca una tarjeta para ver su avance, cobros, tareas y, según el servicio, crédito o taxes.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-gauge"/></svg></span><span class="g-t">Seguimiento de crédito</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Contrato</b><p>Escribe la fecha en que firmó el contrato: el panel calcula los 3 días hábiles de cancelación y te avisa mientras no puedas cobrar ni disputar.</p></div></li><li><span>2</span><div><b>Puntajes</b><p>Agrega los puntajes de Equifax, Experian y TransUnion cada vez que el cliente saque su reporte. Verás la gráfica y cuántos puntos ha subido.</p></div></li><li><span>3</span><div><b>Disputas</b><p>Registra cada cuenta disputada por ronda (puedes hacerlo en los 3 burós de una vez). Al pasar 30 días sin respuesta te aparece en «Para hoy». Cambia el resultado: eliminado, corregido o verificado.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-calculator"/></svg></span><span class="g-t">Taxes</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Datos de la declaración</b><p>En el caso de taxes guarda el año fiscal y el tipo (individual, negocio propio, LLC, corporación o enmienda).</p></div></li><li><span>2</span><div><b>Resultado</b><p>Cuando la tengas lista, marca si sale reembolso o monto a pagar y la cantidad.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-trending"/></svg></span><span class="g-t">Cobros</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Registrar un pago</b><p>Desde <b>Cobros</b>, la ficha o el caso toca <b>Registrar pago</b>: monto, fecha, método (Zelle, efectivo, Cash App…) y una nota, por ejemplo «Cuota 2 de 5».</p></div></li><li><span>2</span><div><b>Saber quién debe</b><p>Si el caso tiene precio, el panel calcula el saldo. En <b>Cobros</b> verás los ingresos del mes, el mes anterior y la lista de saldos pendientes.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-clipboard"/></svg></span><span class="g-t">Tareas</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Crear tareas</b><p>Crea tareas con fecha límite y asígnalas a ti o a tu compañera, ligadas a un cliente o a un caso.</p></div></li><li><span>2</span><div><b>Completarlas</b><p>Marca la casilla cuando esté hecha. En <b>Tareas</b> se agrupan en vencidas, hoy, próximos 7 días y más adelante.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-file"/></svg></span><span class="g-t">Documentos</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Subir</b><p>En la ficha del cliente arrastra los archivos (o toca para elegirlos): fotos o PDF de hasta 10 MB.</p></div></li><li><span>2</span><div><b>Ver</b><p>Toca «Ver»: se abre con un enlace privado que caduca en 2 minutos. Los documentos del formulario de inicio también aparecen en la ficha.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-globe"/></svg></span><span class="g-t">Tu sitio web</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Precios y servicios</b><p>En <b>Sitio web</b> escribe el precio «desde» de cada servicio o apaga los que no estés ofreciendo. Se publica al instante.</p></div></li><li><span>2</span><div><b>Anuncio</b><p>Activa un aviso flotante en tu sitio, por ejemplo «¡Temporada de taxes abierta!», con botón para agendar.</p></div></li><li><span>3</span><div><b>Testimonios y preguntas</b><p>Agrega lo que dicen tus clientes y preguntas frecuentes. Puedes ocultarlos o editarlos cuando quieras.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-sparkles"/></svg></span><span class="g-t">Contenido digital</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Lo creamos nosotros</b><p>DGP diseña tus posts, historias y flyers y los sube a <b>Contenido</b>. Tú no tienes que subir nada.</p></div></li><li><span>2</span><div><b>Apruébalos</b><p>Ábrelo, revisa el diseño y el texto, y toca <b>Aprobar</b> o <b>Pedir cambios</b> con un comentario. Lo verás también en el calendario.</p></div></li><li><span>3</span><div><b>Publícalos</b><p>Descarga el diseño, copia el texto con un clic, publícalo y márcalo como <b>Publicado</b>.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-shield"/></svg></span><span class="g-t">Equipo y permisos</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Invitar a tu compañera</b><p>En <b>Equipo → Invitar usuario</b> escribe su nombre y correo y marca qué puede usar. Le llega un correo para crear su contraseña.</p></div></li><li><span>2</span><div><b>Permisos</b><p>Activa o desactiva cada permiso con un interruptor. «Datos sensibles» controla quién ve el Seguro Social y las claves del monitor.</p></div></li><li><span>3</span><div><b>Quitar acceso y actividad</b><p>Desactiva su acceso al instante si deja de trabajar contigo. Abajo verás quién creó, editó o eliminó cada cosa.</p></div></li></ol></details>
+        </div>
       </div>
     </div>
   </section>
 
-  <section class="section section-soft" aria-label="Checklist">
+  <section class="section section-soft" id="checklist" aria-label="Checklist">
     <div class="container">
       <div class="section-head center reveal">
         <span class="script-kicker">Checklist completo</span>
@@ -386,7 +513,7 @@
             <span class="status ok"><svg class="icon icon-sm"><use href="#i-check"/></svg>Completado</span>
           </div>
           <ul class="checks">
-            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Formulario de contacto del sitio web</b><p>Recibe nombre, teléfono, correo y servicio de interés, y redirige a la página de agradecimiento.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Formulario de contacto del sitio web</b><p>Recibe nombre, teléfono, correo y servicio de interés, te avisa a <code>anavargas@avamultiservices.com</code> y ahora también llega a tu panel.</p></div></li>
             <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Formulario de inicio de reparación de crédito</b><p>En <code>avamultiservices.com/formularios/inicio/</code>: datos personales, SSN, empleador, dirección, monitor de crédito, 3 documentos y autorizaciones.</p></div></li>
             <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Base de datos privada y documentos protegidos</b><p>Las solicitudes y documentos se guardan cifrados. Desde la web solo se pueden enviar, nunca leer.</p></div></li>
             <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Panel de administración con usuario y contraseña</b><p>En <code>avamultiservices.com/admin/</code>: lista de clientes, detalle, documentos, estado de cada caso, notas internas y exportación.</p></div></li>
@@ -395,6 +522,32 @@
             <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Cuenta de administradora creada</b><p>Acceso al panel con <code>anavargas@avamultiservices.com</code>; el registro de cuentas nuevas está cerrado.</p></div></li>
             <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Sitio actualizado: desde Dallas para todo EE. UU.</b><p>El sitio ahora comunica que atiendes clientes en todo el país.</p></div></li>
           </ul>
+        </article>
+
+        <!-- CRM -->
+        <article class="block reveal">
+          <div class="block-head">
+            <span class="bh-ico brown"><svg class="icon"><use href="#i-layout"/></svg></span>
+            <div class="bh-txt"><div class="k">04 · CRM</div><h2>Tu sistema de clientes</h2></div>
+            <span class="status ok"><svg class="icon icon-sm"><use href="#i-check"/></svg>Completado</span>
+          </div>
+          <ul class="checks">
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Panel nuevo con menú por secciones</b><p>Diseño con tu identidad, menú lateral en computadora y barra inferior en el celular.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Clientes con ficha completa</b><p>Contacto, origen, etiquetas, casos, notas, tareas, cobros, documentos y botones de WhatsApp, llamada y correo.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Convertir solicitudes y mensajes en clientes</b><p>Con detección de clientes repetidos por correo o teléfono.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Casos por servicio con tablero de etapas</b><p>Crédito, Taxes, Inmigración, LLC, Notaría y Otro, con arrastrar y soltar.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Seguimiento de crédito</b><p>Contrato con 3 días hábiles de cancelación, puntajes por buró con gráfica y disputas por ronda con alerta de 30 días.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Taxes</b><p>Año fiscal, tipo de declaración y reembolso o monto a pagar.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Cobros</b><p>Pagos por método, ingresos del mes, saldos pendientes y exportación.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Tareas y vencimientos</b><p>Asignables, con fecha límite, contador en el menú y lista «Para hoy».</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Documentos privados por cliente</b><p>Subida por arrastre y apertura con enlaces temporales.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Inicio con los números del negocio</b><p>Clientes activos, casos, ingresos, por cobrar, puntos de crédito ganados y gráficas.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Equipo y permisos</b><p>Invitación por correo, permisos por módulo, desactivar acceso y registro de actividad.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Sitio web conectado</b><p>Precios, servicios visibles, anuncio, testimonios y preguntas editables desde el panel.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Contenido digital</b><p>Galería y calendario con aprobación, comentarios, texto para copiar y descarga.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Pruebas completas</b><p>Probado como administradora y como compañera con permisos limitados, en computadora y celular.</p></div></li>
+          </ul>
+          <div class="note"><svg class="icon"><use href="#i-sparkles"/></svg><span><b>Contenido digital:</b> DGP crea y sube tus diseños directamente; tú solo los revisas, apruebas y publicas.</span></div>
         </article>
 
       </div>
