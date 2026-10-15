@@ -39,7 +39,7 @@
     var etapa = el('select', { class: 'input sm', 'aria-label': 'Etapa' }, s.etapas.map(function (e) { return el('option', { value: e, text: e }); }));
     etapa.value = k.etapa;
     etapa.addEventListener('change', async function () {
-      var estado = k.estado === 'cancelado' ? 'cancelado' : (etapa.value === s.etapas[s.etapas.length - 1] ? 'completado' : 'activo');
+      var estado = k.estado === 'cancelado' ? 'cancelado' : (A.esFinal(k.servicio, etapa.value) ? 'completado' : 'activo');
       var u = await sb.from('casos').update({ etapa: etapa.value, estado: estado }).eq('id', k.id);
       if (u.error) { A.toast('No se pudo cambiar la etapa.', 'error'); etapa.value = k.etapa; return; }
       A.toast('Etapa: ' + etapa.value); recargar();
@@ -64,6 +64,7 @@
       cuerpo.push(contrato(k, recargar), puntajes(k, datos[0].data || [], recargar), disputas(k, datos[1].data || [], recargar));
     }
     if (k.servicio === 'taxes') cuerpo.push(taxes(k, recargar));
+    if (CAMPOS[k.servicio]) cuerpo.splice(2, 0, datosServicio(k, recargar));
     if (A.puede('cobros')) cuerpo.push(await cobros(k, recargar));
     cuerpo.push(await tareasCaso(k, recargar));
 
@@ -78,6 +79,36 @@
       alCerrar: function () { if (cambiado && alCambiar) alCambiar(); }
     });
   };
+
+  /* ---------- Datos propios de cada servicio ---------- */
+  var CAMPOS = {
+    credito: { t: 'Próxima ronda', c: [['proxima_ronda', 'Fecha de la próxima ronda', 'date']] },
+    plan_irs: { t: 'Plan de pago con el IRS', c: [['monto_deuda', 'Monto de la deuda (USD)', 'number'], ['pago_mensual', 'Pago mensual (USD)', 'number'], ['dia_pago', 'Día de pago (1-28)', 'number'], ['numero_plan', 'Número o referencia del plan', 'text']] },
+    inmigracion: { t: 'Datos del trámite', c: [['tramite', 'Trámite / formulario', 'text'], ['numero_recibo', 'Número de recibo', 'text'], ['fecha_vencimiento', 'Fecha de vencimiento', 'date']] },
+    franchise_tax: { t: 'Franchise Tax', c: [['anio', 'Año', 'number'], ['ingresos', 'Ingresos de la LLC (USD)', 'number'], ['numero_tx', 'Texas Taxpayer Number', 'text']] },
+    contabilidad: { t: 'Periodo', c: [['periodo', 'Mes (AAAA-MM)', 'text']] },
+    llc: { t: 'Datos de la LLC', c: [['nombre_llc', 'Nombre de la LLC', 'text'], ['ein', 'EIN', 'text'], ['fecha_formacion', 'Fecha de formación', 'date']] }
+  };
+  function datosServicio(k, recargar) {
+    var d = k.datos || {}, def = CAMPOS[k.servicio], inputs = {};
+    var grid = el('div', { class: 'grid2' });
+    def.c.forEach(function (c) {
+      var inp = el('input', { class: 'input sm', type: c[2], value: d[c[0]] != null ? d[c[0]] : '', 'aria-label': c[1], step: c[2] === 'number' ? 'any' : null });
+      inputs[c[0]] = inp;
+      grid.appendChild(el('div', { class: 'field' }, [el('label', { text: c[1] }), inp]));
+    });
+    var aviso = null, hoy = A.hoyISO();
+    if (k.servicio === 'credito' && d.proxima_ronda) aviso = el('div', { class: 'alert ' + (d.proxima_ronda <= hoy ? 'warn' : 'ok'), style: 'margin-bottom:10px' }, [A.icon('i-clock', 'icon-sm'), (d.proxima_ronda <= hoy ? 'Ya toca la siguiente ronda (' : 'Siguiente ronda el ') + A.fecha(d.proxima_ronda) + (d.proxima_ronda <= hoy ? ').' : '.')]);
+    if (k.servicio === 'inmigracion' && d.fecha_vencimiento) aviso = el('div', { class: 'alert ' + (d.fecha_vencimiento <= hoy ? 'warn' : 'ok'), style: 'margin-bottom:10px' }, [A.icon('i-clock', 'icon-sm'), 'Vence el ' + A.fecha(d.fecha_vencimiento) + (d.numero_recibo ? ' · recibo ' + d.numero_recibo : '')]);
+    if (k.servicio === 'plan_irs' && d.pago_mensual) aviso = el('div', { class: 'alert ok', style: 'margin-bottom:10px' }, [A.icon('i-dollar', 'icon-sm'), A.dinero(d.pago_mensual) + ' al mes' + (d.dia_pago ? ', los días ' + d.dia_pago : '') + (d.monto_deuda ? ' · deuda ' + A.dinero(d.monto_deuda) : '')]);
+    return sec(def.t, [aviso, grid, el('button', { class: 'mini-btn', type: 'button', style: 'margin-top:12px', text: 'Guardar', onclick: async function () {
+      var n = Object.assign({}, d);
+      def.c.forEach(function (c) { var v = inputs[c[0]].value.trim(); n[c[0]] = v === '' ? null : (c[2] === 'number' ? Number(v) : v); });
+      var u = await sb.from('casos').update({ datos: n }).eq('id', k.id);
+      if (u.error) { A.toast('No se pudo guardar.', 'error'); return; }
+      A.toast('Datos guardados.'); recargar();
+    } })]);
+  }
 
   /* ---------- Crédito ---------- */
   function contrato(k, recargar) {
@@ -160,7 +191,8 @@
       hijos.push(el('div', { class: 'tiles' }, Object.keys(BUROS).map(function (b) {
         var d = pn[b] != null && p0[b] != null ? pn[b] - p0[b] : null;
         return el('div', { class: 'tile' }, [el('span', { class: 'k', text: BUROS[b].n }), el('b', { text: pn[b] != null ? pn[b] : '—' }),
-          d != null && lista.length > 1 ? el('span', { class: 'delta ' + (d >= 0 ? 'up' : 'down'), text: (d >= 0 ? '+' : '') + d + ' pts' }) : null]);
+          d != null && lista.length > 1 ? el('span', { class: 'delta ' + (d >= 0 ? 'up' : 'down'), text: (d >= 0 ? '+' : '') + d + ' pts' }) : null,
+          lista.length > 1 && p0[b] != null ? el('span', { class: 'muted', style: 'display:block;font-size:11.5px', text: 'Inicial ' + p0[b] + ' → actual ' + pn[b] }) : null]);
       })));
       hijos.push(A.graficaPuntajes(lista));
       hijos.push(el('div', { class: 'legend' }, Object.keys(BUROS).map(function (b) { return el('span', null, [el('i', { style: 'background:' + BUROS[b].c }), BUROS[b].n]); })));

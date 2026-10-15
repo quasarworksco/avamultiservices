@@ -35,7 +35,9 @@
         A.puede('solicitudes') ? sb.from('solicitudes').select('id', { count: 'exact', head: true }).eq('estado', 'nuevo') : Promise.resolve({ count: 0 }),
         A.puede('solicitudes') ? sb.from('mensajes_web').select('id', { count: 'exact', head: true }).eq('estado', 'nuevo') : Promise.resolve({ count: 0 }),
         A.puede('contenido') ? sb.from('contenido').select('id', { count: 'exact', head: true }).eq('estado', 'por_aprobar') : Promise.resolve({ count: 0 }),
-        A.puede('cobros') ? sb.from('casos').select('precio, pagos(monto)').neq('estado', 'cancelado').not('precio', 'is', null) : vacio
+        A.puede('cobros') ? sb.from('casos').select('precio, pagos(monto)').neq('estado', 'cancelado').not('precio', 'is', null) : vacio,
+        A.puede('mensajes') ? sb.from('cola_mensajes').select('id', { count: 'exact', head: true }).eq('estado', 'pendiente').lte('programado_para', new Date().toISOString()) : Promise.resolve({ count: 0 }),
+        A.puede('citas') ? sb.from('citas').select('id', { count: 'exact', head: true }).in('estado', ['solicitada', 'confirmada']).gte('inicio', new Date(hoy + 'T00:00:00').toISOString()).lt('inicio', new Date(masDias(1) + 'T00:00:00').toISOString()) : Promise.resolve({ count: 0 })
       ]);
       var casos = res[0].data || [], tareas = res[1].data || [], disp = res[2].data || [], pagos = res[3].data || [], punt = res[4].data || [];
       var activos = casos.filter(function (k) { return k.estado === 'activo'; });
@@ -61,7 +63,9 @@
       var nuevas = (res[5].count || 0) + (res[6].count || 0);
       if (A.puede('solicitudes')) lista.push([nuevas, 'Solicitudes nuevas', '#/solicitudes']);
       if (A.puede('contenido')) lista.push([res[7].count || 0, 'Diseños por aprobar', '#/contenido']);
-      lista.slice(0, 8).forEach(function (s, i) {
+      if (A.puede('mensajes')) lista.push([res[9].count || 0, 'Mensajes por enviar', '#/bandeja/cola']);
+      if (A.puede('citas')) lista.push([res[10].count || 0, 'Citas hoy', '#/agenda']);
+      lista.slice(0, 10).forEach(function (s, i) {
         kpis.appendChild(el('a', { class: 'stat', href: s[2], style: 'animation-delay:' + i * 60 + 'ms' }, [el('div', { class: 'k', text: s[0] }), el('div', { class: 'l', text: s[1] })]));
       });
 
@@ -88,6 +92,18 @@
           el('span', null, [el('b', { text: 'Periodo de cancelación · ' + A.nombreDe(k.clientes || {}) }), el('span', { class: 'muted', text: 'Hasta el ' + A.fecha(fin) + '. Aún no se puede cobrar ni disputar.' })])
         ]) });
       });
+      casos.filter(function (k) { return k.estado === 'activo' && k.servicio === 'credito' && k.datos && k.datos.proxima_ronda && k.datos.proxima_ronda <= masDias(2); }).forEach(function (k) {
+        items.push({ f: k.datos.proxima_ronda, nodo: el('button', { class: 'today-i', type: 'button', onclick: function () { A.verCaso(k.id, function () { A.ir('inicio'); }); } }, [
+          el('span', { class: 'ti-ico', 'data-svc': 'credito' }, [A.icon('i-gauge', 'icon-sm')]),
+          el('span', null, [el('b', { text: 'Siguiente ronda · ' + A.nombreDe(k.clientes || {}) }), el('span', { class: 'muted', text: k.etapa + ' · próxima ronda ' + A.fecha(k.datos.proxima_ronda) })])
+        ]) });
+      });
+      casos.filter(function (k) { return k.estado !== 'cancelado' && k.servicio === 'inmigracion' && k.datos && k.datos.fecha_vencimiento && k.datos.fecha_vencimiento <= masDias(30); }).forEach(function (k) {
+        items.push({ f: k.datos.fecha_vencimiento, nodo: el('button', { class: 'today-i', type: 'button', onclick: function () { A.verCaso(k.id, function () { A.ir('inicio'); }); } }, [
+          el('span', { class: 'ti-ico warn' }, [A.icon('i-passport', 'icon-sm')]),
+          el('span', null, [el('b', { text: 'Vencimiento migratorio · ' + A.nombreDe(k.clientes || {}) }), el('span', { class: 'muted', text: (k.datos.tramite || 'Trámite') + ' vence el ' + A.fecha(k.datos.fecha_vencimiento) + (k.datos.numero_recibo ? ' · ' + k.datos.numero_recibo : '') })])
+        ]) });
+      });
       items.sort(function (a, b) { return (a.f || '').localeCompare(b.f || ''); });
       hoyBox.innerHTML = '';
       hoyBox.appendChild(el('div', { class: 'card-h' }, [el('h3', { class: 't', text: 'Para hoy · ' + items.length }), A.puede('tareas') ? el('button', { class: 'mini-btn', type: 'button', text: 'Nueva tarea', onclick: function () { A.editarTarea(null, function () { A.ir('inicio'); }, { fecha: hoy }); } }) : null]));
@@ -95,6 +111,47 @@
       var box = el('div', { class: 'tasks' });
       items.forEach(function (i) { box.appendChild(i.nodo); });
       hoyBox.appendChild(box);
+
+      // Temporadas: Franchise Tax (1 abr – 15 may) y taxes en enero
+      var mes = new Date().getMonth(), dia = new Date().getDate(), anio = new Date().getFullYear();
+      var temporada = null;
+      if (A.puede('casos') && (mes === 3 || (mes === 4 && dia <= 15))) {
+        var ft = casos.filter(function (k) { return k.servicio === 'franchise_tax' && k.datos && String(k.datos.anio) === String(anio); });
+        var pend = ft.filter(function (k) { return k.estado === 'activo'; }).length;
+        temporada = el('div', { class: 'season' }, [A.icon('i-building'), el('div', null, [el('b', { text: 'Temporada de Franchise Tax: vence el 15 de mayo' }),
+          el('span', { text: ft.length ? pend + ' de ' + ft.length + ' LLC pendientes de presentar.' : 'Aún no se crean los casos de este año para tus clientes con LLC.' })]),
+          ft.length ? el('a', { class: 'btn btn-white btn-sm', href: '#/casos' }, [el('span', { text: 'Ver casos' })]) : el('button', { class: 'btn btn-white btn-sm', type: 'button', onclick: async function () {
+            var r = await sb.rpc('generar_franchise_tax', { p_anio: anio }); A.toast(r.error ? 'No se pudo.' : r.data + ' casos creados y avisos listos.', r.error ? 'error' : ''); A.ir('inicio');
+          } }, [el('span', { text: 'Crear casos y avisos' })])]);
+      } else if (A.puede('campanas') && mes === 0) {
+        temporada = el('div', { class: 'season' }, [A.icon('i-calculator'), el('div', null, [el('b', { text: '¡Empieza la temporada de taxes!' }), el('span', { text: 'Avisa a tus clientes de taxes del año pasado para que agenden su cita.' })]),
+          el('a', { class: 'btn btn-white btn-sm', href: '#/campanas' }, [el('span', { text: 'Crear campaña' })])]);
+      }
+      if (temporada) kpis.parentNode.insertBefore(temporada, kpis);
+
+      // Oportunidades de venta
+      if (c) {
+        var porCliente = {};
+        casos.forEach(function (k) { (porCliente[k.cliente_id] = porCliente[k.cliente_id] || { c: k.clientes, s: {} }).s[k.servicio] = k; });
+        var ops = [];
+        Object.keys(porCliente).forEach(function (id) {
+          var x = porCliente[id];
+          var t = x.s.taxes;
+          if (t && (t.estado === 'completado' || A.esFinal('taxes', t.etapa)) && !x.s.credito) ops.push({ id: id, c: x.c, ofrecer: 'credito', t: 'Terminó sus taxes', o: 'Ofrécele reparación de crédito' });
+          if (x.s.llc && !x.s.contabilidad) ops.push({ id: id, c: x.c, ofrecer: 'contabilidad', t: 'Abrió su LLC', o: 'Ofrécele contabilidad mensual' });
+        });
+        if (ops.length) {
+          var opCard = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Oportunidades · ' + ops.length })]);
+          ops.slice(0, 8).forEach(function (op) {
+            opCard.appendChild(el('div', { class: 'today-i' }, [
+              el('span', { class: 'ti-ico', 'data-svc': op.ofrecer }, [A.icon('i-sparkles', 'icon-sm')]),
+              el('span', { style: 'flex:1' }, [el('a', { href: '#/clientes/' + op.id }, [el('b', { text: A.nombreDe(op.c || {}) })]), el('span', { class: 'muted', text: op.t + ' · ' + op.o })]),
+              A.puede('casos') ? el('button', { class: 'mini-btn', type: 'button', text: 'Crear caso', onclick: function () { A.editarCaso(null, { cliente_id: op.id, servicio: op.ofrecer }, function () { A.ir('inicio'); }); } }) : null
+            ]));
+          });
+          hoyBox.parentNode.appendChild(opCard);
+        }
+      }
 
       // Casos por servicio
       if (c) {
@@ -128,6 +185,22 @@
           ]));
         });
         der.appendChild(el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Ingresos · últimos 6 meses' }), bars]));
+
+        // Ingresos por servicio (últimos 6 meses)
+        var svcDe = {};
+        casos.forEach(function (k) { svcDe[k.id] = k.servicio; });
+        var porS = {};
+        pagos.forEach(function (p) { var sv = svcDe[p.caso_id] || 'otro'; porS[sv] = (porS[sv] || 0) + Number(p.monto); });
+        var filas = Object.keys(porS).map(function (k) { return [k, porS[k]]; }).sort(function (a, b) { return b[1] - a[1]; });
+        var mxs = filas.length ? filas[0][1] : 1;
+        var ingCard = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Ingresos por servicio · últimos 6 meses' })]);
+        if (!filas.length) ingCard.appendChild(el('div', { class: 'muted', text: 'Registra pagos ligados a un caso para ver qué servicio te deja más.' }));
+        filas.forEach(function (x) {
+          ingCard.appendChild(el('div', { class: 'hbar hbar-w', 'data-svc': x[0], title: A.SERVICIOS[x[0]].label + ': ' + A.dinero(x[1]) }, [
+            el('span', { class: 'hbar-l', text: A.SERVICIOS[x[0]].corto }), el('span', { class: 'hbar-t' }, [el('i', { style: 'width:' + Math.max(4, x[1] / mxs * 100) + '%' })]), el('b', { text: A.dinero(x[1]) })
+          ]));
+        });
+        der.appendChild(ingCard);
       }
       A.contarTareas();
     }

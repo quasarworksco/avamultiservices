@@ -19,7 +19,11 @@
     })[0] || null;
   };
 
-  function camposCliente(c) {
+  A.listaClientes = async function () {
+    var r = await sb.from('clientes').select('id,nombre,apellidos').order('nombre').limit(5000);
+    return r.data || [];
+  };
+  function camposCliente(c, todos) {
     c = c || {};
     return [
       { k: 'nombre', label: 'Nombre', required: true, value: c.nombre, max: 120 },
@@ -33,7 +37,8 @@
       { k: 'direccion', label: 'Dirección', full: true, value: c.direccion, max: 300 },
       { k: 'ciudad', label: 'Ciudad', value: c.ciudad, max: 120 },
       { k: 'region', label: 'Estado', value: c.region, max: 80, placeholder: 'TX' },
-      { k: 'codigo_postal', label: 'Código postal', value: c.codigo_postal, max: 20 }
+      { k: 'codigo_postal', label: 'Código postal', value: c.codigo_postal, max: 20 },
+      { k: 'referido_por', label: '¿Quién lo refirió?', type: 'select', full: true, value: c.referido_por || '', options: [['', 'Nadie / no aplica']].concat((todos || []).filter(function (x) { return x.id !== c.id; }).map(function (x) { return [x.id, A.nombreDe(x)]; })) }
     ];
   }
   function limpiar(d) {
@@ -41,8 +46,8 @@
     return d;
   }
 
-  A.nuevoCliente = function (alCrear) {
-    var campos = camposCliente();
+  A.nuevoCliente = async function (alCrear) {
+    var campos = camposCliente(null, await A.listaClientes());
     campos.push({ k: 'notas', label: 'Notas', type: 'textarea', full: true, placeholder: 'Qué necesita, cómo te contactó…' });
     A.modal({
       titulo: 'Nuevo cliente', ok: 'Crear cliente', campos: campos,
@@ -59,9 +64,10 @@
     });
   };
 
-  function editarCliente(c, alGuardar) {
+  async function editarCliente(c, alGuardar) {
+    var todos = await A.listaClientes();
     A.modal({
-      titulo: 'Editar cliente', campos: camposCliente(c),
+      titulo: 'Editar cliente', campos: camposCliente(c, todos),
       guardar: async function (d, aviso) {
         var r = await sb.from('clientes').update(limpiar(d)).eq('id', c.id).select('*').single();
         if (r.error) { A.msg(aviso, 'No se pudo guardar.'); return false; }
@@ -91,17 +97,17 @@
 
   /* ---------- Lista ---------- */
   A.vista('clientes', {
-    permiso: 'clientes',
+    permiso: 'clientes|taxes',
     render: function (cont, params) {
       if (params[0]) { ficha(cont, params[0]); return; }
       ui.stats = el('div', { class: 'stats' });
       ui.list = el('div', { class: 'list' });
       var sel = el('select', { class: 'input', 'aria-label': 'Servicio', onchange: function () { filtro.servicio = this.value; pintar(); } },
-        [el('option', { value: '', text: 'Todos los servicios' })].concat(Object.keys(A.SERVICIOS).map(function (k) { return el('option', { value: k, text: A.SERVICIOS[k].label }); })));
+        [el('option', { value: '', text: 'Todos los servicios' })].concat(A.serviciosVisibles().map(function (k) { return el('option', { value: k, text: A.SERVICIOS[k].label }); })));
       sel.value = filtro.servicio;
       cont.appendChild(A.cabecera('Tu cartera', 'Clientes', 'de AVA', [
         el('button', { class: 'btn btn-ghost btn-sm', onclick: exportar }, [A.icon('i-download'), el('span', { text: 'Exportar' })]),
-        el('button', { class: 'btn btn-dark btn-sm', onclick: function () { A.nuevoCliente(); } }, [A.icon('i-plus'), el('span', { text: 'Nuevo cliente' })])
+        A.puede('clientes') ? el('button', { class: 'btn btn-dark btn-sm', onclick: function () { A.nuevoCliente(); } }, [A.icon('i-plus'), el('span', { text: 'Nuevo cliente' })]) : null
       ]));
       cont.appendChild(ui.stats);
       cont.appendChild(el('div', { class: 'tools' }, [
@@ -169,6 +175,25 @@
       ['Servicios', function (c) { return (c.casos || []).map(function (k) { return A.SERVICIOS[k.servicio].corto + ' (' + k.etapa + ')'; }).join('; '); }],
       ['Etiquetas', function (c) { return (c.etiquetas || []).join(', '); }]
     ], filas);
+  }
+
+  /* ---------- Referidos ---------- */
+  function tarjetaReferidos(c) {
+    var card = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Referidos' })]);
+    Promise.all([
+      sb.from('clientes').select('id,nombre,apellidos').eq('referido_por', c.id),
+      c.referido_por ? sb.from('clientes').select('id,nombre,apellidos').eq('id', c.referido_por).maybeSingle() : Promise.resolve({ data: null }),
+      sb.from('ajustes').select('valor').eq('clave', 'negocio').maybeSingle()
+    ]).then(function (r) {
+      var trajo = r[0].data || [], por = r[1].data, desc = r[2].data && r[2].data.valor.descuento_referido;
+      if (por) card.appendChild(el('p', { class: 'muted', style: 'margin-bottom:8px' }, ['Llegó referido por ', el('a', { class: 'link-btn', href: '#/clientes/' + por.id, text: A.nombreDe(por) })]));
+      if (trajo.length) {
+        card.appendChild(el('div', { class: 'alert ok', style: 'margin-bottom:8px' }, [A.icon('i-sparkles', 'icon-sm'), 'Trajo a ' + trajo.length + (trajo.length === 1 ? ' cliente' : ' clientes') + (desc ? ' · le corresponde un descuento de ' + desc + (trajo.length > 1 ? ' por cada uno' : '') : '')]));
+        card.appendChild(el('div', { class: 'chips' }, trajo.map(function (x) { return el('a', { class: 'chip-s', href: '#/clientes/' + x.id, text: A.nombreDe(x) }); })));
+      }
+      if (!por && !trajo.length) card.appendChild(el('div', { class: 'muted', text: 'Si este cliente te recomienda a alguien, márcalo como «¿Quién lo refirió?» en la ficha del nuevo cliente.' }));
+    });
+    return card;
   }
 
   /* ---------- Ficha ---------- */
@@ -239,7 +264,7 @@
     // Datos
     var dl = el('dl', { class: 'kv', style: 'grid-template-columns:120px 1fr' });
     [['Teléfono', c.telefono], ['Correo', c.email], ['Nacimiento', A.fecha(c.fecha_nacimiento)], ['Dirección', [c.direccion, c.ciudad, c.region, c.codigo_postal].filter(Boolean).join(', ')],
-      ['Idioma', c.idioma === 'en' ? 'Inglés' : 'Español'], ['Llegó por', A.ORIGENES[c.origen]]].forEach(function (p) {
+      ['Idioma', c.idioma === 'en' ? 'Inglés' : 'Español'], ['Llegó por', A.ORIGENES[c.origen] || c.origen]].forEach(function (p) {
       dl.appendChild(el('dt', { text: p[0] })); dl.appendChild(el('dd', { text: p[1] || '—' }));
     });
     var derecha = [el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Datos de contacto' }), dl])];
@@ -284,7 +309,11 @@
         else docsCard.appendChild(el('div', { class: 'muted', text: 'La solicitud original ya no existe.' }));
       });
     }
-    if (A.puede('documentos')) derecha.push(A.tarjetaDocumentos(c.id));
+    derecha.push(tarjetaReferidos(c));
+    if (A.puede('clientes')) derecha.push(A.tarjetaPortal(c));
+    if (A.puede('clientes')) derecha.push(A.tarjetaContratos(c));
+    if (A.puede('cobros')) derecha.push(A.tarjetaPlanes(c));
+    if (A.puede('documentos') || A.puede('taxes')) derecha.push(A.tarjetaDocumentos(c.id));
     if (A.puede('equipo')) {
       var act = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Actividad' })]);
       derecha.push(act);

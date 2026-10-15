@@ -192,14 +192,18 @@
 
   /* ---------- Catálogos ---------- */
   var SERVICIOS = {
-    credito: { label: 'Reparación de crédito', corto: 'Crédito', etapas: ['Contrato', 'Análisis', 'Disputas R1', 'Disputas R2', 'Disputas R3', 'Seguimiento', 'Completado'] },
-    taxes: { label: 'Taxes', corto: 'Taxes', etapas: ['Docs pendientes', 'En preparación', 'Revisión', 'Enviado al IRS', 'Aceptado', 'Reembolso'] },
-    inmigracion: { label: 'Documentos migratorios', corto: 'Inmigración', etapas: ['Consulta', 'Documentos', 'Preparación', 'Enviado', 'Seguimiento', 'Completado'] },
-    llc: { label: 'Formación de LLC', corto: 'LLC', etapas: ['Datos', 'Registro en Texas', 'EIN', 'Operating Agreement', 'Entregado'] },
-    notaria: { label: 'Notaría', corto: 'Notaría', etapas: ['Agendado', 'Firmado', 'Entregado'] },
-    otro: { label: 'Otro servicio', corto: 'Otro', etapas: ['Pendiente', 'En proceso', 'Completado'] }
+    credito: { label: 'Reparación de crédito', corto: 'Crédito', etapas: ['Contrato', 'Análisis', 'Ronda 1', 'Ronda 2', 'Ronda 3', 'Ronda 4', 'Ronda 5', 'Finalizado'], finales: ['Finalizado'] },
+    taxes: { label: 'Taxes', corto: 'Taxes', etapas: ['Documentos pendientes', 'Preparando', 'Revisión', 'Firmado', 'Enviado', 'Aceptado', 'Reembolso', 'Quedó con deuda'], finales: ['Reembolso', 'Quedó con deuda'] },
+    plan_irs: { label: 'Plan de pago IRS', corto: 'Plan IRS', etapas: ['Cliente informado', 'Plan solicitado', 'Aprobado', 'En pagos', 'Pagado'], finales: ['Pagado'] },
+    contabilidad: { label: 'Contabilidad mensual', corto: 'Contabilidad', etapas: ['Pedir estados de cuenta', 'Conciliar', 'Reporte', 'Enviado'], finales: ['Enviado'] },
+    llc: { label: 'Formación de LLC', corto: 'LLC', etapas: ['Datos', 'Registro en Texas', 'EIN', 'Operating Agreement', 'Entregado'], finales: ['Entregado'] },
+    franchise_tax: { label: 'Franchise Tax de Texas', corto: 'Franchise Tax', etapas: ['Pedir información', 'Información recibida', 'Preparando', 'Presentado'], finales: ['Presentado'] },
+    inmigracion: { label: 'Inmigración', corto: 'Inmigración', etapas: ['Documentos pendientes', 'Preparando', 'Enviado', 'En proceso', 'Resuelto'], finales: ['Resuelto'] },
+    otro: { label: 'Otro (notaría y más)', corto: 'Otro', etapas: ['Pendiente', 'En proceso', 'Completado'], finales: ['Completado'] },
+    notaria: { label: 'Notaría', corto: 'Notaría', etapas: ['Pendiente', 'En proceso', 'Completado'], finales: ['Completado'], oculto: true }
   };
-  var ORIGENES = { sitio_web: 'Sitio web', formulario: 'Formulario de inicio', whatsapp: 'WhatsApp', redes: 'Redes sociales', referido: 'Referido', visita: 'Visita a la oficina', otro: 'Otro' };
+  function esFinal(servicio, etapa) { var s = SERVICIOS[servicio]; return !!s && s.finales.indexOf(etapa) !== -1; }
+  var ORIGENES = { meta_ads: 'Meta Ads', whatsapp: 'WhatsApp', instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok', referido: 'Referido', walk_in: 'Walk-in (oficina)', sitio_web: 'Sitio web', formulario: 'Formulario de inicio', google: 'Google', otro: 'Otro' };
   var PERMISOS = [
     ['solicitudes', 'Solicitudes', 'Ver las solicitudes que llegan del sitio'],
     ['sensibles', 'Datos sensibles', 'Ver SSN y claves del monitor de crédito'],
@@ -209,14 +213,25 @@
     ['cobros', 'Cobros', 'Registrar pagos y ver ingresos'],
     ['tareas', 'Tareas', 'Crear y asignar tareas del equipo'],
     ['sitio', 'Sitio web', 'Editar precios, anuncios y preguntas del sitio'],
-    ['contenido', 'Contenido digital', 'Ver, aprobar y comentar posts y diseños']
+    ['contenido', 'Contenido digital', 'Ver, aprobar y comentar posts y diseños'],
+    ['mensajes', 'Mensajes', 'Bandeja de WhatsApp, Instagram y Messenger, y avisos automáticos'],
+    ['campanas', 'Campañas', 'Crear y enviar campañas por etiqueta'],
+    ['citas', 'Citas', 'Ver y gestionar la agenda'],
+    ['taxes', 'Solo taxes asignados', 'Ve únicamente los casos de taxes que tú le asignes y esos clientes']
   ];
+  var ROLES = {
+    completa: { n: 'Compañera (todo menos equipo)', p: ['solicitudes', 'clientes', 'casos', 'documentos', 'cobros', 'tareas', 'mensajes', 'campanas', 'citas', 'contenido'] },
+    redes: { n: 'Redes sociales', p: ['solicitudes', 'mensajes', 'campanas'] },
+    taxes: { n: 'Ayudante de temporada de taxes', p: ['taxes', 'tareas'] },
+    personal: { n: 'Personalizado', p: [] }
+  };
 
   /* ---------- Sesión y permisos ---------- */
   var me = null;
   function puede(m) {
     if (!me) return false;
     if (!m) return true;
+    if (m.indexOf('|') !== -1) return m.split('|').some(puede);
     if (me.rol === 'admin') return true;
     if (m === 'equipo') return false;
     return (me.permisos || []).indexOf(m) !== -1;
@@ -250,6 +265,8 @@
     AVA.contarSolicitudes();
     AVA.contarTareas();
     AVA.contarContenido();
+    if (AVA.contarBandeja) AVA.contarBandeja();
+    if (AVA.contarCitas) AVA.contarCitas();
   }
 
   sb.auth.onAuthStateChange(function (event) {
@@ -324,7 +341,8 @@
   window.AVA = {
     sb: sb, el: el, icon: icon, fecha: fecha, hace: hace, dinero: dinero, iniciales: iniciales, nombreDe: nombreDe,
     hoyISO: hoyISO, soloDigitos: soloDigitos, msg: msg, toast: toast, modal: modal, drawer: drawer, cerrarDrawer: cerrarDrawer,
-    seccion: seccion, cabecera: cabecera, SERVICIOS: SERVICIOS, ORIGENES: ORIGENES, PERMISOS: PERMISOS,
+    seccion: seccion, cabecera: cabecera, SERVICIOS: SERVICIOS, ORIGENES: ORIGENES, PERMISOS: PERMISOS, ROLES: ROLES, esFinal: esFinal,
+    serviciosVisibles: function () { return Object.keys(SERVICIOS).filter(function (k) { return !SERVICIOS[k].oculto; }); },
     puede: puede, yo: function () { return me; }, equipo: equipo, limpiarEquipo: function () { equipoCache = null; },
     vista: function (nombre, def) { vistas[nombre] = def; },
     ir: function (ruta) { if (location.hash === '#/' + ruta) navegar(); else location.hash = '#/' + ruta; },

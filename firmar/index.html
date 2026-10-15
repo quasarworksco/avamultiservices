@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Firma tu contrato · AVA Multiservices</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#2a2a2a">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="../assets/css/publico.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol></svg>
+<header class="p-top"><div class="container">
+  <a href="../" class="brand" aria-label="AVA Multiservices"><img class="brand-logo" src="../assets/img/logo.svg" alt="AVA" width="72" height="34"><span class="brand-divider"></span><span class="brand-sub">Firma<br>electrónica</span></a>
+</div></header>
+<main class="p-main"><div class="container"><div class="p-wrap">
+  <div class="p-head"><span class="kicker" id="para">Contrato</span><h1 id="titulo">Cargando…</h1></div>
+  <div class="p-card" id="card">
+    <div class="contrato" id="texto"></div>
+    <div id="firmar" hidden>
+      <div class="p-step" style="margin-top:22px">Tu firma</div>
+      <div class="firma-box"><canvas id="lienzo" aria-label="Dibuja tu firma"></canvas><span class="hint" id="hint">Firma aquí con tu dedo o el mouse</span></div>
+      <div style="display:flex;justify-content:flex-end;margin-top:6px"><button type="button" class="link-btn" id="borrar">Borrar firma</button></div>
+      <div class="field" style="margin-top:10px"><label for="nombre">Escribe tu nombre completo</label><input class="input" id="nombre" autocomplete="name" maxlength="120"></div>
+      <label class="check-row"><input type="checkbox" id="acepto"><span>Leí el contrato completo, lo acepto y entiendo que mi firma electrónica tiene la misma validez que una firma a mano.</span></label>
+      <div class="msg error" id="err" hidden></div>
+      <div class="p-actions"><button class="btn btn-primary" id="ok" type="button"><span class="btn-label">Firmar contrato</span></button></div>
+    </div>
+    <div id="firmado" hidden class="done" style="margin-top:22px">
+      <div class="ok-ico"><svg class="icon"><use href="#i-check"/></svg></div>
+      <h2>Contrato firmado</h2>
+      <p id="info"></p>
+      <div class="p-actions" style="justify-content:center"><button class="btn btn-ghost" type="button" onclick="window.print()"><span>Guardar o imprimir copia</span></button></div>
+    </div>
+  </div>
+</div></div></main>
+<footer class="p-foot">AVA Multiservices · Dallas, Texas</footer>
+<script src="../assets/js/firmar.js"></script>
+</body>
+</html>

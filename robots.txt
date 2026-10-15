@@ -5,5 +5,7 @@ Disallow: /entrega/
 Disallow: /formularios/
 Disallow: /admin/
 Disallow: /gracias.html
+Disallow: /portal/
+Disallow: /firmar/
 
 Sitemap: https://avamultiservices.com/sitemap.xml

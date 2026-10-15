@@ -9,4 +9,5 @@
       <image:loc>https://avamultiservices.com/assets/img/og-image.jpg</image:loc>
     </image:image>
   </url>
+  <url><loc>https://avamultiservices.com/citas/</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
 </urlset>
