@@ -8,7 +8,6 @@
   var st = { servicio: 'credito', resp: '', cancelados: false };
   var ui = {};
 
-  function ultima(servicio) { var e = A.SERVICIOS[servicio].etapas; return e[e.length - 1]; }
   function opcionesEtapa(select, servicio, actual) {
     select.innerHTML = '';
     A.SERVICIOS[servicio].etapas.forEach(function (e) { select.appendChild(el('option', { value: e, text: e })); });
@@ -31,7 +30,7 @@
       campos.push({ k: 'cliente_id', label: 'Cliente', type: 'select', full: true, required: true, options: clientes.map(function (c) { return [c.id, A.nombreDe(c)]; }) });
     }
     campos.push(
-      { k: 'servicio', label: 'Servicio', type: 'select', value: servicio, options: Object.keys(A.SERVICIOS).map(function (k) { return [k, A.SERVICIOS[k].label]; }) },
+      { k: 'servicio', label: 'Servicio', type: 'select', value: servicio, options: A.serviciosVisibles().concat(A.SERVICIOS[servicio].oculto ? [servicio] : []).map(function (k) { return [k, A.SERVICIOS[k].label]; }) },
       { k: 'etapa', label: 'Etapa', type: 'select', options: [] },
       { k: 'titulo', label: 'Título (opcional)', full: true, value: caso.titulo, max: 160, placeholder: 'Ej.: Taxes 2025 personales' },
       { k: 'responsable', label: 'Responsable', type: 'select', value: caso.responsable || (nuevo ? A.yo().user_id : ''), options: [['', 'Sin asignar']].concat(equipo.map(function (m) { return [m.user_id, m.nombre]; })) },
@@ -45,7 +44,7 @@
       titulo: nuevo ? 'Nuevo caso' : (caso.titulo || A.SERVICIOS[servicio].label), ok: nuevo ? 'Crear caso' : 'Guardar', campos: campos,
       guardar: async function (d, aviso) {
         if (base.cliente_id) d.cliente_id = base.cliente_id;
-        if (d.estado !== 'cancelado' && d.etapa === ultima(d.servicio)) d.estado = 'completado';
+        if (d.estado !== 'cancelado' && A.esFinal(d.servicio, d.etapa)) d.estado = 'completado';
         var q = nuevo ? sb.from('casos').insert(d) : sb.from('casos').update(d).eq('id', caso.id);
         var res = await q;
         if (res.error) { A.msg(aviso, 'No se pudo guardar el caso.'); return false; }
@@ -69,8 +68,9 @@
 
   /* ---------- Tablero ---------- */
   A.vista('casos', {
-    permiso: 'casos',
+    permiso: 'casos|taxes',
     render: async function (cont) {
+      if (!A.puede('casos') && ['taxes', 'plan_irs'].indexOf(st.servicio) === -1) st.servicio = 'taxes';
       var equipo = await A.equipo();
       ui.eq = {};
       equipo.forEach(function (m) { ui.eq[m.user_id] = m.nombre; });
@@ -82,7 +82,7 @@
       var canc = el('input', { type: 'checkbox', onchange: function () { st.cancelados = this.checked; pintar(); } });
       canc.checked = st.cancelados;
       cont.appendChild(A.cabecera('Seguimiento', 'Casos', 'por etapa', [
-        el('button', { class: 'btn btn-dark btn-sm', onclick: function () { A.editarCaso(null, { servicio: st.servicio }, cargar); } }, [A.icon('i-plus'), el('span', { text: 'Nuevo caso' })])
+        A.puede('casos') ? el('button', { class: 'btn btn-dark btn-sm', onclick: function () { A.editarCaso(null, { servicio: st.servicio }, cargar); } }, [A.icon('i-plus'), el('span', { text: 'Nuevo caso' })]) : null
       ]));
       cont.appendChild(ui.tabs);
       cont.appendChild(el('div', { class: 'tools' }, [resp, el('label', { class: 'check', style: 'height:44px' }, [canc, 'Mostrar cancelados'])]));
@@ -113,7 +113,7 @@
   function pintar() {
     var vis = visibles();
     ui.tabs.innerHTML = '';
-    Object.keys(A.SERVICIOS).forEach(function (s) {
+    A.serviciosVisibles().filter(function (s) { return A.puede('casos') || s === 'taxes' || s === 'plan_irs'; }).forEach(function (s) {
       var n = vis.filter(function (k) { return k.servicio === s && k.estado === 'activo'; }).length;
       ui.tabs.appendChild(el('button', { class: 'tab' + (s === st.servicio ? ' on' : ''), 'data-svc': s, role: 'tab', 'aria-selected': s === st.servicio ? 'true' : 'false', onclick: function () { st.servicio = s; pintar(); } },
         [el('i'), A.SERVICIOS[s].corto, el('span', { class: 'n', text: n })]));
@@ -155,7 +155,7 @@
     if (!k || k.etapa === etapa) return;
     var antes = { etapa: k.etapa, estado: k.estado };
     k.etapa = etapa;
-    if (k.estado !== 'cancelado') k.estado = etapa === ultima(k.servicio) ? 'completado' : 'activo';
+    if (k.estado !== 'cancelado') k.estado = A.esFinal(k.servicio, etapa) ? 'completado' : 'activo';
     pintar();
     var r = await sb.from('casos').update({ etapa: k.etapa, estado: k.estado }).eq('id', id);
     if (r.error) { Object.assign(k, antes); pintar(); A.toast('No se pudo mover el caso.', 'error'); return; }

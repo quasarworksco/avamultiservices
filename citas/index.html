@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Agenda tu cita · AVA Multiservices</title>
+  <meta name="description" content="Reserva tu cita con AVA Multiservices en Dallas: taxes, reparación de crédito, LLC, inmigración, notaría y contabilidad.">
+  <meta name="theme-color" content="#2a2a2a">
+  <link rel="canonical" href="https://avamultiservices.com/citas/">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="es_US">
+  <meta property="og:site_name" content="AVA Multiservices">
+  <meta property="og:title" content="Agenda tu cita · AVA Multiservices">
+  <meta property="og:description" content="Elige el día y la hora que mejor te queden.">
+  <meta property="og:url" content="https://avamultiservices.com/citas/">
+  <meta property="og:image" content="https://avamultiservices.com/assets/img/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="../assets/css/publico.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></symbol>
+</svg>
+<header class="p-top"><div class="container">
+  <a href="../" class="brand" aria-label="AVA Multiservices"><img class="brand-logo" src="../assets/img/logo.svg" alt="AVA" width="72" height="34"><span class="brand-divider"></span><span class="brand-sub">Agenda<br>tu cita</span></a>
+  <a href="../" class="btn btn-ghost btn-sm"><span>Volver al sitio</span></a>
+</div></header>
+
+<main class="p-main"><div class="container"><div class="p-wrap">
+  <div class="p-head">
+    <span class="kicker">Dallas · presencial o en línea</span>
+    <h1>Agenda tu cita <span class="serif">en un minuto</span></h1>
+    <p>Elige el servicio, el día y la hora que mejor te queden. Te enviaremos un recordatorio un día antes.</p>
+  </div>
+
+  <form class="p-card" id="f" novalidate>
+    <div class="p-step">1 · Servicio</div>
+    <div class="opts" id="servicios"></div>
+
+    <div class="p-step">2 · Día</div>
+    <div class="days" id="dias"></div>
+
+    <div class="p-step">3 · Hora <span id="zona" style="text-transform:none;letter-spacing:0;font-weight:500;color:var(--muted)">(hora de Dallas)</span></div>
+    <div class="slots" id="horas"><p style="color:var(--muted)">Elige un día para ver los horarios disponibles.</p></div>
+
+    <div class="p-step">4 · Tus datos</div>
+    <div class="p-grid">
+      <div class="field"><label for="nombre">Nombre completo *</label><input class="input" id="nombre" autocomplete="name" maxlength="120" required></div>
+      <div class="field"><label for="telefono">Teléfono (WhatsApp) *</label><input class="input" id="telefono" type="tel" autocomplete="tel" maxlength="40" required></div>
+      <div class="field full"><label for="email">Correo (opcional)</label><input class="input" id="email" type="email" autocomplete="email" maxlength="200"></div>
+      <div class="field full"><label for="notas">¿Algo que debamos saber? (opcional)</label><textarea class="input" id="notas" rows="3" maxlength="1000"></textarea></div>
+    </div>
+    <div class="msg error" id="err" hidden></div>
+    <div class="p-actions"><button class="btn btn-primary" id="enviar" type="submit"><span class="btn-label">Confirmar cita</span><svg class="icon icon-sm arrow"><use href="#i-arrow-right"/></svg></button></div>
+  </form>
+
+  <div class="p-card done" id="ok" hidden>
+    <div class="ok-ico"><svg class="icon"><use href="#i-check"/></svg></div>
+    <h2>¡Tu cita está reservada!</h2>
+    <p>Te confirmaremos por WhatsApp. Si necesitas cambiarla, escríbenos.</p>
+    <div class="summary" id="resumen"></div>
+    <div class="p-actions" style="justify-content:center">
+      <a class="btn btn-ghost" id="ics" download="cita-ava.ics"><span>Agregar a mi calendario</span></a>
+      <a class="btn btn-primary" href="https://wa.me/17868162430" target="_blank" rel="noopener"><span>Escribir por WhatsApp</span></a>
+    </div>
+  </div>
+</div></div></main>
+<footer class="p-foot">AVA Multiservices · Dallas, Texas · <a href="../">avamultiservices.com</a></footer>
+<script src="../assets/js/citas.js"></script>
+</body>
+</html>

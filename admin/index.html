@@ -59,6 +59,7 @@
 <symbol id="i-calendar" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h18"/></symbol>
 <symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/></symbol>
 <symbol id="i-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></symbol>
+<symbol id="i-send" viewBox="0 0 24 24"><path d="M14.54 21.69a.5.5 0 0 0 .94-.03l6.5-19a.5.5 0 0 0-.64-.63l-19 6.5a.5.5 0 0 0-.02.93l7.93 3.18a2 2 0 0 1 1.11 1.11z"/><path d="m21.85 2.15-10.94 10.94"/></symbol>
 <symbol id="i-dollar" viewBox="0 0 24 24"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
 </svg>
 
@@ -113,16 +114,20 @@
     <div class="nav-group">Trabajo</div>
     <a class="nav-item" href="#/inicio" data-route="inicio"><svg class="icon"><use href="#i-home"/></svg><span>Inicio</span></a>
     <a class="nav-item" href="#/solicitudes" data-route="solicitudes" data-alias="mensajes" data-perm="solicitudes"><svg class="icon"><use href="#i-inbox"/></svg><span>Solicitudes</span><span class="count" id="count-sol"></span></a>
-    <a class="nav-item" href="#/clientes" data-route="clientes" data-perm="clientes"><svg class="icon"><use href="#i-users"/></svg><span>Clientes</span></a>
-    <a class="nav-item" href="#/casos" data-route="casos" data-perm="casos"><svg class="icon"><use href="#i-kanban"/></svg><span>Casos</span></a>
+    <a class="nav-item" href="#/clientes" data-route="clientes" data-perm="clientes|taxes"><svg class="icon"><use href="#i-users"/></svg><span>Clientes</span></a>
+    <a class="nav-item" href="#/casos" data-route="casos" data-perm="casos|taxes"><svg class="icon"><use href="#i-kanban"/></svg><span>Casos</span></a>
+    <a class="nav-item" href="#/bandeja" data-route="bandeja" data-perm="mensajes"><svg class="icon"><use href="#i-message"/></svg><span>Mensajes</span><span class="count" id="count-ban"></span></a>
+    <a class="nav-item" href="#/agenda" data-route="agenda" data-perm="citas"><svg class="icon"><use href="#i-calendar"/></svg><span>Agenda</span><span class="count" id="count-cit"></span></a>
     <a class="nav-item" href="#/tareas" data-route="tareas"><svg class="icon"><use href="#i-clipboard"/></svg><span>Tareas</span><span class="count" id="count-tar"></span></a>
     <a class="nav-item" href="#/cobros" data-route="cobros" data-perm="cobros"><svg class="icon"><use href="#i-dollar"/></svg><span>Cobros</span></a>
     <a class="nav-item" href="#/documentos" data-route="documentos" data-perm="documentos"><svg class="icon"><use href="#i-file"/></svg><span>Documentos</span></a>
     <div class="nav-group">Marca</div>
+    <a class="nav-item" href="#/campanas" data-route="campanas" data-perm="campanas"><svg class="icon"><use href="#i-send"/></svg><span>Campañas</span></a>
     <a class="nav-item" href="#/sitio" data-route="sitio" data-perm="sitio"><svg class="icon"><use href="#i-globe"/></svg><span>Sitio web</span></a>
     <a class="nav-item" href="#/contenido" data-route="contenido" data-perm="contenido"><svg class="icon"><use href="#i-sparkles"/></svg><span>Contenido</span><span class="count" id="count-con"></span></a>
     <div class="nav-group" data-perm="equipo">Ajustes</div>
     <a class="nav-item" href="#/equipo" data-route="equipo" data-perm="equipo"><svg class="icon"><use href="#i-shield"/></svg><span>Equipo</span></a>
+    <a class="nav-item" href="#/ajustes" data-route="ajustes" data-perm="equipo"><svg class="icon"><use href="#i-layout"/></svg><span>Ajustes</span></a>
     </nav>
     <div class="side-foot">
       <span class="avatar" id="me-ini"></span>
@@ -163,6 +168,11 @@
 <script src="../assets/js/admin/documentos.js"></script>
 <script src="../assets/js/admin/sitio.js"></script>
 <script src="../assets/js/admin/contenido.js"></script>
+<script src="../assets/js/admin/clientes-extra.js"></script>
+<script src="../assets/js/admin/bandeja.js"></script>
+<script src="../assets/js/admin/campanas.js"></script>
+<script src="../assets/js/admin/agenda.js"></script>
+<script src="../assets/js/admin/ajustes.js"></script>
 <script src="../assets/js/admin/equipo.js"></script>
 <script>AVA.start();</script>
 </body>

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Mi portal · AVA Multiservices</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#2a2a2a">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="../assets/img/apple-touch-icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="../assets/css/publico.css">
+  <style>
+    .pt-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px; margin-top: 22px; align-items: start; }
+    .pt-grid .p-card { margin-top: 0; }
+    .pt-grid .p-card + .p-card { margin-top: 16px; }
+    .pt-h { font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+    .pt-caso { padding: 16px; border-radius: 16px; background: var(--stone-50); border: 1px solid var(--line); }
+    .pt-caso + .pt-caso { margin-top: 10px; }
+    .pt-caso b { font-size: 16px; }
+    .pt-caso .et { margin-top: 2px; font-size: 13.5px; color: var(--muted); }
+    .pt-steps { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; margin-top: 12px; }
+    .pt-steps i { height: 6px; border-radius: 3px; background: var(--stone-100); }
+    .pt-steps i.on { background: var(--accent); animation: grow 0.8s var(--ease) both; transform-origin: left; }
+    @keyframes grow { from { transform: scaleX(0); } }
+    .pt-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px; }
+    .pt-row:first-of-type { border-top: 0; }
+    .saldo-big { font-family: var(--font-serif); font-size: 40px; line-height: 1; }
+    .drop { display: block; margin-top: 12px; padding: 18px; border-radius: 16px; border: 1.5px dashed var(--line-strong); text-align: center; cursor: pointer; font-size: 14px; }
+    .drop:hover { border-color: var(--accent); background: var(--accent-50); }
+    .hello { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+    .hello h1 { font-size: clamp(32px, 5vw, 46px); font-weight: 500; line-height: 1.05; }
+    .hello h1 .serif { color: var(--accent); }
+    @media (max-width: 860px) { .pt-grid { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+<header class="p-top"><div class="container">
+  <a href="../" class="brand" aria-label="AVA Multiservices"><img class="brand-logo" src="../assets/img/logo.svg" alt="AVA" width="72" height="34"><span class="brand-divider"></span><span class="brand-sub">Mi<br>portal</span></a>
+  <button class="btn btn-ghost btn-sm" id="salir" hidden><span>Salir</span></button>
+</div></header>
+<main class="p-main"><div class="container">
+  <div class="p-wrap" id="v-login" hidden>
+    <div class="p-head"><span class="kicker">Clientes de AVA</span><h1>Tu portal <span class="serif">personal</span></h1><p>Mira en qué etapa va tu trámite, sube documentos y firma desde tu celular.</p></div>
+    <form class="p-card" id="login" novalidate style="max-width:460px;margin-inline:auto">
+      <div class="field"><label for="email">Tu correo</label><input class="input" id="email" type="email" autocomplete="email" required></div>
+      <div class="msg" id="lmsg" hidden></div>
+      <div class="p-actions"><button class="btn btn-primary" type="submit" style="width:100%"><span class="btn-label">Enviarme un enlace para entrar</span></button></div>
+      <p style="margin-top:12px;font-size:13px;color:var(--muted);text-align:center">Sin contraseñas: te llega un enlace seguro a tu correo.</p>
+    </form>
+  </div>
+  <div class="p-wrap" id="v-sin" hidden>
+    <div class="p-card done"><h2>Aún no tienes acceso</h2><p>Este correo no está registrado en el portal. Escríbenos por WhatsApp y te activamos el acceso.</p>
+      <div class="p-actions" style="justify-content:center"><a class="btn btn-primary" href="https://wa.me/17868162430" target="_blank" rel="noopener"><span>Escribir por WhatsApp</span></a></div></div>
+  </div>
+  <div id="v-portal" hidden>
+    <div class="hello"><div><span class="kicker" id="fecha"></span><h1>Hola, <span class="serif" id="nombre"></span></h1></div>
+      <a class="btn btn-primary btn-sm" href="../citas/"><span>Agendar una cita</span></a></div>
+    <div class="pt-grid">
+      <div>
+        <section class="p-card"><div class="pt-h">Tus trámites</div><div id="casos"></div></section>
+        <section class="p-card"><div class="pt-h">Documentos</div><div id="docs"></div>
+          <label class="drop"><input type="file" id="archivo" multiple accept="image/*,application/pdf" hidden><b>Subir documentos</b><br><span style="color:var(--muted);font-size:13px">Fotos o PDF de hasta 10 MB</span></label>
+          <div class="msg" id="dmsg" hidden></div></section>
+      </div>
+      <div>
+        <section class="p-card"><div class="pt-h">Pagos</div><div id="pagos"></div></section>
+        <section class="p-card" id="ccard" hidden><div class="pt-h">Contratos</div><div id="contratos"></div></section>
+        <section class="p-card" id="citcard" hidden><div class="pt-h">Próximas citas</div><div id="citas"></div></section>
+      </div>
+    </div>
+  </div>
+</div></main>
+<footer class="p-foot">AVA Multiservices · Dallas, Texas · <a href="https://wa.me/17868162430">WhatsApp</a></footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/dist/umd/supabase.js"></script>
+<script src="../assets/js/portal.js"></script>
+</body>
+</html>
