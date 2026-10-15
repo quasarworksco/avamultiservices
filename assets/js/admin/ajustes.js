@@ -3,17 +3,20 @@
   'use strict';
   var A = window.AVA, el = A.el, sb = A.sb;
   var DIAS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+  var FN = 'https://szmkcwtkorsndvmxywai.supabase.co/functions/v1/';
+  // [nombre, descripción, clave de estado (o true si ya funciona), icono]
   var INTEG = [
-    ['WhatsApp Business (API de Meta)', 'Recibir y enviar mensajes dentro del CRM, respuesta fuera de horario y envíos automáticos de la cola.', 'pendiente', 'i-whatsapp'],
-    ['Instagram y Messenger', 'Mensajes directos de Instagram y Facebook en la misma bandeja.', 'pendiente', 'i-message'],
-    ['Meta Ads (formularios de anuncios)', 'Los leads de tus anuncios entran solos a Solicitudes con origen «Meta Ads».', 'pendiente', 'i-trending'],
-    ['QuickBooks', 'Sincronizar tus cobros y la contabilidad de tus clientes.', 'pendiente', 'i-calculator'],
-    ['Pagos con tarjeta y cobros automáticos', 'Cobrar con tarjeta desde el portal y cobrar cada mes los planes de crédito y contabilidad.', 'pendiente', 'i-dollar'],
-    ['Google Calendar', 'Ver tus citas en tu calendario y bloquear horarios ocupados.', 'pendiente', 'i-calendar'],
-    ['Firma electrónica', 'Contratos firmados desde el celular con nombre, firma, fecha y dispositivo.', 'activo', 'i-edit'],
-    ['Portal del cliente', 'Tus clientes ven su avance, suben documentos y firman.', 'activo', 'i-lock'],
-    ['Citas en línea', 'Reservas en avamultiservices.com/citas con recordatorio.', 'activo', 'i-clock']
+    ['WhatsApp Business (API de Meta)', 'Recibir y enviar mensajes dentro del CRM, respuesta fuera de horario y envíos automáticos de la cola.', 'whatsapp', 'i-whatsapp'],
+    ['Instagram y Messenger', 'Mensajes directos de Instagram y Facebook en la misma bandeja.', 'meta', 'i-message'],
+    ['Meta Ads (formularios de anuncios)', 'Los leads de tus anuncios entran solos a Solicitudes con origen «Meta Ads».', 'meta', 'i-trending'],
+    ['Pagos con tarjeta y cobros automáticos', 'Cobrar con tarjeta desde el portal y cobrar cada mes los planes de crédito y contabilidad.', 'stripe', 'i-dollar'],
+    ['QuickBooks', 'Sincronizar tus cobros y la contabilidad de tus clientes.', null, 'i-calculator'],
+    ['Google Calendar', 'Ver tus citas en tu calendario y bloquear horarios ocupados.', null, 'i-calendar'],
+    ['Firma electrónica', 'Contratos firmados desde el celular con nombre, firma, fecha y dispositivo.', true, 'i-edit'],
+    ['Portal del cliente', 'Tus clientes ven su avance, suben documentos y firman.', true, 'i-lock'],
+    ['Citas en línea', 'Reservas en avamultiservices.com/citas con recordatorio.', true, 'i-clock']
   ];
+  var FUENTES = { whatsapp: 'WhatsApp', messenger: 'Messenger', instagram: 'Instagram', meta_ads: 'Meta Ads', stripe: 'Stripe', cola: 'Envío automático' };
 
   A.vista('ajustes', {
     permiso: 'equipo',
@@ -61,11 +64,28 @@
         } })]);
 
       // Integraciones
-      var intCard = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Integraciones' }), el('p', { class: 'muted', style: 'margin-bottom:12px', text: 'El CRM ya está preparado para cada una. Las marcadas como pendientes se conectan en la etapa final, con tus cuentas.' })]);
+      var intCard = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Integraciones' }), el('p', { class: 'muted', style: 'margin-bottom:12px', text: 'El CRM ya está preparado para cada una. Las que dicen «Por conectar» se activan al registrar las claves de tus cuentas.' })]);
+      var integ = await A.integraciones();
       INTEG.forEach(function (x) {
+        var on = x[2] === true || (x[2] && integ[x[2]]);
         intCard.appendChild(el('div', { class: 'integ' }, [el('span', { class: 'ti-ico' }, [A.icon(x[3], 'icon-sm')]), el('div', null, [el('b', { text: x[0] }), el('span', { class: 'muted', text: x[1] })]),
-          el('span', { class: 'pill ' + (x[2] === 'activo' ? 'completado' : 'pendiente'), text: x[2] === 'activo' ? 'Activo' : 'Por conectar' })]));
+          el('span', { class: 'pill ' + (on ? 'completado' : 'pendiente'), text: on ? 'Activo' : 'Por conectar' })]));
       });
+      // Direcciones para configurar en Meta y Stripe
+      function copiar(txt) { return el('button', { class: 'mini-btn', type: 'button', text: 'Copiar', onclick: function () { navigator.clipboard.writeText(txt).then(function () { A.toast('Copiado.'); }); } }); }
+      intCard.appendChild(el('div', { class: 'field', style: 'margin-top:14px' }, [el('label', { text: 'Webhook para Meta (WhatsApp, Instagram, Messenger y anuncios)' }),
+        el('div', { style: 'display:flex;gap:8px;align-items:center' }, [el('code', { style: 'flex:1;min-width:0;overflow-wrap:anywhere;font-size:12px', text: FN + 'meta-webhook' }), copiar(FN + 'meta-webhook')])]));
+      intCard.appendChild(el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: 'Webhook para Stripe' }),
+        el('div', { style: 'display:flex;gap:8px;align-items:center' }, [el('code', { style: 'flex:1;min-width:0;overflow-wrap:anywhere;font-size:12px', text: FN + 'stripe-webhook' }), copiar(FN + 'stripe-webhook')])]));
+      // Últimos eventos recibidos
+      var ev = await sb.from('integraciones_eventos').select('*').order('created_at', { ascending: false }).limit(8);
+      if ((ev.data || []).length) {
+        intCard.appendChild(el('h3', { class: 't', style: 'margin-top:18px', text: 'Actividad reciente' }));
+        ev.data.forEach(function (e) {
+          intCard.appendChild(el('div', { class: 'muted', style: 'display:flex;gap:8px;justify-content:space-between;padding:6px 0;border-top:1px solid var(--line);font-size:13px' }, [
+            el('span', { text: (e.ok ? '✓ ' : '✕ ') + FUENTES[e.fuente] + ' · ' + e.tipo.replace(/_/g, ' ') + (e.detalle ? ' · ' + e.detalle : '') }), el('span', { style: 'flex:none', text: A.hace(e.created_at) })]));
+        });
+      }
 
       // Automáticos
       var autoCard = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Tareas automáticas' }),

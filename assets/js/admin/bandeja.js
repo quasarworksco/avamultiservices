@@ -1,5 +1,5 @@
 /* Panel CRM — Bandeja única: WhatsApp, Instagram y Messenger, mensajes por enviar, respuestas rápidas y automatizaciones.
-   Hasta conectar las APIs, cada envío abre WhatsApp con el texto listo y queda registrado aquí. */
+   Con las APIs conectadas se envía desde aquí; si no, cada envío abre WhatsApp con el texto listo y queda registrado. */
 (function () {
   'use strict';
   var A = window.AVA, el = A.el, sb = A.sb;
@@ -13,6 +13,14 @@
     if (d.length === 10) d = '1' + d;
     return 'https://wa.me/' + d + (texto ? '?text=' + encodeURIComponent(texto) : '');
   };
+
+  // Lee el error que devuelve una función de Supabase ({ error, codigo })
+  async function leerError(err) {
+    try { return await err.context.json(); } catch (_) { return { error: 'No se pudo enviar.' }; }
+  }
+  function conectado(integ, canal) {
+    return canal === 'whatsapp' ? !!integ.whatsapp : (canal === 'messenger' || canal === 'instagram') ? !!integ.meta : false;
+  }
 
   A.contarBandeja = async function () {
     if (!A.puede('mensajes')) return;
@@ -31,8 +39,14 @@
       if (params[0]) st.tab = params[0];
       ui.body = el('div');
       cont.appendChild(A.cabecera('Comunicación', 'Mensajes', 'con tus clientes', []));
-      cont.appendChild(el('div', { class: 'alert warn', style: 'margin-top:14px' }, [A.icon('i-alert', 'icon-sm'),
-        'WhatsApp Business, Instagram y Messenger aún no están conectados. Mientras tanto, cada mensaje se abre en tu WhatsApp con el texto listo y queda registrado aquí. Tú respondes personalmente: lo automático solo prepara avisos y recordatorios.']));
+      var aviso = el('div');
+      cont.appendChild(aviso);
+      A.integraciones().then(function (integ) {
+        if (integ.whatsapp && integ.meta) return;
+        var faltan = !integ.whatsapp && !integ.meta ? 'WhatsApp Business, Instagram y Messenger aún no están conectados.' : !integ.whatsapp ? 'WhatsApp Business aún no está conectado.' : 'Instagram y Messenger aún no están conectados.';
+        aviso.appendChild(el('div', { class: 'alert warn', style: 'margin-top:14px' }, [A.icon('i-alert', 'icon-sm'),
+          faltan + (integ.whatsapp ? '' : ' Mientras tanto, cada mensaje de WhatsApp se abre en tu WhatsApp con el texto listo y queda registrado aquí.') + ' Tú respondes personalmente: lo automático solo prepara avisos y recordatorios.']));
+      });
       ui.tabs = el('div', { class: 'tabs' });
       cont.appendChild(ui.tabs);
       cont.appendChild(ui.body);
@@ -90,6 +104,8 @@
     if (!(r.data || []).length) msgs.appendChild(el('div', { class: 'muted', style: 'text-align:center;padding:20px', text: 'Sin mensajes todavía.' }));
     setTimeout(function () { msgs.scrollTop = msgs.scrollHeight; }, 30);
 
+    var integ = await A.integraciones();
+    var directo = conectado(integ, c.canal);
     var txt = el('textarea', { class: 'input', placeholder: 'Escribe tu respuesta…', maxlength: 4000, style: 'min-height:70px' });
     var rap = (await sb.from('respuestas_rapidas').select('*').order('orden')).data || [];
     var primerNombre = (c.clientes && c.clientes.nombre) || (c.nombre || '').split(' ')[0] || '';
@@ -99,12 +115,22 @@
     panel.appendChild(el('div', { class: 'chat-f' }, [chips, txt, el('div', { class: 'row2', style: 'display:flex;gap:8px;justify-content:flex-end;margin-top:8px' }, [
       el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: async function () {
         var t = txt.value.trim(); if (!t) { txt.focus(); return; }
+        var boton = this; boton.disabled = true;
+        if (directo) {
+          var env = await sb.functions.invoke('enviar-mensaje', { body: { conversacion_id: c.id, texto: t } });
+          boton.disabled = false;
+          if (!env.error) { txt.value = ''; abrir(c, panel); return; }
+          var info = await leerError(env.error);
+          if (!(info.codigo === 'fuera_ventana' && c.canal === 'whatsapp')) { A.toast(info.error || 'No se pudo enviar.', 'error'); return; }
+          if (!confirm('Pasaron más de 24 horas desde su último mensaje, así que WhatsApp no deja escribirle desde el CRM con texto libre. ¿Abrir tu WhatsApp con el mensaje listo?')) return;
+        }
+        boton.disabled = false;
         if (c.canal === 'whatsapp' || c.canal === 'sms') window.open(A.wa(c.contacto, t), '_blank', 'noopener');
         await sb.from('mensajes_chat').insert({ conversacion_id: c.id, direccion: 'saliente', texto: t });
         await sb.from('conversaciones').update({ ultimo_texto: t.slice(0, 200), ultimo_at: new Date().toISOString() }).eq('id', c.id);
         txt.value = '';
         abrir(c, panel);
-      } }, [A.icon('i-send'), el('span', { text: c.canal === 'whatsapp' ? 'Enviar por WhatsApp' : 'Registrar respuesta' })])
+      } }, [A.icon('i-send'), el('span', { text: directo ? 'Enviar' : c.canal === 'whatsapp' ? 'Enviar por WhatsApp' : 'Registrar respuesta' })])
     ])]));
   }
 
@@ -133,7 +159,9 @@
     var r = await sb.from('cola_mensajes').select('*').eq('estado', 'pendiente').order('programado_para').limit(500);
     var lista = r.data || [];
     var ahora = new Date().toISOString();
-    box.appendChild(el('p', { class: 'muted', style: 'margin:14px 0', text: 'Avisos y recordatorios que el sistema preparó: cambios de etapa, documentos, pagos, citas, reseñas, Franchise Tax y campañas. Cuando conectemos la API se enviarán solos; por ahora toca «Enviar» y se abre WhatsApp con el mensaje listo.' }));
+    var integ = await A.integraciones();
+    box.appendChild(el('p', { class: 'muted', style: 'margin:14px 0', text: 'Avisos y recordatorios que el sistema preparó: cambios de etapa, documentos, pagos, citas, reseñas, Franchise Tax y campañas. ' +
+      (integ.whatsapp ? 'Toca «Enviar» y sale por WhatsApp Business desde el CRM. Si activas el envío automático (pestaña Automatizaciones), salen solos cada 10 minutos.' : 'Cuando conectemos la API se enviarán solos; por ahora toca «Enviar» y se abre WhatsApp con el mensaje listo.') }));
     if (!lista.length) { box.appendChild(el('div', { class: 'empty' }, [el('b', { text: 'Nada pendiente' }), 'Aquí aparecerán los mensajes automáticos listos para enviar.'])); return; }
     var card = el('div', { class: 'card' });
     lista.forEach(function (m) {
@@ -141,10 +169,19 @@
       card.appendChild(el('div', { class: 'qrow' + (futuro ? ' later' : '') }, [
         el('div', { class: 'qrow-b' }, [
           el('div', null, [el('span', { class: 'chip-s', text: TIPOS[m.tipo] }), ' ', el('b', { text: m.nombre || m.telefono }), el('span', { class: 'muted', text: ' · ' + (futuro ? 'programado ' + A.fecha(m.programado_para, true) : A.hace(m.created_at)) })]),
-          el('p', { text: m.texto })
+          el('p', { text: m.texto }),
+          m.error ? el('p', { class: 'muted', style: 'color:var(--danger,#b4472f);font-size:12.5px', text: 'No se pudo enviar (' + m.intentos + ' intento' + (m.intentos === 1 ? '' : 's') + '): ' + m.error }) : null
         ]),
         el('div', { class: 'qrow-a' }, [
           el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: async function () {
+            if (integ.whatsapp) {
+              this.disabled = true;
+              var env = await sb.functions.invoke('enviar-mensaje', { body: { cola_id: m.id } });
+              if (env.error) { var info = await leerError(env.error); A.toast(info.error || 'No se pudo enviar.', 'error'); }
+              else A.toast('Mensaje enviado.');
+              pintarTabs();
+              return;
+            }
             window.open(A.wa(m.telefono, m.texto), '_blank', 'noopener');
             await sb.from('cola_mensajes').update({ estado: 'enviado', enviado_at: new Date().toISOString() }).eq('id', m.id);
             if (m.cliente_id) await registrarEnChat(m);
@@ -199,6 +236,16 @@
   async function auto(box) {
     var r = await sb.from('ajustes').select('valor').eq('clave', 'whatsapp').single();
     var cfg = (r.data && r.data.valor) || {};
+    var integ = await A.integraciones();
+    var envio = el('input', { type: 'checkbox' }); envio.checked = !!cfg.envio_automatico;
+    envio.addEventListener('change', guardar);
+    var envioCard = el('div', { class: 'card', style: 'margin-top:14px' }, [
+      el('div', { class: 'card-h' }, [el('h3', { class: 't', text: 'Envío automático de «Por enviar»' }), el('span', { class: 'switch' }, [envio, el('span')])]),
+      el('p', { class: 'muted', text: integ.whatsapp
+        ? 'Encendido: cada 10 minutos el CRM envía solo los avisos pendientes por WhatsApp Business. Apagado: tú los revisas y tocas «Enviar». A quien no te haya escrito en 24 horas se le envía con la plantilla aprobada por Meta.'
+        : 'Se podrá encender cuando conectemos WhatsApp Business. Mientras tanto los avisos esperan en «Por enviar».' })
+    ]);
+    if (!integ.whatsapp) envio.disabled = true;
     var grid = el('div', { class: 'auto-grid' });
     AUTOS.forEach(function (a) {
       var c = cfg[a[0]] || {};
@@ -223,7 +270,7 @@
       if (extra) extra.querySelectorAll('input').forEach(function (i) { i.addEventListener('change', guardar); });
     });
     async function guardar() {
-      var n = Object.assign({}, cfg);
+      var n = Object.assign({}, cfg, { envio_automatico: envio.checked });
       grid.querySelectorAll('.auto-card').forEach(function (card) {
         var k = card.dataset.k, o = Object.assign({}, n[k] || {});
         o.activo = card.querySelector('.switch input').checked;
@@ -241,6 +288,7 @@
       if (!u.error) cfg = n;
     }
     box.appendChild(el('p', { class: 'muted', style: 'margin:14px 0', text: 'Tú sigues respondiendo personalmente. Esto solo prepara avisos puntuales; cada uno se puede apagar.' }));
+    box.appendChild(envioCard);
     box.appendChild(grid);
   }
 })();

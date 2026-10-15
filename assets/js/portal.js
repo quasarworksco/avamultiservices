@@ -45,8 +45,15 @@
       sb.from('pagos').select('monto,fecha,caso_id,metodo').eq('cliente_id', id).order('fecha', { ascending: false }),
       sb.from('contratos').select('titulo,estado,token,firmado_at').eq('cliente_id', id).order('created_at', { ascending: false }),
       sb.from('citas').select('inicio,servicio,estado').eq('cliente_id', id).gte('inicio', new Date().toISOString()).in('estado', ['solicitada', 'confirmada']).order('inicio'),
-      sb.rpc('portal_info')
+      sb.rpc('portal_info'),
+      sb.functions.invoke('enviar-mensaje', { body: { estado: true } })
     ]);
+    var pago = new URLSearchParams(location.search).get('pago');
+    if (pago) {
+      var aviso = { ok: ['¡Gracias! Recibimos tu pago. Puede tardar unos minutos en aparecer aquí.', 'ok'], plan: ['¡Listo! Tu tarjeta quedó registrada para el cobro mensual.', 'ok'], cancelado: ['El pago se canceló. Puedes intentarlo de nuevo cuando quieras.', 'error'] }[pago];
+      if (aviso) msg('pmsg', aviso[0], aviso[1]);
+      history.replaceState(null, '', location.pathname);
+    }
     $('nombre').textContent = (r[0].data && r[0].data.nombre) || '';
     // Casos
     var cb = $('casos'); cb.innerHTML = '';
@@ -69,7 +76,18 @@
     if (total - pagado > 0) {
       var how = el('p', null, 'Puedes pagar en la oficina' + (info.zelle ? ' o por Zelle a ' + info.zelle : '') + '. ');
       how.style.cssText = 'margin-top:10px;font-size:14px;color:var(--muted)'; pb.appendChild(how);
-      var card = el('button', 'btn btn-ghost btn-sm', 'Pagar con tarjeta (muy pronto)'); card.disabled = true; card.style.marginTop = '8px'; pb.appendChild(card);
+      var conTarjeta = !!(r[6].data && r[6].data.stripe);
+      var card = el('button', conTarjeta ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm', conTarjeta ? 'Pagar con tarjeta' : 'Pagar con tarjeta (muy pronto)');
+      card.disabled = !conTarjeta; card.style.marginTop = '8px';
+      card.onclick = async function () {
+        card.disabled = true; card.textContent = 'Abriendo pago seguro…';
+        var s = await sb.functions.invoke('stripe-pago', { body: { tipo: 'saldo' } });
+        if (s.data && s.data.url) { location.href = s.data.url; return; }
+        var e = {}; try { e = await s.error.context.json(); } catch (_) { /* */ }
+        msg('pmsg', e.error || 'No se pudo abrir el pago. Intenta de nuevo.');
+        card.disabled = false; card.textContent = 'Pagar con tarjeta';
+      };
+      pb.appendChild(card);
     }
     (r[2].data || []).slice(0, 8).forEach(function (p) { var row = el('div', 'pt-row'); row.appendChild(el('span', null, fecha(p.fecha))); row.appendChild(el('b', null, dinero(p.monto))); pb.appendChild(row); });
     // Contratos

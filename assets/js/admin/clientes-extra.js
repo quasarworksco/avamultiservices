@@ -124,23 +124,62 @@
 
   /* ---------- Planes mensuales (cobro recurrente) ---------- */
   var SERV_PLAN = { credito: 'Reparación de crédito', contabilidad: 'Contabilidad mensual', plan_irs: 'Plan de pago IRS', otro: 'Otro' };
+  var COBRO = { manual: '', pendiente: 'esperando que el cliente registre su tarjeta', activo: 'se cobra solo con tarjeta', fallido: 'el último cobro con tarjeta falló', cancelado: 'cobro con tarjeta cancelado' };
+
+  // Crea un enlace de pago de Stripe y lo comparte por WhatsApp con el cliente
+  async function enlacePago(c, cuerpo, mensaje) {
+    // La ventana se abre antes de esperar a Stripe para que el navegador no la bloquee
+    var w = c.telefono ? window.open('', '_blank') : null;
+    if (w) w.opener = null;
+    var r = await sb.functions.invoke('stripe-pago', { body: cuerpo });
+    if (r.error) {
+      if (w) w.close();
+      var e = {}; try { e = await r.error.context.json(); } catch (_) { /* */ }
+      A.toast(e.error || 'No se pudo crear el enlace.', 'error'); return;
+    }
+    var texto = mensaje + ' ' + r.data.url;
+    if (w) w.location.href = A.wa(c.telefono, texto);
+    else { try { await navigator.clipboard.writeText(r.data.url); } catch (_) { /* */ } A.toast('Enlace copiado: el cliente no tiene teléfono.'); }
+  }
+  A.enlacePago = enlacePago;
   A.tarjetaPlanes = function (c) {
     var card = el('div', { class: 'card' });
     async function pintar() {
       var r = await sb.from('planes').select('*').eq('cliente_id', c.id).order('created_at');
       card.innerHTML = '';
-      card.appendChild(el('div', { class: 'card-h' }, [el('h3', { class: 't', text: 'Cobros mensuales' }), el('button', { class: 'mini-btn', type: 'button', text: 'Nuevo plan', onclick: function () { editarPlan(c, null, pintar); } })]));
+      var integ = await A.integraciones();
+      card.appendChild(el('div', { class: 'card-h' }, [el('h3', { class: 't', text: 'Cobros mensuales' }), el('div', { style: 'display:flex;gap:6px' }, [
+        integ.stripe && A.puede('cobros') ? el('button', { class: 'mini-btn', type: 'button', text: 'Cobrar con tarjeta', onclick: function () { cobroUnico(c); } }) : null,
+        el('button', { class: 'mini-btn', type: 'button', text: 'Nuevo plan', onclick: function () { editarPlan(c, null, pintar); } })])]));
       if (!(r.data || []).length) card.appendChild(el('div', { class: 'muted', text: 'Para crédito o contabilidad: registra el cobro mensual y el sistema te recordará cada pago (y a tu cliente).' }));
       (r.data || []).forEach(function (p) {
         card.appendChild(el('button', { class: 'saldo', type: 'button', onclick: function () { editarPlan(c, p, pintar); } }, [
-          el('div', null, [el('b', { text: SERV_PLAN[p.servicio] + (p.descripcion ? ' · ' + p.descripcion : '') }), el('div', { class: 'muted', text: 'Día ' + p.dia_cobro + ' de cada mes' + (p.activo ? '' : ' · pausado') + (p.servicio === 'contabilidad' && p.activo ? ' · crea el caso del mes automáticamente' : '') })]),
+          el('div', null, [el('b', { text: SERV_PLAN[p.servicio] + (p.descripcion ? ' · ' + p.descripcion : '') }), el('div', { class: 'muted', text: 'Día ' + p.dia_cobro + ' de cada mes' + (p.activo ? '' : ' · pausado') + (COBRO[p.estado_cobro] ? ' · ' + COBRO[p.estado_cobro] : '') + (p.servicio === 'contabilidad' && p.activo ? ' · crea el caso del mes automáticamente' : '') })]),
           el('b', { class: p.activo ? '' : 'muted', text: A.dinero(p.monto) + '/mes' })
         ]));
+        if (integ.stripe && p.activo && A.puede('cobros') && p.estado_cobro !== 'activo') {
+          card.appendChild(el('button', { class: 'mini-btn', type: 'button', style: 'margin:-2px 0 10px', text: p.estado_cobro === 'pendiente' || p.estado_cobro === 'fallido' ? 'Reenviar enlace de cobro automático' : 'Activar cobro automático con tarjeta',
+            onclick: function () { enlacePago(c, { tipo: 'plan', plan_id: p.id }, 'Hola ' + (c.nombre || '') + ', para tu plan mensual de ' + A.dinero(p.monto) + ' registra tu tarjeta aquí y se cobrará solo el día ' + p.dia_cobro + ' de cada mes:'); } }));
+        }
       });
     }
     pintar();
     return card;
   };
+  function cobroUnico(c) {
+    A.modal({
+      titulo: 'Cobrar con tarjeta', ok: 'Crear enlace y enviar',
+      campos: [
+        { k: 'monto', label: 'Monto (USD)', type: 'number', required: true, min: '1', step: '0.01' },
+        { k: 'descripcion', label: 'Concepto', max: 120, placeholder: 'Preparación de taxes 2025', full: true }
+      ],
+      extra: el('p', { class: 'muted', style: 'margin-top:10px;font-size:12.5px', text: 'Se abre WhatsApp con el enlace de pago seguro de Stripe. Cuando el cliente pague, el pago aparece solo en Cobros.' }),
+      guardar: async function (d) {
+        await enlacePago(c, { tipo: 'monto', cliente_id: c.id, monto: Number(d.monto), descripcion: d.descripcion || 'Pago a AVA Multiservices' },
+          'Hola ' + (c.nombre || '') + ', puedes pagar ' + A.dinero(d.monto) + (d.descripcion ? ' (' + d.descripcion + ')' : '') + ' con tarjeta aquí:');
+      }
+    });
+  }
   function editarPlan(c, p, alGuardar) {
     var nuevo = !p; p = p || {};
     A.modal({
@@ -154,7 +193,7 @@
         { k: 'activo', label: 'Estado', type: 'select', value: p.activo === false ? 'no' : 'si', options: [['si', 'Activo'], ['no', 'Pausado']] },
         { k: 'descripcion', label: 'Descripción', full: true, value: p.descripcion, max: 200, placeholder: 'Plan crédito 6 meses' }
       ],
-      extra: el('p', { class: 'muted', style: 'margin-top:10px;font-size:12.5px', text: 'El cobro automático con tarjeta se activa cuando conectemos la pasarela de pagos. Mientras tanto, el sistema avisa 2 días antes del cobro.' }),
+      extra: el('p', { class: 'muted', style: 'margin-top:10px;font-size:12.5px', text: 'Con Stripe conectado, después de crear el plan toca «Activar cobro automático con tarjeta» y envíale el enlace al cliente. Si no, el sistema avisa 2 días antes del cobro.' }),
       guardar: async function (d, aviso) {
         d.activo = d.activo !== 'no';
         d.dia_cobro = Math.min(28, Math.max(1, Number(d.dia_cobro) || 1));
