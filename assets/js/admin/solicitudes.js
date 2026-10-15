@@ -53,10 +53,10 @@
     msjs = r.data || [];
     mui.list.innerHTML = '';
     mui.list.appendChild(el('div', { class: 'row head' }, [el('span', { text: 'Persona' }), el('span', { class: 'hide-m', text: 'Correo' }), el('span', { class: 'hide-m', text: 'Servicio' }), el('span', { class: 'hide-m', text: 'Recibido' }), el('span', { text: 'Estado' })]));
-    if (!msjs.length) mui.list.appendChild(el('div', { class: 'empty' }, [el('b', { text: 'Aún no hay mensajes' }), 'Los mensajes del formulario «Solicita tu cita» de tu sitio llegarán aquí.']));
+    if (!msjs.length) mui.list.appendChild(el('div', { class: 'empty' }, [el('b', { text: 'Aún no hay mensajes' }), 'Los mensajes del formulario «Solicita tu cita» de tu sitio y los formularios de tus anuncios de Meta llegarán aquí.']));
     msjs.forEach(function (m) {
       mui.list.appendChild(el('button', { class: 'row', type: 'button', onclick: function () { abrirM(m); } }, [
-        el('span', { class: 'who-cell' }, [el('span', { class: 'avatar', text: A.iniciales(m.nombre) }), el('div', null, [el('div', { class: 'name', text: m.nombre }), el('div', { class: 'muted', text: m.telefono })])]),
+        el('span', { class: 'who-cell' }, [el('span', { class: 'avatar', text: A.iniciales(m.nombre) }), el('div', null, [el('div', { class: 'name', text: m.nombre }), el('div', { class: 'muted', text: m.telefono + (m.origen === 'meta_ads' ? ' · Meta Ads' : '') })])]),
         el('span', { class: 'muted hide-m', text: m.email || '—' }), el('span', { class: 'muted hide-m', text: m.servicio || '—' }),
         el('span', { class: 'muted hide-m', text: A.hace(m.created_at) }),
         el('span', null, [el('span', { class: 'pill ' + (m.estado === 'nuevo' ? 'nuevo' : m.estado === 'atendido' ? 'completado' : 'archivado'), text: EST_M[m.estado] })])
@@ -69,7 +69,7 @@
     estado.value = m.estado;
     var tel = A.soloDigitos(m.telefono);
     A.drawer({
-      titulo: m.nombre, meta: 'Mensaje de contacto · ' + A.fecha(m.created_at, true),
+      titulo: m.nombre, meta: (m.origen === 'meta_ads' ? 'Lead de Meta Ads · ' : 'Mensaje de contacto · ') + A.fecha(m.created_at, true),
       cuerpo: [
         A.seccion('Datos', [['Teléfono', m.telefono], ['Correo', m.email], ['Servicio', m.servicio], ['Idioma', m.idioma]]),
         A.seccion('Mensaje', [['Escribió', m.mensaje || '—']]),
@@ -100,7 +100,7 @@
     if (d && confirm('Ya existe un cliente parecido: ' + A.nombreDe(d) + '. ¿Vincular este mensaje a su ficha?')) id = d.id;
     if (!id) {
       var partes = m.nombre.trim().split(/\s+/);
-      var nuevo = await sb.from('clientes').insert({ nombre: partes[0], apellidos: partes.slice(1).join(' ') || null, email: m.email, telefono: m.telefono, origen: 'sitio_web', idioma: m.idioma === 'English' ? 'en' : 'es', notas: m.mensaje ? 'Mensaje del sitio: ' + m.mensaje : null }).select('id').single();
+      var nuevo = await sb.from('clientes').insert({ nombre: partes[0], apellidos: partes.slice(1).join(' ') || null, email: m.email, telefono: /\d{7}/.test(A.soloDigitos(m.telefono)) ? m.telefono : null, origen: m.origen === 'meta_ads' ? 'meta_ads' : 'sitio_web', idioma: m.idioma === 'English' ? 'en' : 'es', notas: m.mensaje ? (m.origen === 'meta_ads' ? 'Formulario de Meta Ads: ' : 'Mensaje del sitio: ') + m.mensaje : null }).select('id').single();
       if (nuevo.error) { A.toast('No se pudo crear el cliente.', 'error'); return; }
       id = nuevo.data.id;
       var svc = SERV_MAP[m.servicio];

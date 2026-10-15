@@ -338,12 +338,18 @@
     return equipoCache;
   }
 
+  var integCache = null;
   window.AVA = {
     sb: sb, el: el, icon: icon, fecha: fecha, hace: hace, dinero: dinero, iniciales: iniciales, nombreDe: nombreDe,
     hoyISO: hoyISO, soloDigitos: soloDigitos, msg: msg, toast: toast, modal: modal, drawer: drawer, cerrarDrawer: cerrarDrawer,
     seccion: seccion, cabecera: cabecera, SERVICIOS: SERVICIOS, ORIGENES: ORIGENES, PERMISOS: PERMISOS, ROLES: ROLES, esFinal: esFinal,
     serviciosVisibles: function () { return Object.keys(SERVICIOS).filter(function (k) { return !SERVICIOS[k].oculto; }); },
     puede: puede, yo: function () { return me; }, equipo: equipo, limpiarEquipo: function () { equipoCache = null; },
+    // Qué integraciones están conectadas (WhatsApp, Meta, Stripe). Se pregunta una vez por sesión.
+    integraciones: function () {
+      if (!integCache) integCache = sb.functions.invoke('enviar-mensaje', { body: { estado: true } }).then(function (r) { return r.data || {}; }).catch(function () { return {}; });
+      return integCache;
+    },
     vista: function (nombre, def) { vistas[nombre] = def; },
     ir: function (ruta) { if (location.hash === '#/' + ruta) navegar(); else location.hash = '#/' + ruta; },
     resumenCaso: function (t) {
