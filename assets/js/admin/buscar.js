@@ -3,24 +3,28 @@
 (function () {
   'use strict';
   var A = window.AVA, el = A.el, sb = A.sb;
-  var abierta = null;
+  var ui = null;
 
   function limpiar(t) { return String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
   function patron(t) { return '%' + t.replace(/[%_,()]/g, ' ').trim() + '%'; }
 
-  A.buscar = function () {
-    if (abierta) { abierta.querySelector('input').focus(); return; }
+  // La ventana se arma una sola vez; después solo se muestra u oculta (abre al instante)
+  function crear() {
     var input = el('input', { type: 'search', placeholder: 'Buscar cliente, teléfono, correo, caso o recibo #…', 'aria-label': 'Buscar', autocomplete: 'off' });
     var res = el('div', { class: 'qs-res', role: 'listbox' }, [el('div', { class: 'qs-vacio', text: 'Escribe al menos 2 letras o números.' })]);
     var bg = el('div', { class: 'qs', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Búsqueda rápida' }, [el('div', { class: 'qs-card' }, [
       el('div', { class: 'qs-in' }, [A.icon('i-lupa'), input, el('button', { class: 'x', type: 'button', 'aria-label': 'Cerrar', onclick: cerrar }, [A.icon('i-x', 'icon-sm')])]), res
     ])]);
+    bg.hidden = true;
     document.body.appendChild(bg);
-    abierta = bg;
-    input.focus();
     var items = [], sel = 0, timer = null, ultima = 0;
 
-    function cerrar() { bg.remove(); abierta = null; document.removeEventListener('keydown', teclas, true); }
+    function abrir() {
+      bg.hidden = false;
+      input.focus(); input.select();
+      document.addEventListener('keydown', teclas, true);
+    }
+    function cerrar() { bg.hidden = true; document.removeEventListener('keydown', teclas, true); }
     function ir(it) { cerrar(); it.ir(); }
     function marcar() { items.forEach(function (it, i) { it.nodo.classList.toggle('on', i === sel); }); if (items[sel]) items[sel].nodo.scrollIntoView({ block: 'nearest' }); }
     function teclas(e) {
@@ -29,9 +33,8 @@
       else if (e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(0, sel - 1); marcar(); }
       else if (e.key === 'Enter' && items[sel]) { e.preventDefault(); ir(items[sel]); }
     }
-    document.addEventListener('keydown', teclas, true);
     bg.addEventListener('mousedown', function (e) { if (e.target === bg) cerrar(); });
-    input.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(buscar, 220); });
+    input.addEventListener('input', function () { clearTimeout(timer); timer = setTimeout(buscar, 150); });
 
     async function buscar() {
       var q = input.value.trim(), n = ++ultima;
@@ -40,7 +43,10 @@
       var dig = q.replace(/\D/g, '');
       var esRecibo = /^#?\d{3,7}$/.test(q);
       var p1 = patron(q.split(/\s+/)[0]);
-      var consultas = [];
+      var consultas = [], aparte = [];
+      // Solicitudes y recibos no dependen de los clientes: se piden en paralelo desde ya
+      if (A.puede('solicitudes')) aparte.push(solicitudes(p1, dig));
+      if (esRecibo && A.puede('cobros')) aparte.push(recibo(q));
       // Clientes: por nombre, apellido, correo o teléfono
       var clientes = [];
       if (A.puede('clientes|taxes|casos|cobros')) {
@@ -69,27 +75,7 @@
           });
         }));
       }
-      // Solicitudes y mensajes de contacto
-      if (A.puede('solicitudes')) {
-        var fs = ['nombre.ilike.' + p1, 'apellidos.ilike.' + p1, 'email.ilike.' + p1];
-        if (dig.length >= 3) fs.push('telefono.ilike.%' + dig.slice(-4) + '%');
-        var fm = ['nombre.ilike.' + p1, 'email.ilike.' + p1];
-        if (dig.length >= 3) fm.push('telefono.ilike.%' + dig.slice(-4) + '%');
-        consultas.push(Promise.all([
-          sb.from('solicitudes').select('id,nombre,apellidos,telefono,estado').or(fs.join(',')).limit(10),
-          sb.from('mensajes_web').select('id,nombre,telefono,estado,origen').or(fm.join(',')).limit(10)
-        ]).then(function (r) {
-          var a = (r[0].data || []).map(function (x) { return { g: 'Solicitudes', t: A.nombreDe(x), s: 'Formulario de inicio · ' + (x.telefono || ''), av: A.iniciales(A.nombreDe(x)), ir: function () { A.ir('solicitudes'); } }; });
-          var b = (r[1].data || []).map(function (x) { return { g: 'Solicitudes', t: x.nombre, s: (x.origen === 'meta_ads' ? 'Lead de Meta Ads' : 'Mensaje de contacto') + ' · ' + (x.telefono || ''), av: A.iniciales(x.nombre), ir: function () { A.ir('mensajes'); } }; });
-          return a.concat(b).slice(0, 5);
-        }));
-      } else consultas.push(Promise.resolve([]));
-      // Recibos por número
-      if (esRecibo && A.puede('cobros')) {
-        consultas.push(sb.from('pagos').select('id,numero,monto,fecha,token, clientes(id,nombre,apellidos,telefono)').eq('numero', Number(q.replace('#', ''))).limit(1).then(function (r) {
-          return (r.data || []).map(function (p) { return { g: 'Recibos', t: 'Recibo #' + p.numero + ' · ' + A.dinero(p.monto), s: A.nombreDe(p.clientes || {}) + ' · ' + A.fecha(p.fecha), av: '#', ir: function () { window.open(A.urlRecibo(p), '_blank', 'noopener'); } }; });
-        }));
-      }
+      consultas = consultas.concat(aparte);
       var grupos = await Promise.all(consultas.map(function (c) { return c.catch(function () { return []; }); }));
       if (n !== ultima) return;
       items = [].concat.apply([], grupos);
@@ -106,6 +92,32 @@
       });
       marcar();
     }
+    return { abrir: abrir };
+  }
+
+  function solicitudes(p1, dig) {
+    var fs = ['nombre.ilike.' + p1, 'apellidos.ilike.' + p1, 'email.ilike.' + p1];
+    if (dig.length >= 3) fs.push('telefono.ilike.%' + dig.slice(-4) + '%');
+    var fm = ['nombre.ilike.' + p1, 'email.ilike.' + p1];
+    if (dig.length >= 3) fm.push('telefono.ilike.%' + dig.slice(-4) + '%');
+    return Promise.all([
+      sb.from('solicitudes').select('id,nombre,apellidos,telefono,estado').or(fs.join(',')).limit(10),
+      sb.from('mensajes_web').select('id,nombre,telefono,estado,origen').or(fm.join(',')).limit(10)
+    ]).then(function (r) {
+      var a = (r[0].data || []).map(function (x) { return { g: 'Solicitudes', t: A.nombreDe(x), s: 'Formulario de inicio · ' + (x.telefono || ''), av: A.iniciales(A.nombreDe(x)), ir: function () { A.ir('solicitudes'); } }; });
+      var b = (r[1].data || []).map(function (x) { return { g: 'Solicitudes', t: x.nombre, s: (x.origen === 'meta_ads' ? 'Lead de Meta Ads' : 'Mensaje de contacto') + ' · ' + (x.telefono || ''), av: A.iniciales(x.nombre), ir: function () { A.ir('mensajes'); } }; });
+      return a.concat(b).slice(0, 5);
+    });
+  }
+  function recibo(q) {
+    return sb.from('pagos').select('id,numero,monto,fecha,token, clientes(id,nombre,apellidos,telefono)').eq('numero', Number(q.replace('#', ''))).limit(1).then(function (r) {
+      return (r.data || []).map(function (p) { return { g: 'Recibos', t: 'Recibo #' + p.numero + ' · ' + A.dinero(p.monto), s: A.nombreDe(p.clientes || {}) + ' · ' + A.fecha(p.fecha), av: '#', ir: function () { window.open(A.urlRecibo(p), '_blank', 'noopener'); } }; });
+    });
+  }
+
+  A.buscar = function () {
+    if (!ui) ui = crear();
+    ui.abrir();
   };
 
   document.addEventListener('keydown', function (e) {

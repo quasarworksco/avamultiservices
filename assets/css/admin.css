@@ -527,8 +527,11 @@ a.stat { display: block; color: inherit; animation: rise 0.5s var(--ease) both; 
 .side-search { display: flex; align-items: center; gap: 10px; width: calc(100% - 4px); margin: 4px 2px 14px; padding: 10px 12px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.06); color: rgba(255, 255, 255, 0.72); font: inherit; font-size: 13.5px; cursor: pointer; transition: background 0.2s; }
 .side-search:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
 .side-search kbd { margin-left: auto; padding: 1px 6px; border-radius: 5px; border: 1px solid rgba(255, 255, 255, 0.2); font: inherit; font-size: 11px; }
-.qs { position: fixed; inset: 0; z-index: 70; display: flex; justify-content: center; align-items: flex-start; padding: 12vh 16px 16px; background: rgba(27, 27, 26, 0.45); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); animation: fadein 0.2s; }
-.qs-card { width: 100%; max-width: 620px; max-height: 72vh; display: flex; flex-direction: column; border-radius: 20px; background: #fff; box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.5); overflow: hidden; }
+/* Sin desenfoque de fondo: abre al instante incluso en pantallas grandes */
+.qs { position: fixed; inset: 0; z-index: 70; display: flex; justify-content: center; align-items: flex-start; padding: 12vh 16px 16px; background: rgba(27, 27, 26, 0.5); }
+.qs[hidden] { display: none; }
+.qs-card { width: 100%; max-width: 620px; max-height: 72vh; display: flex; flex-direction: column; border-radius: 20px; background: #fff; box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.55); overflow: hidden; animation: qsIn 0.12s ease-out; }
+@keyframes qsIn { from { opacity: 0; transform: translateY(-6px); } }
 .qs-in { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
 .qs-in input { flex: 1; min-width: 0; border: 0; outline: 0; font: inherit; font-size: 17px; background: none; }
 .qs-in .icon { color: var(--muted); }
