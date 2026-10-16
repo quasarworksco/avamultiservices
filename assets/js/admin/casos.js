@@ -131,6 +131,12 @@
         var card = el('button', { class: 'kcard', type: 'button', draggable: 'true', 'data-id': k.id, 'data-svc': k.servicio, style: 'animation-delay:' + Math.min(i * 40, 400) + 'ms', onclick: function () { A.verCaso(k.id, cargar); } }, [
           el('b', { text: A.nombreDe(k.clientes || {}) }),
           k.titulo ? el('div', { class: 'muted', text: k.titulo }) : null,
+          (function () {
+            var pr = A.progresoDocs(k.checklist);
+            if (!pr.total || k.estado !== 'activo') return null;
+            return el('div', { class: 'kc-docs' + (pr.revisar ? ' rev' : pr.listos === pr.total ? ' ok' : ''), title: pr.faltan.length ? 'Falta: ' + pr.faltan.join(', ') : 'Documentos completos' }, [
+              A.icon(pr.listos === pr.total ? 'i-check' : 'i-file', 'icon-sm'), 'Docs ' + pr.listos + '/' + pr.total + (pr.revisar ? ' · ' + pr.revisar + ' por revisar' : '')]);
+          })(),
           el('div', { class: 'meta' }, [
             el('span', { class: tarde ? 'late' : '', text: k.estado === 'cancelado' ? 'Cancelado' : (k.fecha_entrega ? (tarde ? 'Vencido · ' : 'Entrega ') + A.fecha(k.fecha_entrega) : (k.precio != null ? A.dinero(k.precio) : 'Sin fecha')) }),
             ui.eq[k.responsable] ? el('span', { class: 'avatar', title: ui.eq[k.responsable], text: A.iniciales(ui.eq[k.responsable]) }) : null

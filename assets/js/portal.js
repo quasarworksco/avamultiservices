@@ -41,8 +41,8 @@
     $('fecha').textContent = new Date().toLocaleDateString('es-US', { weekday: 'long', day: 'numeric', month: 'long' });
     var r = await Promise.all([
       sb.from('clientes').select('id,nombre').eq('id', id).single(),
-      sb.from('casos').select('id,servicio,titulo,etapa,estado,precio,fecha_entrega').eq('cliente_id', id).neq('estado', 'cancelado').order('created_at', { ascending: false }),
-      sb.from('pagos').select('monto,fecha,caso_id,metodo').eq('cliente_id', id).order('fecha', { ascending: false }),
+      sb.from('casos').select('id,servicio,titulo,etapa,estado,precio,fecha_entrega,checklist').eq('cliente_id', id).neq('estado', 'cancelado').order('created_at', { ascending: false }),
+      sb.from('pagos').select('monto,fecha,caso_id,metodo,numero,token').eq('cliente_id', id).order('fecha', { ascending: false }),
       sb.from('contratos').select('titulo,estado,token,firmado_at').eq('cliente_id', id).order('created_at', { ascending: false }),
       sb.from('citas').select('inicio,servicio,estado').eq('cliente_id', id).gte('inicio', new Date().toISOString()).in('estado', ['solicitada', 'confirmada']).order('inicio'),
       sb.rpc('portal_info'),
@@ -63,7 +63,35 @@
       var box = el('div', 'pt-caso'); box.appendChild(el('b', null, k.titulo || e[0]));
       box.appendChild(el('div', 'et', (k.estado === 'completado' ? 'Completado · ' : 'Etapa actual: ') + k.etapa + (k.fecha_entrega && k.estado === 'activo' ? ' · entrega estimada ' + fecha(k.fecha_entrega) : '')));
       var steps = el('div', 'pt-steps'); etapas.forEach(function (_, j) { var b = el('i', j <= i ? 'on' : ''); b.style.animationDelay = (j * 80) + 'ms'; steps.appendChild(b); });
-      box.appendChild(steps); cb.appendChild(box);
+      box.appendChild(steps);
+      // Documentos que pide este trámite
+      var lista = k.estado === 'activo' ? (k.checklist || []) : [];
+      if (lista.some(function (x) { return x.e !== 'no_aplica'; })) {
+        var faltan = lista.filter(function (x) { return x.e === 'falta'; }).length;
+        var dl = el('div', 'pt-docs');
+        dl.appendChild(el('div', 'pt-docs-h', faltan ? 'Te faltan ' + faltan + (faltan === 1 ? ' documento' : ' documentos') : '¡Tenemos todos tus documentos!'));
+        lista.forEach(function (x, i) {
+          if (x.e === 'no_aplica') return;
+          var row = el('div', 'pt-doc ' + x.e);
+          row.appendChild(el('span', 'pt-doc-i', x.e === 'recibido' ? '✓' : x.e === 'enviado' ? '•' : ''));
+          row.appendChild(el('span', 'pt-doc-t', x.d));
+          if (x.e === 'falta') {
+            var lab = el('label', 'link-btn', 'Subir');
+            var inp = document.createElement('input'); inp.type = 'file'; inp.hidden = true; inp.accept = 'image/*,application/pdf';
+            inp.onchange = async function () {
+              var f = this.files[0]; if (!f) return;
+              lab.textContent = 'Subiendo…';
+              var ok = await subir(id, [f], x.d);
+              if (ok) { await sb.rpc('portal_marcar_doc', { p_caso: k.id, p_idx: i }); entrar(); }
+              else lab.textContent = 'Subir';
+            };
+            lab.appendChild(inp); row.appendChild(lab);
+          } else row.appendChild(el('span', 'pt-doc-e', x.e === 'recibido' ? 'Recibido' : 'En revisión'));
+          dl.appendChild(row);
+        });
+        box.appendChild(dl);
+      }
+      cb.appendChild(box);
     });
     if (!(r[1].data || []).length) cb.appendChild(el('p', null, 'Aún no tienes trámites activos.'));
     // Pagos
@@ -89,7 +117,12 @@
       };
       pb.appendChild(card);
     }
-    (r[2].data || []).slice(0, 8).forEach(function (p) { var row = el('div', 'pt-row'); row.appendChild(el('span', null, fecha(p.fecha))); row.appendChild(el('b', null, dinero(p.monto))); pb.appendChild(row); });
+    (r[2].data || []).slice(0, 8).forEach(function (p) {
+      var row = el('div', 'pt-row'); row.appendChild(el('span', null, fecha(p.fecha)));
+      var der = el('span'); der.style.cssText = 'display:flex;gap:12px;align-items:center';
+      if (p.token) { var a = el('a', 'link-btn', 'Recibo #' + p.numero); a.href = '../recibo/?t=' + p.token; a.target = '_blank'; a.rel = 'noopener'; der.appendChild(a); }
+      der.appendChild(el('b', null, dinero(p.monto))); row.appendChild(der); pb.appendChild(row);
+    });
     // Contratos
     var cs = r[3].data || [];
     $('ccard').hidden = !cs.length;
@@ -113,7 +146,7 @@
     (r.data || []).forEach(function (d) { var row = el('div', 'pt-row'); row.appendChild(el('span', null, d.nombre)); row.appendChild(el('span', null, fecha(d.created_at))); box.appendChild(row); });
     if (!(r.data || []).length) box.appendChild(el('p', null, 'Todavía no has subido documentos.'));
   }
-  async function subir(id, files) {
+  async function subir(id, files, etiqueta) {
     var ok = 0;
     for (var i = 0; i < files.length; i++) {
       var f = files[i];
@@ -122,11 +155,12 @@
       var path = 'clientes/' + id + '/portal/' + Date.now() + '-' + f.name.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^\w.\-]+/g, '-').slice(-80);
       var up = await sb.storage.from('documentos').upload(path, f, { contentType: f.type });
       if (up.error) { msg('dmsg', 'No se pudo subir ' + f.name + '.'); continue; }
-      var ins = await sb.from('documentos').insert({ cliente_id: id, nombre: f.name.slice(0, 200), path: path, tipo: f.type, tamano: f.size });
+      var ins = await sb.from('documentos').insert({ cliente_id: id, nombre: ((etiqueta ? etiqueta + ' · ' : '') + f.name).slice(0, 200), path: path, tipo: f.type, tamano: f.size });
       if (!ins.error) ok++;
     }
     if (ok) msg('dmsg', ok === 1 ? '¡Documento recibido! Gracias.' : ok + ' documentos recibidos. ¡Gracias!', 'ok');
     pintarDocs(id);
+    return ok;
   }
 
   sb.auth.onAuthStateChange(function (ev) { if (ev === 'SIGNED_IN') entrar(); });

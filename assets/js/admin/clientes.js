@@ -296,7 +296,7 @@
           el('div', { class: 'tile' }, [el('span', { class: 'k', text: 'Pagado' }), el('b', { text: A.dinero(pagado) || '$0' })]),
           el('div', { class: 'tile' }, [el('span', { class: 'k', text: 'Saldo' }), el('b', { class: total - pagado > 0 ? 'debe' : '', text: A.dinero(Math.max(0, total - pagado)) || '$0' })])
         ]));
-        pagos.slice(0, 6).forEach(function (x) { cobrosCard.appendChild(el('div', { class: 'pay' }, [el('span', { text: A.fecha(x.fecha) + ' · ' + A.METODOS[x.metodo] }), el('b', { text: A.dinero(x.monto) })])); });
+        pagos.slice(0, 6).forEach(function (x) { cobrosCard.appendChild(el('div', { class: 'pay' }, [el('span', { text: A.fecha(x.fecha) + ' · ' + A.METODOS[x.metodo] }), el('span', { style: 'display:flex;gap:10px;align-items:center' }, [A.botonesRecibo(x, c), el('b', { text: A.dinero(x.monto) })])])); });
       })();
     }
 
