@@ -135,7 +135,7 @@
   }
 
   async function nuevaConv() {
-    var cl = (await sb.from('clientes').select('id,nombre,apellidos,telefono').order('nombre').limit(5000)).data || [];
+    var cl = await A.clientesBasicos();
     A.modal({
       titulo: 'Nueva conversación', ok: 'Abrir',
       campos: [

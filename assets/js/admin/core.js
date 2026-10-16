@@ -154,13 +154,14 @@
     $('d-name').textContent = o.titulo;
     $('d-meta').textContent = o.meta || '';
     var body = $('d-body'), foot = $('d-foot');
+    var y = !$('drawer').hidden && o.mantenerScroll ? body.scrollTop : 0;
     body.innerHTML = ''; foot.innerHTML = '';
     (o.cuerpo || []).forEach(function (n) { if (n) body.appendChild(n); });
     (o.pie || []).forEach(function (n) { if (n) foot.appendChild(n); });
     foot.hidden = !(o.pie && o.pie.length);
     drawerAlCerrar = o.alCerrar || null;
     $('drawer').hidden = false; $('drawer-bg').hidden = false;
-    body.scrollTop = 0;
+    body.scrollTop = y;
   }
   function cerrarDrawer() {
     if ($('drawer').hidden) return;
@@ -267,6 +268,10 @@
     AVA.contarContenido();
     if (AVA.contarBandeja) AVA.contarBandeja();
     if (AVA.contarCitas) AVA.contarCitas();
+    // Precarga en segundo plano lo que usan las ventanas emergentes
+    if (puede('clientes|casos|cobros|tareas|documentos|mensajes|citas|taxes')) cargarClientes();
+    equipo();
+    if (puede('citas')) recordar('config_citas', function () { return sb.rpc('config_citas').then(function (r) { return r.data || {}; }); });
   }
 
   sb.auth.onAuthStateChange(function (event) {
@@ -339,12 +344,41 @@
   }
 
   var integCache = null;
+
+  /* Lista de clientes en memoria para que las ventanas (pago, caso, tarea, cita…) abran al instante.
+     Se usa la copia guardada y se actualiza por detrás; si falta el cliente que se necesita, se espera la nueva. */
+  var cliCache = null, cliPromesa = null;
+  function cargarClientes() {
+    if (cliPromesa) return cliPromesa;
+    cliPromesa = sb.from('clientes').select('id,nombre,apellidos,telefono,email').order('nombre').limit(5000).then(function (r) {
+      if (!r.error) cliCache = r.data || [];
+      cliPromesa = null;
+      return cliCache || [];
+    });
+    return cliPromesa;
+  }
+  async function clientesBasicos(necesito) {
+    if (cliCache && (!necesito || cliCache.some(function (c) { return c.id === necesito; }))) { cargarClientes(); return cliCache; }
+    return cargarClientes();
+  }
+  /* Valores que casi no cambian (configuración de citas, etc.) guardados 5 minutos */
+  var memo = {};
+  function recordar(clave, fn, ms) {
+    var m = memo[clave];
+    if (m && Date.now() - m.t < (ms || 300000)) return m.p;
+    var p = Promise.resolve(fn()).catch(function (e) { delete memo[clave]; throw e; });
+    memo[clave] = { t: Date.now(), p: p };
+    return p;
+  }
+
   window.AVA = {
     sb: sb, el: el, icon: icon, fecha: fecha, hace: hace, dinero: dinero, iniciales: iniciales, nombreDe: nombreDe,
     hoyISO: hoyISO, soloDigitos: soloDigitos, msg: msg, toast: toast, modal: modal, drawer: drawer, cerrarDrawer: cerrarDrawer,
     seccion: seccion, cabecera: cabecera, SERVICIOS: SERVICIOS, ORIGENES: ORIGENES, PERMISOS: PERMISOS, ROLES: ROLES, esFinal: esFinal,
     serviciosVisibles: function () { return Object.keys(SERVICIOS).filter(function (k) { return !SERVICIOS[k].oculto; }); },
     puede: puede, yo: function () { return me; }, equipo: equipo, limpiarEquipo: function () { equipoCache = null; },
+    clientesBasicos: clientesBasicos,
+    nuevoClienteBD: function (d) { cliCache = null; return sb.from('clientes').insert(d); }, limpiarClientes: function () { cliCache = null; }, recordar: recordar, olvidar: function (clave) { delete memo[clave]; },
     // Qué integraciones están conectadas (WhatsApp, Meta, Stripe). Se pregunta una vez por sesión.
     integraciones: function () {
       if (!integCache) integCache = sb.functions.invoke('enviar-mensaje', { body: { estado: true } }).then(function (r) { return r.data || {}; }).catch(function () { return {}; });

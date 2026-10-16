@@ -19,10 +19,7 @@
     })[0] || null;
   };
 
-  A.listaClientes = async function () {
-    var r = await sb.from('clientes').select('id,nombre,apellidos').order('nombre').limit(5000);
-    return r.data || [];
-  };
+  A.listaClientes = function () { return A.clientesBasicos(); };
   function camposCliente(c, todos) {
     c = c || {};
     return [
@@ -57,6 +54,7 @@
           A.ir('clientes/' + dup.id); return true;
         }
         var r = await sb.from('clientes').insert(limpiar(d)).select('id').single();
+        A.limpiarClientes();
         if (r.error) { A.msg(aviso, 'No se pudo crear el cliente. Revisa los datos.'); return false; }
         A.toast('Cliente creado.');
         if (alCrear) alCrear(r.data.id); else A.ir('clientes/' + r.data.id);
@@ -70,12 +68,14 @@
       titulo: 'Editar cliente', campos: camposCliente(c, todos),
       guardar: async function (d, aviso) {
         var r = await sb.from('clientes').update(limpiar(d)).eq('id', c.id).select('*').single();
+        A.limpiarClientes();
         if (r.error) { A.msg(aviso, 'No se pudo guardar.'); return false; }
         A.toast('Datos guardados.');
         alGuardar(r.data);
       },
       borrar: async function () {
         var r = await sb.from('clientes').delete().eq('id', c.id);
+        A.limpiarClientes();
         if (r.error) { A.toast('No se pudo eliminar.', 'error'); return false; }
         A.toast('Cliente eliminado.');
         A.ir('clientes');

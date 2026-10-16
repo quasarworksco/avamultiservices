@@ -114,7 +114,7 @@
   }
 
   async function elegirCliente() {
-    var r = await sb.from('clientes').select('id,nombre,apellidos').order('nombre').limit(5000);
+    var r = { data: await A.clientesBasicos() };
     if (!(r.data || []).length) { A.toast('Primero crea un cliente.', 'error'); return; }
     var m = A.modal({
       titulo: 'Subir documento', ok: 'Listo',
