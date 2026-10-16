@@ -25,13 +25,15 @@
     return el('section', { class: 'd-sec' }, [el('div', { class: 'card-h' }, [el('h3', { text: titulo }), accion || null])].concat(hijos));
   }
 
-  A.verCaso = async function (id, alCambiar) {
+  A.verCaso = async function (id, alCambiar, recargando) {
+    // Se abre el panel al instante y se llena cuando llegan los datos
+    if (!recargando) A.drawer({ titulo: 'Cargando…', meta: 'Caso', cuerpo: [el('div', { class: 'muted', style: 'padding:8px 0', text: 'Cargando el caso…' })] });
     var r = await sb.from('casos').select('*, clientes(id,nombre,apellidos,telefono)').eq('id', id).maybeSingle();
-    if (r.error || !r.data) { A.toast('No se encontró el caso.', 'error'); return; }
+    if (r.error || !r.data) { A.cerrarDrawer(); A.toast('No se encontró el caso.', 'error'); return; }
     var k = r.data;
     var s = A.SERVICIOS[k.servicio];
     var cambiado = false;
-    var recargar = function () { cambiado = true; A.verCaso(id, alCambiar); };
+    var recargar = function () { cambiado = true; A.verCaso(id, alCambiar, true); };
     var equipo = await A.equipo();
     var resp = equipo.filter(function (m) { return m.user_id === k.responsable; })[0];
 
@@ -77,7 +79,8 @@
         el('a', { class: 'btn btn-ghost', href: '#/clientes/' + k.cliente_id }, [A.icon('i-users'), el('span', { text: 'Ficha del cliente' })]),
         el('button', { class: 'btn btn-dark', type: 'button', onclick: function () { A.editarCaso(k, null, recargar); } }, [A.icon('i-edit'), el('span', { text: 'Editar caso' })])
       ])],
-      alCerrar: function () { if (cambiado && alCambiar) alCambiar(); }
+      alCerrar: function () { if ((cambiado || recargando) && alCambiar) alCambiar(); },
+      mantenerScroll: !!recargando
     });
   };
 

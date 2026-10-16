@@ -24,8 +24,7 @@
     var campos = [];
     var clientes = null;
     if (nuevo && !base.cliente_id) {
-      var r = await sb.from('clientes').select('id,nombre,apellidos').order('nombre').limit(5000);
-      clientes = r.data || [];
+      clientes = await A.clientesBasicos();
       if (!clientes.length) { A.toast('Primero crea un cliente.', 'error'); A.nuevoCliente(); return; }
       campos.push({ k: 'cliente_id', label: 'Cliente', type: 'select', full: true, required: true, options: clientes.map(function (c) { return [c.id, A.nombreDe(c)]; }) });
     }

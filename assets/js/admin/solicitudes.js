@@ -100,7 +100,7 @@
     if (d && confirm('Ya existe un cliente parecido: ' + A.nombreDe(d) + '. ¿Vincular este mensaje a su ficha?')) id = d.id;
     if (!id) {
       var partes = m.nombre.trim().split(/\s+/);
-      var nuevo = await sb.from('clientes').insert({ nombre: partes[0], apellidos: partes.slice(1).join(' ') || null, email: m.email, telefono: /\d{7}/.test(A.soloDigitos(m.telefono)) ? m.telefono : null, origen: m.origen === 'meta_ads' ? 'meta_ads' : 'sitio_web', idioma: m.idioma === 'English' ? 'en' : 'es', notas: m.mensaje ? (m.origen === 'meta_ads' ? 'Formulario de Meta Ads: ' : 'Mensaje del sitio: ') + m.mensaje : null }).select('id').single();
+      var nuevo = await A.nuevoClienteBD({ nombre: partes[0], apellidos: partes.slice(1).join(' ') || null, email: m.email, telefono: /\d{7}/.test(A.soloDigitos(m.telefono)) ? m.telefono : null, origen: m.origen === 'meta_ads' ? 'meta_ads' : 'sitio_web', idioma: m.idioma === 'English' ? 'en' : 'es', notas: m.mensaje ? (m.origen === 'meta_ads' ? 'Formulario de Meta Ads: ' : 'Mensaje del sitio: ') + m.mensaje : null }).select('id').single();
       if (nuevo.error) { A.toast('No se pudo crear el cliente.', 'error'); return; }
       id = nuevo.data.id;
       var svc = SERV_MAP[m.servicio];
@@ -274,7 +274,7 @@
       if (confirm('Ya existe un cliente parecido: ' + A.nombreDe(d) + '. ¿Quieres abrir su ficha en lugar de crear uno nuevo?')) { A.ir('clientes/' + d.id); }
       return;
     }
-    var nuevo = await sb.from('clientes').insert({
+    var nuevo = await A.nuevoClienteBD({
       nombre: r.nombre || 'Sin nombre', apellidos: r.apellidos, email: r.email, telefono: r.telefono,
       fecha_nacimiento: r.fecha_nacimiento, direccion: r.direccion, ciudad: r.ciudad, region: r.region,
       codigo_postal: r.codigo_postal, origen: 'formulario', solicitud_id: r.id,

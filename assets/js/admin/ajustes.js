@@ -60,6 +60,7 @@
           var n = Object.assign({}, cit, { duracion: Math.max(15, Number(dur.value) || 30), anticipacion_horas: Math.max(0, Number(ant.value) || 0), horario: nh,
             servicios: servs.value.split(',').map(function (x) { return x.trim(); }).filter(Boolean) });
           var u = await sb.from('ajustes').update({ valor: n }).eq('clave', 'citas');
+          A.olvidar('config_citas');
           A.toast(u.error ? 'No se pudo guardar.' : 'Horario guardado.', u.error ? 'error' : '');
         } })]);
 

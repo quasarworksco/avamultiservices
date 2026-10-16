@@ -56,7 +56,7 @@
 
   async function editar(c, alGuardar) {
     var nueva = !c; c = c || {};
-    var cfg = (await sb.rpc('config_citas')).data || {};
+    var cfg = await A.recordar('config_citas', function () { return sb.rpc('config_citas').then(function (r) { return r.data || {}; }); });
     var iniLocal = c.inicio ? new Date(c.inicio).toLocaleString('sv-SE', { timeZone: 'America/Chicago' }).slice(0, 16).replace(' ', 'T') : '';
     var m = A.modal({
       titulo: nueva ? 'Nueva cita' : 'Cita de ' + c.nombre,

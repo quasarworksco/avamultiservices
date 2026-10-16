@@ -52,7 +52,7 @@
       { k: 'asignada_a', label: 'Asignada a', type: 'select', value: t.asignada_a || base.asignada_a || A.yo().user_id, options: [['', 'Sin asignar']].concat(equipo.map(function (m) { return [m.user_id, m.nombre]; })) }
     ];
     if (A.puede('clientes') || A.puede('casos')) {
-      var r = await sb.from('clientes').select('id,nombre,apellidos').order('nombre').limit(5000);
+      var r = { data: await A.clientesBasicos(t.cliente_id || base.cliente_id) };
       campos.push({ k: 'cliente_id', label: 'Cliente (opcional)', type: 'select', full: true, value: t.cliente_id || base.cliente_id || '', options: [['', 'Ninguno']].concat((r.data || []).map(function (c) { return [c.id, A.nombreDe(c)]; })) });
     }
     campos.push({ k: 'detalle', label: 'Detalle', type: 'textarea', full: true, value: t.detalle, max: 2000 });

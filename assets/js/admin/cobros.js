@@ -24,7 +24,7 @@
   /* Registrar un pago (base: {cliente_id, caso_id, monto}) */
   A.registrarPago = async function (base, alGuardar) {
     base = base || {};
-    var clientes = (await sb.from('clientes').select('id,nombre,apellidos,telefono').order('nombre').limit(5000)).data || [];
+    var clientes = await A.clientesBasicos(base.cliente_id);
     if (!clientes.length) { A.toast('Primero crea un cliente.', 'error'); return; }
     var campos = [
       { k: 'cliente_id', label: 'Cliente', type: 'select', full: true, required: true, value: base.cliente_id || clientes[0].id, options: clientes.map(function (c) { return [c.id, A.nombreDe(c)]; }) },
