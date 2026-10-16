@@ -227,7 +227,7 @@
   var AUTOS = [
     ['fuera_horario', 'Respuesta fuera de horario', 'Se envía sola cuando alguien escribe fuera de tu horario o cuando la activas porque no puedes contestar.', []],
     ['aviso_etapa', 'Aviso de cambio de etapa', 'Cuando mueves un caso de etapa, se prepara un aviso para el cliente.', ['nombre', 'servicio', 'etapa']],
-    ['recordatorio_documentos', 'Recordatorio de documentos', 'Si un caso lleva más de 3 días esperando documentos, se prepara un recordatorio semanal.', ['nombre', 'servicio', 'link_portal']],
+    ['recordatorio_documentos', 'Recordatorio de documentos', 'Si a un caso le faltan documentos de su lista (o lleva más de 3 días esperando), se prepara un recordatorio semanal con lo que falta.', ['nombre', 'servicio', 'faltan', 'link_portal']],
     ['recordatorio_pago', 'Recordatorio de pago', '2 días antes de cada cobro mensual.', ['nombre', 'monto', 'servicio', 'fecha']],
     ['recordatorio_cita', 'Recordatorio de cita', 'Un día antes de cada cita.', ['nombre', 'fecha', 'hora']],
     ['resena', 'Pedir reseña de Google', 'Un día después de terminar un caso.', ['nombre', 'link_resena']],

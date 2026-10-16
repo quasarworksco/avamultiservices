@@ -22,7 +22,7 @@
     permiso: 'equipo',
     render: async function (cont) {
       cont.appendChild(A.cabecera('Configuración', 'Ajustes', 'del negocio', []));
-      var r = await sb.from('ajustes').select('*').in('clave', ['negocio', 'citas']);
+      var r = await sb.from('ajustes').select('*').in('clave', ['negocio', 'citas', 'checklists']);
       var cfg = {};
       (r.data || []).forEach(function (x) { cfg[x.clave] = x.valor; });
       var neg = cfg.negocio || {}, cit = cfg.citas || {};
@@ -63,6 +63,21 @@
           A.toast(u.error ? 'No se pudo guardar.' : 'Horario guardado.', u.error ? 'error' : '');
         } })]);
 
+      // Documentos que se piden en cada servicio
+      var listas = Object.assign({}, cfg.checklists || {});
+      var svc = el('select', { class: 'input sm', 'aria-label': 'Servicio' }, Object.keys(A.SERVICIOS).filter(function (k) { return !A.SERVICIOS[k].oculto || k === 'notaria'; }).map(function (k) { return el('option', { value: k, text: A.SERVICIOS[k].label }); }));
+      var docs = el('textarea', { class: 'input', style: 'min-height:190px', maxlength: 4000, 'aria-label': 'Documentos, uno por línea' });
+      function mostrar() { docs.value = (listas[svc.value] || []).join('\n'); }
+      svc.addEventListener('change', mostrar); mostrar();
+      var docCard = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Documentos por servicio' }),
+        el('p', { class: 'muted', style: 'margin-bottom:10px', text: 'Lo que se le pide al cliente en cada servicio, uno por línea. Cada caso nuevo copia esta lista; en cada caso puedes agregar o quitar.' }),
+        el('div', { class: 'field' }, [el('label', { text: 'Servicio' }), svc]), el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: 'Documentos (uno por línea)' }), docs]),
+        el('button', { class: 'btn btn-dark btn-sm', type: 'button', style: 'margin-top:14px', text: 'Guardar lista', onclick: async function () {
+          listas[svc.value] = docs.value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 40);
+          var u = await sb.from('ajustes').update({ valor: listas }).eq('clave', 'checklists');
+          A.toast(u.error ? 'No se pudo guardar.' : 'Lista de ' + A.SERVICIOS[svc.value].label + ' guardada.', u.error ? 'error' : '');
+        } })]);
+
       // Integraciones
       var intCard = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Integraciones' }), el('p', { class: 'muted', style: 'margin-bottom:12px', text: 'El CRM ya está preparado para cada una. Las que dicen «Por conectar» se activan al registrar las claves de tus cuentas.' })]);
       var integ = await A.integraciones();
@@ -95,7 +110,7 @@
           el('button', { class: 'mini-btn', type: 'button', text: 'Generar Franchise Tax ' + new Date().getFullYear(), onclick: async function () { if (!confirm('¿Crear los casos de Franchise Tax ' + new Date().getFullYear() + ' para tus clientes con LLC?')) return; var r = await sb.rpc('generar_franchise_tax', { p_anio: new Date().getFullYear() }); A.toast(r.error ? 'No se pudo.' : r.data + ' casos creados.', r.error ? 'error' : ''); } })
         ])]);
 
-      cont.appendChild(el('div', { class: 'cols' }, [el('div', null, [negCard, citCard]), el('div', null, [intCard, autoCard])]));
+      cont.appendChild(el('div', { class: 'cols' }, [el('div', null, [negCard, citCard, docCard]), el('div', null, [intCard, autoCard])]));
     }
   });
 })();

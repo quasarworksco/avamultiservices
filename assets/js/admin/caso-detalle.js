@@ -65,6 +65,7 @@
     }
     if (k.servicio === 'taxes') cuerpo.push(taxes(k, recargar));
     if (CAMPOS[k.servicio]) cuerpo.splice(2, 0, datosServicio(k, recargar));
+    cuerpo.splice(2, 0, A.checklistCaso(k, recargar));
     if (A.puede('cobros')) cuerpo.push(await cobros(k, recargar));
     cuerpo.push(await tareasCaso(k, recargar));
 
@@ -78,6 +79,54 @@
       ])],
       alCerrar: function () { if (cambiado && alCambiar) alCambiar(); }
     });
+  };
+
+  /* ---------- Documentos que necesita el caso ---------- */
+  var EST_DOC = { falta: 'Falta', enviado: 'Lo subió el cliente', recibido: 'Recibido', no_aplica: 'No aplica' };
+  A.EST_DOC = EST_DOC;
+  A.progresoDocs = function (lista) {
+    lista = lista || [];
+    var listos = lista.filter(function (x) { return x.e === 'recibido' || x.e === 'no_aplica'; }).length;
+    return { listos: listos, total: lista.length, faltan: lista.filter(function (x) { return x.e === 'falta'; }).map(function (x) { return x.d; }), revisar: lista.filter(function (x) { return x.e === 'enviado'; }).length };
+  };
+  A.checklistCaso = function (k, recargar) {
+    var lista = (k.checklist || []).map(function (x) { return { d: x.d, e: x.e }; });
+    var pr = A.progresoDocs(lista);
+    async function guardar(n, aviso) {
+      var u = await sb.from('casos').update({ checklist: n }).eq('id', k.id);
+      if (u.error) { A.toast('No se pudo guardar.', 'error'); return; }
+      if (aviso) A.toast(aviso);
+      recargar();
+    }
+    var filas = el('div', { class: 'chk-list' });
+    lista.forEach(function (x, i) {
+      var sig = x.e === 'recibido' ? 'falta' : 'recibido';
+      filas.appendChild(el('div', { class: 'chk chk-' + x.e }, [
+        el('button', { class: 'chk-box', type: 'button', 'aria-label': x.e === 'recibido' ? 'Marcar como pendiente' : 'Marcar como recibido', title: x.e === 'recibido' ? 'Marcar como pendiente' : 'Marcar como recibido',
+          onclick: function () { var n = lista.slice(); n[i] = { d: x.d, e: sig }; guardar(n); } }, [x.e === 'recibido' ? A.icon('i-check', 'icon-sm') : null]),
+        el('span', { class: 'chk-t' }, [x.d, x.e !== 'falta' && x.e !== 'recibido' ? el('span', { class: 'chk-e', text: EST_DOC[x.e] }) : null]),
+        el('button', { class: 'link-btn', type: 'button', style: 'font-size:12px', text: x.e === 'no_aplica' ? 'Sí aplica' : 'No aplica',
+          onclick: function () { var n = lista.slice(); n[i] = { d: x.d, e: x.e === 'no_aplica' ? 'falta' : 'no_aplica' }; guardar(n); } }),
+        el('button', { class: 'chk-x', type: 'button', 'aria-label': 'Quitar ' + x.d, title: 'Quitar de la lista', onclick: function () { var n = lista.slice(); n.splice(i, 1); guardar(n); } }, [A.icon('i-x', 'icon-sm')])
+      ]));
+    });
+    if (!lista.length) filas.appendChild(el('div', { class: 'muted', text: 'Este caso no tiene lista de documentos. Agrega lo que necesitas del cliente.' }));
+    var nuevo = el('input', { class: 'input sm', placeholder: 'Agregar documento, p. ej. «1099-K de Uber»', maxlength: 120, 'aria-label': 'Nuevo documento' });
+    var pct = pr.total ? Math.round(pr.listos / pr.total * 100) : 0;
+    var pedir = pr.faltan.length && k.clientes && k.clientes.telefono ? el('button', { class: 'mini-btn', type: 'button', text: 'Pedir lo que falta', onclick: function () {
+      var texto = 'Hola ' + (k.clientes.nombre || '') + ', para avanzar con tu ' + A.SERVICIOS[k.servicio].label.toLowerCase() + ' nos falta:\n' + pr.faltan.map(function (f) { return '• ' + f; }).join('\n') + '\nPuedes enviarlos por aquí o subirlos en tu portal: avamultiservices.com/portal';
+      window.open(A.wa(k.clientes.telefono, texto), '_blank', 'noopener');
+    } }) : null;
+    return sec('Documentos · ' + pr.listos + ' de ' + pr.total, [
+      pr.total ? el('div', { class: 'bar', style: 'margin:0 0 12px', title: pct + '% listo' }, [el('i', { style: 'width:' + pct + '%' })]) : null,
+      pr.revisar ? el('div', { class: 'alert warn', style: 'margin-bottom:10px' }, [A.icon('i-upload', 'icon-sm'), pr.revisar === 1 ? 'El cliente subió 1 documento por el portal. Revísalo en Documentos y márcalo como recibido.' : 'El cliente subió ' + pr.revisar + ' documentos por el portal. Revísalos y márcalos como recibidos.']) : null,
+      filas,
+      el('form', { class: 'inline-form', style: 'margin-top:10px', onsubmit: function (e) {
+        e.preventDefault();
+        var t = nuevo.value.trim(); if (!t) return;
+        guardar(lista.concat([{ d: t, e: 'falta' }]), 'Documento agregado.');
+      } }, [nuevo, el('button', { class: 'btn btn-dark btn-sm', type: 'submit', text: 'Agregar' })])
+    ], pedir);
   };
 
   /* ---------- Datos propios de cada servicio ---------- */
@@ -316,7 +365,8 @@
       el('div', { class: 'tile' }, [el('span', { class: 'k', text: 'Saldo' }), el('b', { class: saldo > 0 ? 'debe' : '', text: saldo != null ? A.dinero(Math.max(saldo, 0)) || '$0' : '—' })])
     ])];
     pagos.forEach(function (p) {
-      hijos.push(el('div', { class: 'pay' }, [el('span', null, [A.fecha(p.fecha) + ' · ' + A.METODOS[p.metodo], p.nota ? el('span', { class: 'muted', text: ' · ' + p.nota }) : null]), el('b', { text: A.dinero(p.monto) })]));
+      hijos.push(el('div', { class: 'pay' }, [el('span', null, [A.fecha(p.fecha) + ' · ' + A.METODOS[p.metodo], p.nota ? el('span', { class: 'muted', text: ' · ' + p.nota }) : null]),
+        el('span', { style: 'display:flex;gap:10px;align-items:center' }, [A.botonesRecibo(p, k.clientes), el('b', { text: A.dinero(p.monto) })])]));
     });
     return sec('Cobros', hijos, el('button', { class: 'mini-btn', type: 'button', text: 'Registrar pago', onclick: function () {
       A.registrarPago({ cliente_id: k.cliente_id, caso_id: k.id, monto: saldo > 0 ? saldo : null }, recargar);

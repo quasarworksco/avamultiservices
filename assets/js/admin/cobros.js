@@ -4,12 +4,27 @@
   var A = window.AVA, el = A.el, sb = A.sb;
   A.METODOS = { efectivo: 'Efectivo', zelle: 'Zelle', tarjeta: 'Tarjeta', cashapp: 'Cash App', transferencia: 'Transferencia', cheque: 'Cheque', otro: 'Otro' };
   var st = { mes: A.hoyISO().slice(0, 7) };
+
+  /* Recibos: cada pago tiene un número y un enlace privado (avamultiservices.com/recibo/?t=…) */
+  var SITIO = /avamultiservices\.com$/.test(location.hostname) ? location.origin : 'https://avamultiservices.com';
+  A.urlRecibo = function (p) { return (location.hostname === '192.0.2.2' ? location.origin : SITIO) + '/recibo/?t=' + p.token; };
+  A.enviarRecibo = function (p, cliente) {
+    var texto = 'Hola ' + ((cliente && cliente.nombre) || '') + ', gracias por tu pago de ' + A.dinero(p.monto) + '. Aquí está tu recibo #' + p.numero + ': ' + A.urlRecibo(p);
+    if (cliente && cliente.telefono) window.open(A.wa(cliente.telefono, texto), '_blank', 'noopener');
+    else { try { navigator.clipboard.writeText(A.urlRecibo(p)); } catch (_) { /* */ } A.toast('Enlace del recibo copiado.'); }
+  };
+  A.botonesRecibo = function (p, cliente) {
+    return el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' }, [
+      el('a', { class: 'mini-btn', href: A.urlRecibo(p), target: '_blank', rel: 'noopener', text: 'Recibo #' + p.numero }),
+      el('button', { class: 'mini-btn', type: 'button', text: 'Enviar', title: 'Enviar el recibo por WhatsApp', onclick: function (e) { e.stopPropagation(); A.enviarRecibo(p, cliente); } })
+    ]);
+  };
   var ui = {};
 
   /* Registrar un pago (base: {cliente_id, caso_id, monto}) */
   A.registrarPago = async function (base, alGuardar) {
     base = base || {};
-    var clientes = (await sb.from('clientes').select('id,nombre,apellidos').order('nombre').limit(5000)).data || [];
+    var clientes = (await sb.from('clientes').select('id,nombre,apellidos,telefono').order('nombre').limit(5000)).data || [];
     if (!clientes.length) { A.toast('Primero crea un cliente.', 'error'); return; }
     var campos = [
       { k: 'cliente_id', label: 'Cliente', type: 'select', full: true, required: true, value: base.cliente_id || clientes[0].id, options: clientes.map(function (c) { return [c.id, A.nombreDe(c)]; }) },
@@ -23,9 +38,11 @@
       titulo: 'Registrar pago', ok: 'Registrar', campos: campos,
       guardar: async function (d, aviso) {
         if (!(d.monto > 0)) { A.msg(aviso, 'Escribe un monto mayor que cero.'); return false; }
-        var r = await sb.from('pagos').insert(d);
+        var r = await sb.from('pagos').insert(d).select('id,numero,token,monto,cliente_id').single();
         if (r.error) { A.msg(aviso, 'No se pudo registrar el pago.'); return false; }
-        A.toast('Pago de ' + A.dinero(d.monto) + ' registrado.');
+        A.toast('Pago de ' + A.dinero(d.monto) + ' registrado · recibo #' + r.data.numero + '.');
+        var cl = clientes.filter(function (x) { return x.id === d.cliente_id; })[0];
+        if (cl && cl.telefono && confirm('Pago registrado. ¿Enviar el recibo #' + r.data.numero + ' a ' + cl.nombre + ' por WhatsApp?')) A.enviarRecibo(r.data, cl);
         if (alGuardar) alGuardar();
       }
     });
@@ -69,7 +86,7 @@
     var ant = new Date(ini + 'T12:00:00'); ant.setMonth(ant.getMonth() - 1);
     var antISO = ant.toISOString().slice(0, 10);
     var res = await Promise.all([
-      sb.from('pagos').select('*, clientes(id,nombre,apellidos), casos(id,servicio,titulo)').gte('fecha', ini).lt('fecha', finISO).order('fecha', { ascending: false }),
+      sb.from('pagos').select('*, clientes(id,nombre,apellidos,telefono), casos(id,servicio,titulo)').gte('fecha', ini).lt('fecha', finISO).order('fecha', { ascending: false }),
       sb.from('pagos').select('monto').gte('fecha', antISO).lt('fecha', ini),
       sb.from('casos').select('id,precio,servicio,titulo,estado,cliente_id, clientes(id,nombre,apellidos), pagos(monto)').neq('estado', 'cancelado').not('precio', 'is', null)
     ]);
@@ -91,7 +108,7 @@
     if (!pagosMes.length) ui.list.appendChild(el('div', { class: 'empty' }, [el('b', { text: 'Sin pagos este mes' }), 'Registra cada pago para saber cuánto has cobrado y quién te debe.']));
     pagosMes.forEach(function (p) {
       ui.list.appendChild(el('button', { class: 'row pay-row', type: 'button', onclick: function () { editarPago(p); } }, [
-        el('span', { class: 'who-cell' }, [el('span', { class: 'avatar', text: A.iniciales(A.nombreDe(p.clientes || {})) }), el('div', null, [el('div', { class: 'name', text: A.nombreDe(p.clientes || {}) }), el('div', { class: 'muted', text: p.nota || '' })])]),
+        el('span', { class: 'who-cell' }, [el('span', { class: 'avatar', text: A.iniciales(A.nombreDe(p.clientes || {})) }), el('div', null, [el('div', { class: 'name', text: A.nombreDe(p.clientes || {}) }), el('div', { class: 'muted', text: '#' + p.numero + (p.nota ? ' · ' + p.nota : '') })])]),
         el('span', { class: 'muted hide-m', text: p.casos ? (p.casos.titulo || A.SERVICIOS[p.casos.servicio].corto) : '—' }),
         el('span', { class: 'muted hide-m', text: A.METODOS[p.metodo] }),
         el('span', { class: 'muted hide-m', text: A.fecha(p.fecha) }),
@@ -114,7 +131,8 @@
 
   function editarPago(p) {
     A.modal({
-      titulo: 'Pago de ' + A.nombreDe(p.clientes || {}),
+      titulo: 'Pago de ' + A.nombreDe(p.clientes || {}) + ' · #' + p.numero,
+      extra: el('div', { style: 'margin-top:14px' }, [el('label', { class: 'muted', style: 'display:block;font-size:12px;margin-bottom:6px', text: 'Recibo para el cliente' }), A.botonesRecibo(p, p.clientes)]),
       campos: [
         { k: 'monto', label: 'Monto (USD)', type: 'number', required: true, min: '0.01', step: '0.01', value: p.monto },
         { k: 'fecha', label: 'Fecha', type: 'date', value: p.fecha },
@@ -137,7 +155,7 @@
 
   function exportar() {
     A.csv('pagos-' + st.mes, [
-      ['Fecha', 'fecha'], ['Cliente', function (p) { return A.nombreDe(p.clientes || {}); }],
+      ['Recibo', 'numero'], ['Fecha', 'fecha'], ['Cliente', function (p) { return A.nombreDe(p.clientes || {}); }],
       ['Servicio', function (p) { return p.casos ? (p.casos.titulo || A.SERVICIOS[p.casos.servicio].label) : ''; }],
       ['Método', function (p) { return A.METODOS[p.metodo]; }], ['Monto', 'monto'], ['Nota', 'nota']
     ], pagosMes);

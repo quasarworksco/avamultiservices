@@ -7,6 +7,81 @@
   function masDias(n) { var d = new Date(); d.setDate(d.getDate() + n); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); }
   var vacio = Promise.resolve({ data: [] });
 
+  /* Embudo de ventas: de contacto a cliente que paga, y qué origen trae clientes que pagan */
+  var periodo = 'mes';
+  function desdeDe(p) {
+    var d = new Date();
+    if (p === 'mes') return d.toISOString().slice(0, 7) + '-01';
+    d.setDate(d.getDate() - (p === '90' ? 90 : 365));
+    return d.toISOString().slice(0, 10);
+  }
+  function embudo() {
+    var card = el('div', { class: 'card' });
+    var cuerpo = el('div', { class: 'muted', text: 'Cargando…' });
+    var tabs = el('div', { class: 'fn-tabs', role: 'tablist' });
+    [['mes', 'Este mes'], ['90', '90 días'], ['365', '12 meses']].forEach(function (t) {
+      tabs.appendChild(el('button', { type: 'button', role: 'tab', class: periodo === t[0] ? 'on' : '', 'aria-selected': String(periodo === t[0]), text: t[1], onclick: function () {
+        periodo = t[0]; tabs.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b === this); b.setAttribute('aria-selected', String(b === this)); }, this); cargar();
+      } }));
+    });
+    card.appendChild(el('div', { class: 'card-h' }, [el('h3', { class: 't', text: 'Embudo de ventas' }), tabs]));
+    card.appendChild(cuerpo);
+    async function cargar() {
+      var desde = desdeDe(periodo), desdeTs = new Date(desde + 'T00:00:00').toISOString();
+      var cobros = A.puede('cobros'), sol = A.puede('solicitudes');
+      var r = await Promise.all([
+        sol ? sb.from('solicitudes').select('id', { count: 'exact', head: true }).gte('created_at', desdeTs) : Promise.resolve({ count: 0 }),
+        sol ? sb.from('mensajes_web').select('origen').gte('created_at', desdeTs) : Promise.resolve({ data: [] }),
+        sb.from('clientes').select('id,origen').gte('created_at', desdeTs).limit(5000),
+        sb.from('casos').select('cliente_id').gte('created_at', desdeTs).limit(10000),
+        cobros ? sb.from('pagos').select('cliente_id,monto').gte('fecha', desde).limit(10000) : Promise.resolve({ data: [] })
+      ]);
+      var contactos = (r[0].count || 0) + (r[1].data || []).length;
+      var nuevos = r[2].data || [];
+      var conCaso = new Set((r[3].data || []).map(function (x) { return x.cliente_id; }));
+      var pagoDe = {};
+      (r[4].data || []).forEach(function (p) { pagoDe[p.cliente_id] = (pagoDe[p.cliente_id] || 0) + Number(p.monto); });
+      var servicio = nuevos.filter(function (c) { return conCaso.has(c.id); }).length;
+      var pagaron = nuevos.filter(function (c) { return pagoDe[c.id] > 0; }).length;
+      var pasos = [];
+      if (sol) pasos.push(['Contactos', contactos, 'Solicitudes, mensajes del sitio y leads de anuncios']);
+      pasos.push(['Clientes nuevos', nuevos.length, 'Personas que registraste como cliente']);
+      pasos.push(['Con servicio', servicio, 'Clientes nuevos con al menos un caso']);
+      if (cobros) pasos.push(['Pagaron', pagaron, 'Clientes nuevos con al menos un pago']);
+      var max = Math.max.apply(null, pasos.map(function (p) { return p[1]; }).concat([1]));
+      cuerpo.className = 'funnel'; cuerpo.innerHTML = '';
+      if (!nuevos.length && !contactos) { cuerpo.className = 'muted'; cuerpo.textContent = 'Aún no hay contactos ni clientes nuevos en este periodo.'; return; }
+      pasos.forEach(function (p, i) {
+        cuerpo.appendChild(el('div', { class: 'fn-row', title: p[2] + ': ' + p[1] }, [
+          el('span', { text: p[0] }), el('span', { class: 'fn-t' }, [el('i', { style: 'width:' + Math.max(p[1] ? 2 : 0, p[1] / max * 100) + '%;animation-delay:' + i * 90 + 'ms' })]), el('b', { text: p[1] })
+        ]));
+        var prev = pasos[i - 1];
+        if (prev && prev[0] !== 'Contactos' && prev[1]) cuerpo.appendChild(el('div', { class: 'fn-row' }, [el('span'), el('span', { class: 'fn-step', text: Math.round(p[1] / prev[1] * 100) + '% de «' + prev[0].toLowerCase() + '»' })]));
+      });
+      // Por origen
+      var org = {};
+      nuevos.forEach(function (c) {
+        var o = org[c.origen || 'otro'] = org[c.origen || 'otro'] || { n: 0, pag: 0, ing: 0 };
+        o.n++; if (pagoDe[c.id] > 0) { o.pag++; o.ing += pagoDe[c.id]; }
+      });
+      var leadsMeta = (r[1].data || []).filter(function (m) { return m.origen === 'meta_ads'; }).length;
+      var filas = Object.keys(org).map(function (k) { return [k, org[k]]; }).sort(function (a, b) { return (b[1].ing - a[1].ing) || (b[1].n - a[1].n); });
+      if (filas.length) {
+        var tb = el('tbody');
+        filas.forEach(function (f) {
+          tb.appendChild(el('tr', null, [el('td', { text: A.ORIGENES[f[0]] || f[0] }), el('td', { text: f[1].n }),
+            cobros ? el('td', { text: f[1].pag }) : null, cobros ? el('td', { class: 'hide-m', text: Math.round(f[1].pag / f[1].n * 100) + '%' }) : null,
+            cobros ? el('td', { text: A.dinero(f[1].ing) || '$0' }) : null]));
+        });
+        cuerpo.appendChild(el('table', { class: 'tbl-org' }, [el('thead', null, [el('tr', null, [el('th', { text: 'Origen' }), el('th', { text: 'Clientes' }),
+          cobros ? el('th', { text: 'Pagaron' }) : null, cobros ? el('th', { class: 'hide-m', text: 'Conversión' }) : null, cobros ? el('th', { text: 'Ingresos' }) : null])]), tb]));
+      }
+      if (leadsMeta) cuerpo.appendChild(el('p', { class: 'muted', style: 'margin-top:10px;font-size:12.5px', text: leadsMeta + (leadsMeta === 1 ? ' lead llegó' : ' leads llegaron') + ' de tus anuncios de Meta en este periodo.' }));
+    }
+    cargar();
+    return card;
+  }
+
   A.vista('inicio', {
     permiso: null,
     render: async function (cont) {
@@ -20,7 +95,9 @@
       var hoyBox = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Para hoy' }), el('div', { class: 'muted', text: 'Cargando…' })]);
       var der = el('div');
       cont.appendChild(kpis);
-      cont.appendChild(el('div', { class: 'cols', style: 'grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)' }, [el('div', null, [hoyBox]), der]));
+      var izq = el('div', null, [hoyBox]);
+      cont.appendChild(el('div', { class: 'cols', style: 'grid-template-columns:minmax(0,1.25fr) minmax(0,1fr)' }, [izq, der]));
+      if (A.puede('clientes')) izq.appendChild(embudo());
 
       var hoy = A.hoyISO(), en3 = masDias(3), mesIni = hoy.slice(0, 7) + '-01';
       var ini6 = new Date(); ini6.setDate(1); ini6.setMonth(ini6.getMonth() - 5);

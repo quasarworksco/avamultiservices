@@ -28,6 +28,15 @@
     @keyframes grow { from { transform: scaleX(0); } }
     .pt-row { display: flex; justify-content: space-between; gap: 10px; padding: 10px 0; border-top: 1px solid var(--line); font-size: 14px; }
     .pt-row:first-of-type { border-top: 0; }
+    .pt-docs { margin-top: 14px; padding-top: 12px; border-top: 1px dashed var(--line-strong); }
+    .pt-docs-h { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+    .pt-doc { display: flex; align-items: center; gap: 10px; padding: 7px 0; font-size: 14px; }
+    .pt-doc-i { display: grid; place-items: center; width: 20px; height: 20px; flex: none; border-radius: 50%; border: 1.5px solid var(--line-strong); font-size: 12px; font-weight: 700; }
+    .pt-doc.recibido .pt-doc-i { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .pt-doc.enviado .pt-doc-i { border-color: var(--accent); color: var(--accent); }
+    .pt-doc-t { flex: 1; min-width: 0; }
+    .pt-doc.recibido .pt-doc-t { color: var(--muted); }
+    .pt-doc-e { font-size: 12.5px; color: var(--muted); }
     .saldo-big { font-family: var(--font-serif); font-size: 40px; line-height: 1; }
     .drop { display: block; margin-top: 12px; padding: 18px; border-radius: 16px; border: 1.5px dashed var(--line-strong); text-align: center; cursor: pointer; font-size: 14px; }
     .drop:hover { border-color: var(--accent); background: var(--accent-50); }
