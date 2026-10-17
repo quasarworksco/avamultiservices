@@ -23,9 +23,10 @@
       var cuerpo = el('div');
       cont.appendChild(A.cabecera('Citas', 'Agenda', 'de la semana', [
         el('a', { class: 'btn btn-ghost btn-sm', href: '../citas/', target: '_blank', rel: 'noopener' }, [A.icon('i-external'), el('span', { text: 'Página de reservas' })]),
+        el('button', { class: 'btn btn-ghost btn-sm', type: 'button', onclick: googleCalendar }, [A.icon('i-calendar'), el('span', { text: 'Google Calendar' })]),
         el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: function () { editar(null, pintar); } }, [A.icon('i-plus'), el('span', { text: 'Nueva cita' })])
       ]));
-      cont.appendChild(el('div', { class: 'alert ok', style: 'margin-top:14px' }, [A.icon('i-calendar', 'icon-sm'), 'Tus clientes reservan en avamultiservices.com/citas según tu horario. Reciben recordatorio un día antes. La sincronización con Google Calendar se activa al conectar la integración.']));
+      cont.appendChild(el('div', { class: 'alert ok', style: 'margin-top:14px' }, [A.icon('i-calendar', 'icon-sm'), 'Tus clientes reservan en avamultiservices.com/citas según tu horario. Reciben recordatorio un día antes. Para ver tus citas en el celular, toca «Google Calendar».']));
       cont.appendChild(cuerpo);
       async function pintar() {
         var fin = new Date(st.desde); fin.setDate(fin.getDate() + 7);
@@ -53,6 +54,46 @@
       pintar();
     }
   });
+
+  /* Enlace privado para suscribirse a las citas desde Google Calendar (se actualiza solo) */
+  var FUNC = 'https://szmkcwtkorsndvmxywai.supabase.co/functions/v1/calendario?t=';
+  async function googleCalendar() {
+    var r = await sb.rpc('mi_calendario');
+    if (r.error || !r.data) { A.toast('No se pudo crear tu enlace de calendario.', 'error'); return; }
+    var caja = el('div', { class: 'gcal' });
+    function pintar(token) {
+      var url = FUNC + token;
+      caja.innerHTML = '';
+      caja.appendChild(el('div', { class: 'gcal-top' }, [
+        el('span', { class: 'gcal-logo' }, [A.icon('i-calendar')]),
+        el('div', null, [el('b', { text: 'Tus citas del CRM en Google Calendar' }), el('div', { class: 'muted', text: 'Aparecen en tu celular y computadora con aviso 30 minutos antes. Se actualizan solas.' })])
+      ]));
+      caja.appendChild(el('label', { class: 'gcal-l', text: 'Tu enlace privado' }));
+      var inp = el('input', { class: 'input sm', readonly: true, value: url, onclick: function () { this.select(); } });
+      caja.appendChild(el('div', { class: 'gcal-url' }, [inp,
+        el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: function () { navigator.clipboard.writeText(url).then(function () { A.toast('Enlace copiado. Ahora pégalo en Google Calendar.'); }); } }, [A.icon('i-copy', 'icon-sm'), el('span', { text: 'Copiar' })])
+      ]));
+      var pasos = [
+        ['Copia tu enlace', 'Con el botón «Copiar» de arriba.'],
+        ['Abre Google Calendar en la computadora', 'En calendar.google.com, a la izquierda, junto a «Otros calendarios», toca el signo + y elige «Desde URL».'],
+        ['Pega el enlace y toca «Agregar calendario»', 'Aparece «Citas AVA». Puedes cambiarle el color en sus opciones.'],
+        ['Listo en el celular también', 'En la app de Google Calendar entra a Configuración → Citas AVA y activa «Sincronizar».']
+      ];
+      caja.appendChild(el('ol', { class: 'gcal-pasos' }, pasos.map(function (x, i) {
+        return el('li', { style: 'animation-delay:' + (i * 80) + 'ms' }, [el('span', { class: 'gcal-n', text: String(i + 1) }), el('div', null, [el('b', { text: x[0] }), el('div', { class: 'muted', text: x[1] })])]);
+      })));
+      caja.appendChild(el('a', { class: 'btn btn-ghost btn-sm', href: 'https://calendar.google.com/calendar/u/0/r/settings/addbyurl', target: '_blank', rel: 'noopener', style: 'margin-top:12px' }, [A.icon('i-external', 'icon-sm'), el('span', { text: 'Abrir Google Calendar' })]));
+      caja.appendChild(el('p', { class: 'gcal-nota' }, [A.icon('i-lock', 'icon-sm'), el('span', { text: 'Google revisa el enlace cada pocas horas, así que una cita nueva puede tardar en aparecer. El enlace es solo tuyo: no lo compartas. Si se filtra, crea uno nuevo y el anterior deja de funcionar.' })]));
+      caja.appendChild(el('button', { class: 'link-btn', type: 'button', text: 'Crear un enlace nuevo', onclick: async function () {
+        if (!confirm('El enlace actual dejará de funcionar y tendrás que agregar el nuevo en Google Calendar. ¿Continuar?')) return;
+        var n = await sb.rpc('mi_calendario', { regenerar: true });
+        if (n.error || !n.data) { A.toast('No se pudo crear el enlace.', 'error'); return; }
+        A.toast('Enlace nuevo creado.'); pintar(n.data);
+      } }));
+    }
+    pintar(r.data);
+    A.modal({ titulo: 'Google Calendar', ok: 'Listo', campos: [], extra: caja, guardar: function () {} });
+  }
 
   async function editar(c, alGuardar) {
     var nueva = !c; c = c || {};

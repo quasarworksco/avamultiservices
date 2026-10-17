@@ -84,7 +84,8 @@
     var b = el('button', { type: 'button', class: 'btn btn-ghost btn-sm' });
     function pintar() {
       b.innerHTML = '';
-      b.appendChild(el('span', { text: sonidoActivo() ? '🔔 Sonido activado' : '🔕 Sonido apagado' }));
+      b.appendChild(A.icon(sonidoActivo() ? 'i-bell' : 'i-bell-off', 'icon-sm' + (sonidoActivo() ? ' ico-bell' : '')));
+      b.appendChild(el('span', { text: sonidoActivo() ? 'Sonido activado' : 'Sonido apagado' }));
       b.title = sonidoActivo() ? 'Suena cuando llega un mensaje nuevo. Toca para silenciar.' : 'Toca para que suene cuando llegue un mensaje.';
     }
     b.addEventListener('click', function () {
@@ -140,11 +141,12 @@
     return el('span', { class: 'ch-pill ch-' + canal }, [logo(canal, 'icon-sm'), el('span', { text: (CANAL[canal] || CANAL.sms).n })]);
   }
   var ETAPAS = { nuevo: 'Nuevo', interesado: 'Interesado', cita: 'Cita agendada', cliente: 'Cliente', no_interesado: 'No interesado' };
-  var FILTROS_ETAPA = [['todas', 'Todas las etapas'], ['sin_responder', 'Sin responder'], ['calientes', '🔥 Calientes (IA)'], ['prospectos', 'Prospectos activos'], ['nuevo', 'Nuevos'], ['interesado', 'Interesados'], ['cita', 'Con cita agendada'], ['cliente', 'Clientes'], ['no_interesado', 'No interesados']];
+  var FILTROS_ETAPA = [['todas', 'Todas las etapas'], ['sin_responder', 'Sin responder'], ['calientes', 'Calientes (IA)'], ['prospectos', 'Prospectos activos'], ['nuevo', 'Nuevos'], ['interesado', 'Interesados'], ['cita', 'Con cita agendada'], ['cliente', 'Clientes'], ['no_interesado', 'No interesados']];
   // Escribió y nadie le ha contestado todavía
   // Qué tan interesado está, según la IA
-  var TEMP = { caliente: ['🔥', 'Caliente'], tibio: ['🌤️', 'Tibio'], frio: ['❄️', 'Frío'] };
-  function chipTemp(c) { var t = TEMP[c.temperatura]; return t ? el('span', { class: 'tp tp-' + c.temperatura, title: 'Interés según la IA' + (c.ia && c.ia.motivo ? ': ' + c.ia.motivo : ''), text: t[0] + ' ' + t[1] }) : null; }
+  var TEMP = { caliente: ['i-flame', 'Caliente'], tibio: ['i-sun', 'Tibio'], frio: ['i-snow', 'Frío'] };
+  function pastillaTemp(k, extra) { var t = TEMP[k] || TEMP.tibio; return el('span', Object.assign({ class: 'tp tp-' + (TEMP[k] ? k : 'tibio') }, extra || {}), [A.icon(t[0], 'icon-sm'), t[1]]); }
+  function chipTemp(c) { return TEMP[c.temperatura] ? pastillaTemp(c.temperatura, { title: 'Interés según la IA' + (c.ia && c.ia.motivo ? ': ' + c.ia.motivo : '') }) : null; }
   function sinResponder(c) { return !!c.ultimo_entrante_at && (!c.ultimo_saliente_at || c.ultimo_saliente_at < c.ultimo_entrante_at); }
   function pasaEtapa(c) {
     if (st.etapa === 'todas') return true;
@@ -415,18 +417,17 @@
     function pintar(cargando) {
       caja.innerHTML = '';
       var ia = c.ia;
-      var analizar = el('button', { type: 'button', class: 'link-btn', text: cargando ? 'Pensando…' : ia ? 'Otra sugerencia' : '✨ Analizar con IA', disabled: !!cargando, onclick: async function () {
+      var analizar = el('button', { type: 'button', class: 'link-btn', text: cargando ? 'Pensando…' : ia ? 'Otra sugerencia' : 'Analizar con IA', disabled: !!cargando, onclick: async function () {
         pintar(true);
         var r = await sb.functions.invoke('ia-mensajes', { body: { conversacion_id: c.id } });
         if (r.error) { var e = {}; try { e = await r.error.context.json(); } catch (_) { /* */ } A.toast(e.error || 'La IA no pudo responder.', 'error'); pintar(); return; }
         if (r.data && r.data.ia) { c.ia = r.data.ia; c.temperatura = r.data.ia.temperatura; c.ia_at = r.data.ia.at; st.iaVista = c.ia_at; }
         pintar();
       } });
-      if (!ia) { caja.appendChild(el('div', { class: 'ia-h' }, [el('span', { class: 'ia-t', text: '✨ Asistente con IA' }), analizar])); return; }
-      var t = TEMP[ia.temperatura] || TEMP.tibio;
-      var datos = [ia.telefono ? '📞 ' + ia.telefono : null, ia.email ? '✉️ ' + ia.email : null].filter(Boolean).join(' · ');
+      if (!ia) { caja.appendChild(el('div', { class: 'ia-h' }, [el('span', { class: 'ia-t' }, [A.icon('i-sparkles', 'icon-sm'), 'Asistente con IA']), analizar])); return; }
+      var datos = [ia.telefono ? 'Tel. ' + ia.telefono : null, ia.email ? ia.email : null].filter(Boolean).join(' · ');
       caja.appendChild(el('div', { class: 'ia-h' }, [
-        el('span', { class: 'ia-t', text: '✨ IA' }), el('span', { class: 'tp tp-' + ia.temperatura, text: t[0] + ' ' + t[1] }),
+        el('span', { class: 'ia-t' }, [A.icon('i-sparkles', 'icon-sm'), 'IA']), pastillaTemp(ia.temperatura),
         ia.servicio && A.SERVICIOS[ia.servicio] ? el('span', { class: 'muted', text: 'Busca: ' + A.SERVICIOS[ia.servicio].corto }) : null,
         ia.idioma === 'en' ? el('span', { class: 'muted', text: 'Escribe en inglés' }) : null,
         el('span', { style: 'flex:1' }), analizar

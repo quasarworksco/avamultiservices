@@ -58,9 +58,10 @@
   };
 
   /* Colores e íconos de cada método de pago */
-  var MET_ICO = { efectivo: '💵', zelle: '⚡', tarjeta: '💳', cashapp: '$', transferencia: '🏦', cheque: '🧾', otro: '•' };
+  var MET_ICO = { efectivo: 'i-cash', zelle: 'i-zap', tarjeta: 'i-card', cashapp: 'i-dollar', transferencia: 'i-bank', cheque: 'i-receipt', otro: 'i-dots' };
+  function icoMet(k, cls) { return A.icon(MET_ICO[k] || 'i-dots', cls || 'icon-sm'); }
   function chipMetodo(p) {
-    return el('span', { class: 'mt mt-' + p.metodo }, [el('i', { text: MET_ICO[p.metodo] || '•' }), A.METODOS[p.metodo] || p.metodo, p.pasarela_id ? el('em', { text: 'Square' }) : null]);
+    return el('span', { class: 'mt mt-' + p.metodo }, [icoMet(p.metodo), A.METODOS[p.metodo] || p.metodo, p.pasarela_id ? el('em', { text: 'Square' }) : null]);
   }
   function pct(a, b) { return b > 0 ? Math.round(a / b * 100) : 0; }
 
@@ -129,14 +130,14 @@
     var dif = anterior > 0 ? Math.round((total - anterior) / anterior * 100) : null;
     ui.stats.innerHTML = '';
     [
-      ['verde', '💰', A.dinero(total) || '$0', 'Cobrado en ' + nombreMes,
-        dif == null ? (anterior === 0 && total > 0 ? 'Primer mes con cobros' : 'Sin cobros en ' + nombreAnt) : el('span', { class: dif >= 0 ? 'sube' : 'baja', text: (dif >= 0 ? '▲ ' : '▼ ') + Math.abs(dif) + '% vs ' + nombreAnt + ' (' + (A.dinero(anterior) || '$0') + ')' })],
-      ['ambar', '⏳', A.dinero(totalSaldo) || '$0', 'Por cobrar', saldos.length ? saldos.length + (saldos.length === 1 ? ' caso con saldo' : ' casos con saldo') : 'Nadie te debe 🎉'],
-      ['azul', '💳', A.dinero(suma(tarjeta)) || '$0', 'Con tarjeta (Square)', tarjeta.length + (tarjeta.length === 1 ? ' pago' : ' pagos') + (enlaces.length ? ' · ' + enlaces.length + ' enlace' + (enlaces.length === 1 ? '' : 's') + ' esperando' : '')],
-      ['morado', '🧾', String(pagosMes.length), 'Pagos en ' + nombreMes, pagosMes.length ? 'Promedio ' + A.dinero(Math.round(total / pagosMes.length * 100) / 100) : 'Aún no hay pagos']
+      ['verde', 'i-wallet', A.dinero(total) || '$0', 'Cobrado en ' + nombreMes,
+        dif == null ? (anterior === 0 && total > 0 ? 'Primer mes con cobros' : 'Sin cobros en ' + nombreAnt) : el('span', { class: dif >= 0 ? 'sube' : 'baja' }, [A.icon(dif >= 0 ? 'i-up' : 'i-down', 'icon-sm'), Math.abs(dif) + '% vs ' + nombreAnt + ' (' + (A.dinero(anterior) || '$0') + ')'])],
+      ['ambar', 'i-hourglass', A.dinero(totalSaldo) || '$0', 'Por cobrar', saldos.length ? saldos.length + (saldos.length === 1 ? ' caso con saldo' : ' casos con saldo') : 'Nadie te debe'],
+      ['azul', 'i-card', A.dinero(suma(tarjeta)) || '$0', 'Con tarjeta (Square)', tarjeta.length + (tarjeta.length === 1 ? ' pago' : ' pagos') + (enlaces.length ? ' · ' + enlaces.length + ' enlace' + (enlaces.length === 1 ? '' : 's') + ' esperando' : '')],
+      ['morado', 'i-receipt', String(pagosMes.length), 'Pagos en ' + nombreMes, pagosMes.length ? 'Promedio ' + A.dinero(Math.round(total / pagosMes.length * 100) / 100) : 'Aún no hay pagos']
     ].forEach(function (s, i) {
       ui.stats.appendChild(el('div', { class: 'cb-kpi ' + s[0], style: 'animation-delay:' + i * 60 + 'ms' }, [
-        el('span', { class: 'cb-ico', text: s[1] }),
+        el('span', { class: 'cb-ico' }, [A.icon(s[1])]),
         el('div', { class: 'k', text: s[2] }), el('div', { class: 'l', text: s[3] }), el('div', { class: 'd' }, [s[4]])
       ]));
     });
@@ -156,7 +157,7 @@
         el('div', { class: 'cb-stack' }, mets.map(function (k) { return el('i', { class: 'mt-' + k, style: 'flex:' + porMet[k].t, title: A.METODOS[k] + ' · ' + A.dinero(porMet[k].t) }); }))]);
       mets.forEach(function (k) {
         cMet.appendChild(el('button', { class: 'cb-leg mt-' + k + (st.filtro === k ? ' on' : ''), type: 'button', title: 'Ver solo los pagos con ' + A.METODOS[k], onclick: function () { st.filtro = st.filtro === k ? '' : k; pintarLista(); } }, [
-          el('span', { class: 'cb-dot', text: MET_ICO[k] }), el('b', { text: A.METODOS[k] }),
+          el('span', { class: 'cb-dot' }, [icoMet(k)]), el('b', { text: A.METODOS[k] }),
           el('span', { class: 'muted', text: porMet[k].n + (porMet[k].n === 1 ? ' pago' : ' pagos') }),
           el('span', { class: 'cb-pct', text: pct(porMet[k].t, total) + '%' }), el('strong', { text: A.dinero(porMet[k].t) })
         ]));
@@ -177,7 +178,7 @@
     ui.enlaces.innerHTML = '';
     if (enlaces.length) {
       var cEn = el('div', { class: 'card cb-enlaces' }, [el('div', { class: 'cb-en-h' }, [
-        el('h3', { class: 't', text: '💳 Enlaces de tarjeta esperando pago · ' + enlaces.length + ' · ' + A.dinero(suma(enlaces)) }),
+        el('h3', { class: 't cb-t' }, [A.icon('i-card', 'icon-sm'), 'Enlaces de tarjeta esperando pago · ' + enlaces.length + ' · ' + A.dinero(suma(enlaces))]),
         el('button', { class: 'mini-btn', type: 'button', text: 'Revisar en Square', title: 'Preguntar a Square si ya se pagaron', onclick: async function () {
           this.disabled = true;
           var v = await sb.functions.invoke('square-pago', { body: { tipo: 'verificar' } });
@@ -212,7 +213,7 @@
 
     /* Saldos pendientes */
     ui.saldos.innerHTML = '';
-    ui.saldos.appendChild(el('h3', { class: 't', text: '⏳ Saldos pendientes · ' + saldos.length + (saldos.length ? ' · ' + A.dinero(totalSaldo) : '') }));
+    ui.saldos.appendChild(el('h3', { class: 't cb-t' }, [A.icon('i-hourglass', 'icon-sm'), 'Saldos pendientes · ' + saldos.length + (saldos.length ? ' · ' + A.dinero(totalSaldo) : '')]));
     if (!saldos.length) ui.saldos.appendChild(el('div', { class: 'muted', text: 'Nadie te debe. Los casos con precio y pagos incompletos aparecerán aquí.' }));
     saldos.forEach(function (x) {
       var p = Math.max(0, Math.min(100, Math.round((1 - x.saldo / Number(x.k.precio)) * 100)));
@@ -237,7 +238,7 @@
       ui.filtros.appendChild(el('button', { class: 'cb-f' + (!st.filtro ? ' on' : ''), type: 'button', onclick: function () { st.filtro = ''; pintarLista(); } }, ['Todos ', el('span', { text: pagosMes.length })]));
       mets.forEach(function (k) {
         var n = pagosMes.filter(function (p) { return p.metodo === k; }).length;
-        ui.filtros.appendChild(el('button', { class: 'cb-f mt-' + k + (st.filtro === k ? ' on' : ''), type: 'button', onclick: function () { st.filtro = st.filtro === k ? '' : k; pintarLista(); } }, [MET_ICO[k] + ' ' + A.METODOS[k] + ' ', el('span', { text: n })]));
+        ui.filtros.appendChild(el('button', { class: 'cb-f mt-' + k + (st.filtro === k ? ' on' : ''), type: 'button', onclick: function () { st.filtro = st.filtro === k ? '' : k; pintarLista(); } }, [icoMet(k), A.METODOS[k], el('span', { text: n })]));
       });
     }
     ui.list.innerHTML = '';
