@@ -157,7 +157,8 @@
           el('div', null, [el('b', { text: SERV_PLAN[p.servicio] + (p.descripcion ? ' · ' + p.descripcion : '') }), el('div', { class: 'muted', text: 'Día ' + p.dia_cobro + ' de cada mes' + (p.activo ? '' : ' · pausado') + (COBRO[p.estado_cobro] ? ' · ' + COBRO[p.estado_cobro] : '') + (p.servicio === 'contabilidad' && p.activo ? ' · crea el caso del mes automáticamente' : '') })]),
           el('b', { class: p.activo ? '' : 'muted', text: A.dinero(p.monto) + '/mes' })
         ]));
-        if (integ.pagos && p.activo && A.puede('cobros')) {
+        // Square no permite cobrar reparación de crédito con tarjeta
+        if (integ.pagos && p.activo && A.puede('cobros') && p.servicio !== 'credito') {
           card.appendChild(el('button', { class: 'mini-btn', type: 'button', style: 'margin:-2px 0 10px', text: 'Enviar enlace de pago del mes',
             onclick: async function () {
               await enlacePago(c, { tipo: 'monto', cliente_id: c.id, plan_id: p.id, monto: Number(p.monto), descripcion: (SERV_PLAN[p.servicio] + (p.descripcion ? ' · ' + p.descripcion : '')) + ' (mensualidad)' },
@@ -198,7 +199,7 @@
         { k: 'monto', label: 'Monto (USD)', type: 'number', required: true, min: '1', step: '0.01' },
         { k: 'descripcion', label: 'Concepto', max: 120, placeholder: 'Preparación de taxes 2025', full: true }
       ],
-      extra: el('p', { class: 'muted', style: 'margin-top:10px;font-size:12.5px', text: 'Se abre WhatsApp con el enlace de pago seguro de Square. Cuando el cliente pague, el pago aparece solo en Cobros con su recibo.' }),
+      extra: el('p', { class: 'muted', style: 'margin-top:10px;font-size:12.5px', text: 'Se abre WhatsApp con el enlace de pago seguro de Square. Cuando el cliente pague, el pago aparece solo en Cobros con su recibo. No lo uses para reparación de crédito: Square no lo permite (cóbralo por Zelle o efectivo).' }),
       guardar: async function (d) {
         await enlacePago(c, { tipo: 'monto', cliente_id: c.id, monto: Number(d.monto), descripcion: d.descripcion || 'Pago a AVA Multiservices' },
           'Hola ' + (c.nombre || '') + ', puedes pagar ' + A.dinero(d.monto) + (d.descripcion ? ' (' + d.descripcion + ')' : '') + ' con tarjeta aquí:');
