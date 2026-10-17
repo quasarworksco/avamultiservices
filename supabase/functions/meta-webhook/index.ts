@@ -5,8 +5,33 @@ import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2.49.8';
 const GRAPH = 'https://graph.facebook.com/' + (Deno.env.get('META_GRAPH_VERSION') || 'v23.0');
 const enc = new TextEncoder();
 
+// Claves de integración: primero los secretos de Supabase, si no las guardadas desde el panel (Vault).
+const NOMBRES = ['META_VERIFY_TOKEN', 'META_APP_SECRET', 'WHATSAPP_TOKEN', 'WHATSAPP_PHONE_ID', 'META_PAGE_ID', 'META_PAGE_TOKEN', 'WHATSAPP_TEMPLATE', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'];
+let K: Record<string, string> = {};
+let kHora = 0;
+async function cargarClaves(db: any) {
+  if (Date.now() - kHora < 60000) return K;
+  const { data } = await db.rpc('claves_integracion');
+  const v = (data || {}) as Record<string, string>;
+  const n: Record<string, string> = {};
+  NOMBRES.forEach((x) => { n[x] = Deno.env.get(x) || v[x] || ''; });
+  K = n; kHora = Date.now(); pagTok = '';
+  return K;
+}
+// Token de la página: el guardado o, si no, se pide a Meta con el token del usuario del sistema
+let pagTok = '';
+async function tokenPagina(graph: string) {
+  if (K.META_PAGE_TOKEN) return K.META_PAGE_TOKEN;
+  if (pagTok) return pagTok;
+  if (!K.META_PAGE_ID || !K.WHATSAPP_TOKEN) return '';
+  const r = await fetch(`${graph}/${K.META_PAGE_ID}?fields=access_token&access_token=${encodeURIComponent(K.WHATSAPP_TOKEN)}`);
+  const j = await r.json().catch(() => ({}));
+  pagTok = j.access_token || '';
+  return pagTok;
+}
+
 async function firmaValida(cuerpo: string, firma: string | null) {
-  const secreto = Deno.env.get('META_APP_SECRET');
+  const secreto = K.META_APP_SECRET;
   if (!secreto || !firma || !firma.startsWith('sha256=')) return false;
   const key = await crypto.subtle.importKey('raw', enc.encode(secreto), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
   const mac = new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode(cuerpo)));
@@ -60,7 +85,7 @@ function fueraDeHorario(horario: Record<string, string[]> | undefined) {
 }
 
 async function enviarWhatsApp(to: string, texto: string) {
-  const token = Deno.env.get('WHATSAPP_TOKEN'), phoneId = Deno.env.get('WHATSAPP_PHONE_ID');
+  const token = K.WHATSAPP_TOKEN, phoneId = K.WHATSAPP_PHONE_ID;
   if (!token || !phoneId) return null;
   const r = await fetch(`${GRAPH}/${phoneId}/messages`, {
     method: 'POST', headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
@@ -123,7 +148,7 @@ async function procesarWhatsApp(db: SupabaseClient, value: Record<string, any>) 
 }
 
 async function nombrePerfil(id: string) {
-  const token = Deno.env.get('META_PAGE_TOKEN');
+  const token = await tokenPagina(GRAPH);
   if (!token) return null;
   const r = await fetch(`${GRAPH}/${id}?fields=name,username&access_token=${encodeURIComponent(token)}`);
   if (!r.ok) return null;
@@ -144,9 +169,9 @@ async function procesarMensajeria(db: SupabaseClient, canal: 'messenger' | 'inst
 }
 
 async function procesarLead(db: SupabaseClient, v: Record<string, any>) {
-  const token = Deno.env.get('META_PAGE_TOKEN');
+  const token = await tokenPagina(GRAPH);
   const id = String(v.leadgen_id || '');
-  if (!token || !id) { await log(db, 'meta_ads', 'lead', false, 'Falta META_PAGE_TOKEN'); return; }
+  if (!token || !id) { await log(db, 'meta_ads', 'lead', false, 'Falta el token de la página (META_PAGE_ID o META_PAGE_TOKEN)'); return; }
   const r = await fetch(`${GRAPH}/${id}?fields=field_data,ad_name,form_id,created_time&access_token=${encodeURIComponent(token)}`);
   const j = await r.json().catch(() => ({}));
   if (!r.ok) { await log(db, 'meta_ads', 'lead', false, JSON.stringify(j.error || j).slice(0, 500)); return; }
@@ -167,16 +192,17 @@ async function procesarLead(db: SupabaseClient, v: Record<string, any>) {
 
 Deno.serve(async (req) => {
   const url = new URL(req.url);
+  const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
+  await cargarClaves(db);
   // Verificación inicial de Meta
   if (req.method === 'GET') {
-    const ok = url.searchParams.get('hub.mode') === 'subscribe' && url.searchParams.get('hub.verify_token') === Deno.env.get('META_VERIFY_TOKEN');
+    const ok = url.searchParams.get('hub.mode') === 'subscribe' && !!K.META_VERIFY_TOKEN && url.searchParams.get('hub.verify_token') === K.META_VERIFY_TOKEN;
     return ok ? new Response(url.searchParams.get('hub.challenge') || '', { status: 200 }) : new Response('Prohibido', { status: 403 });
   }
   if (req.method !== 'POST') return new Response('Método no permitido', { status: 405 });
   const cuerpo = await req.text();
   if (!(await firmaValida(cuerpo, req.headers.get('X-Hub-Signature-256')))) return new Response('Firma inválida', { status: 401 });
 
-  const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
   let p: Record<string, any> = {};
   try { p = JSON.parse(cuerpo); } catch (_) { return new Response('JSON inválido', { status: 400 }); }
 

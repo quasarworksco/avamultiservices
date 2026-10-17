@@ -6,6 +6,31 @@ import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2.49.8';
 const ORIGENES = ['https://avamultiservices.com', 'https://www.avamultiservices.com', 'http://192.0.2.2:8080'];
 const SITIO = 'https://avamultiservices.com';
 
+// Claves de integración: primero los secretos de Supabase, si no las guardadas desde el panel (Vault).
+const NOMBRES = ['META_VERIFY_TOKEN', 'META_APP_SECRET', 'WHATSAPP_TOKEN', 'WHATSAPP_PHONE_ID', 'META_PAGE_ID', 'META_PAGE_TOKEN', 'WHATSAPP_TEMPLATE', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'];
+let K: Record<string, string> = {};
+let kHora = 0;
+async function cargarClaves(db: any) {
+  if (Date.now() - kHora < 60000) return K;
+  const { data } = await db.rpc('claves_integracion');
+  const v = (data || {}) as Record<string, string>;
+  const n: Record<string, string> = {};
+  NOMBRES.forEach((x) => { n[x] = Deno.env.get(x) || v[x] || ''; });
+  K = n; kHora = Date.now(); pagTok = '';
+  return K;
+}
+// Token de la página: el guardado o, si no, se pide a Meta con el token del usuario del sistema
+let pagTok = '';
+async function tokenPagina(graph: string) {
+  if (K.META_PAGE_TOKEN) return K.META_PAGE_TOKEN;
+  if (pagTok) return pagTok;
+  if (!K.META_PAGE_ID || !K.WHATSAPP_TOKEN) return '';
+  const r = await fetch(`${graph}/${K.META_PAGE_ID}?fields=access_token&access_token=${encodeURIComponent(K.WHATSAPP_TOKEN)}`);
+  const j = await r.json().catch(() => ({}));
+  pagTok = j.access_token || '';
+  return pagTok;
+}
+
 function cors(req: Request) {
   const origin = req.headers.get('Origin') || '';
   return {
@@ -28,7 +53,7 @@ function form(obj: Record<string, unknown>, pre = '', out = new URLSearchParams(
 }
 async function stripe(path: string, params: Record<string, unknown>) {
   const r = await fetch('https://api.stripe.com/v1/' + path, {
-    method: 'POST', headers: { Authorization: 'Bearer ' + Deno.env.get('STRIPE_SECRET_KEY'), 'Content-Type': 'application/x-www-form-urlencoded' },
+    method: 'POST', headers: { Authorization: 'Bearer ' + K.STRIPE_SECRET_KEY, 'Content-Type': 'application/x-www-form-urlencoded' },
     body: form(params)
   });
   const j = await r.json();
@@ -58,9 +83,10 @@ async function saldo(db: SupabaseClient, clienteId: string) {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors(req) });
   if (req.method !== 'POST') return json(req, 405, { error: 'Método no permitido' });
-  if (!Deno.env.get('STRIPE_SECRET_KEY')) return json(req, 400, { error: 'Los pagos con tarjeta todavía no están conectados.', codigo: 'no_conectado' });
   const url = Deno.env.get('SUPABASE_URL')!;
   const db = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
+  await cargarClaves(db);
+  if (!K.STRIPE_SECRET_KEY) return json(req, 400, { error: 'Los pagos con tarjeta todavía no están conectados.', codigo: 'no_conectado' });
   const comoUsuario = createClient(url, Deno.env.get('SUPABASE_ANON_KEY')!, { global: { headers: { Authorization: req.headers.get('Authorization') || '' } }, auth: { persistSession: false } });
   const { data: u } = await comoUsuario.auth.getUser();
   if (!u?.user) return json(req, 401, { error: 'Inicia sesión' });

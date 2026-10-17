@@ -103,6 +103,35 @@
         });
       }
 
+      // Claves de integración: se guardan cifradas y no se pueden volver a leer desde el panel
+      var CLAVES = [
+        ['META_APP_SECRET', 'Clave secreta de la app de Meta', 'developers.facebook.com → AVA CRM → Configuración → Básica → Clave secreta'],
+        ['WHATSAPP_TOKEN', 'Token del usuario del sistema', 'Portafolio → Usuarios del sistema → Generar token (no vence)'],
+        ['WHATSAPP_PHONE_ID', 'Phone number ID de WhatsApp', 'App → WhatsApp → Configuración de la API (número largo, no el teléfono)'],
+        ['META_PAGE_ID', 'ID de la página de Facebook', 'Página de AVA → Información → Identificador'],
+        ['WHATSAPP_TEMPLATE', 'Nombre de la plantilla de avisos (opcional)', 'Si no se llena se usa «aviso_ava»'],
+        ['STRIPE_SECRET_KEY', 'Clave secreta de Stripe', 'Stripe → Developers → API keys (sk_live_…)'],
+        ['STRIPE_WEBHOOK_SECRET', 'Firma del webhook de Stripe', 'Stripe → Developers → Webhooks (whsec_…)']
+      ];
+      var claveCard = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Claves de integración' }),
+        el('p', { class: 'muted', style: 'margin-bottom:12px', text: 'Pega aquí las claves de Meta y Stripe. Se guardan cifradas y nadie puede volver a verlas; para cambiar una, pega la nueva.' })]);
+      var cfgClaves = (await sb.rpc('claves_configuradas')).data || {};
+      CLAVES.forEach(function (c) {
+        var inp = el('input', { class: 'input sm', type: c[0] === 'WHATSAPP_PHONE_ID' || c[0] === 'META_PAGE_ID' || c[0] === 'WHATSAPP_TEMPLATE' ? 'text' : 'password', autocomplete: 'off', placeholder: cfgClaves[c[0]] ? '•••••••• (guardada)' : 'Pegar aquí', 'aria-label': c[1] });
+        var pill = el('span', { class: 'pill ' + (cfgClaves[c[0]] ? 'completado' : 'pendiente'), text: cfgClaves[c[0]] ? 'Guardada' : 'Falta' });
+        claveCard.appendChild(el('div', { class: 'field', style: 'margin-top:10px' }, [
+          el('label', { style: 'display:flex;justify-content:space-between;gap:8px;align-items:center' }, [el('span', { text: c[1] }), pill]),
+          el('div', { style: 'display:flex;gap:8px' }, [inp, el('button', { class: 'mini-btn', type: 'button', text: 'Guardar', onclick: async function () {
+            var v = inp.value.trim(); if (!v) { inp.focus(); return; }
+            var r = await sb.rpc('guardar_clave_integracion', { p_nombre: c[0], p_valor: v });
+            if (r.error) { A.toast('No se pudo guardar la clave.', 'error'); return; }
+            inp.value = ''; inp.placeholder = '•••••••• (guardada)'; pill.className = 'pill completado'; pill.textContent = 'Guardada';
+            A.limpiarIntegraciones(); A.toast(c[1] + ' guardada. Se activa en 1 minuto.');
+          } })]),
+          el('span', { class: 'muted', style: 'font-size:12px', text: c[2] })
+        ]));
+      });
+
       // Automáticos
       var autoCard = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Tareas automáticas' }),
         el('p', { class: 'muted', text: 'Cada día: recordatorios de citas, pagos y documentos. El día 1 de cada mes: casos de contabilidad mensual. El 1 de abril: casos y avisos de Franchise Tax para clientes con LLC.' }),
@@ -111,7 +140,7 @@
           el('button', { class: 'mini-btn', type: 'button', text: 'Generar Franchise Tax ' + new Date().getFullYear(), onclick: async function () { if (!confirm('¿Crear los casos de Franchise Tax ' + new Date().getFullYear() + ' para tus clientes con LLC?')) return; var r = await sb.rpc('generar_franchise_tax', { p_anio: new Date().getFullYear() }); A.toast(r.error ? 'No se pudo.' : r.data + ' casos creados.', r.error ? 'error' : ''); } })
         ])]);
 
-      cont.appendChild(el('div', { class: 'cols' }, [el('div', null, [negCard, citCard, docCard]), el('div', null, [intCard, autoCard])]));
+      cont.appendChild(el('div', { class: 'cols' }, [el('div', null, [negCard, citCard, docCard]), el('div', null, [intCard, claveCard, autoCard])]));
     }
   });
 })();

@@ -8,6 +8,31 @@ const GRAPH = 'https://graph.facebook.com/' + (Deno.env.get('META_GRAPH_VERSION'
 const ORIGENES = ['https://avamultiservices.com', 'https://www.avamultiservices.com', 'http://192.0.2.2:8080'];
 const VENTANA = 24 * 3600e3;
 
+// Claves de integración: primero los secretos de Supabase, si no las guardadas desde el panel (Vault).
+const NOMBRES = ['META_VERIFY_TOKEN', 'META_APP_SECRET', 'WHATSAPP_TOKEN', 'WHATSAPP_PHONE_ID', 'META_PAGE_ID', 'META_PAGE_TOKEN', 'WHATSAPP_TEMPLATE', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'];
+let K: Record<string, string> = {};
+let kHora = 0;
+async function cargarClaves(db: any) {
+  if (Date.now() - kHora < 60000) return K;
+  const { data } = await db.rpc('claves_integracion');
+  const v = (data || {}) as Record<string, string>;
+  const n: Record<string, string> = {};
+  NOMBRES.forEach((x) => { n[x] = Deno.env.get(x) || v[x] || ''; });
+  K = n; kHora = Date.now(); pagTok = '';
+  return K;
+}
+// Token de la página: el guardado o, si no, se pide a Meta con el token del usuario del sistema
+let pagTok = '';
+async function tokenPagina(graph: string) {
+  if (K.META_PAGE_TOKEN) return K.META_PAGE_TOKEN;
+  if (pagTok) return pagTok;
+  if (!K.META_PAGE_ID || !K.WHATSAPP_TOKEN) return '';
+  const r = await fetch(`${graph}/${K.META_PAGE_ID}?fields=access_token&access_token=${encodeURIComponent(K.WHATSAPP_TOKEN)}`);
+  const j = await r.json().catch(() => ({}));
+  pagTok = j.access_token || '';
+  return pagTok;
+}
+
 function cors(req: Request) {
   const origin = req.headers.get('Origin') || '';
   return {
@@ -21,14 +46,14 @@ const digitos = (s: string) => (s || '').replace(/\D/g, '');
 const telWa = (s: string) => { const d = digitos(s); return d.length === 10 ? '1' + d : d; };
 
 function estado() {
-  const e = (k: string) => !!Deno.env.get(k);
+  const e = (k: string) => !!K[k];
   return {
     whatsapp: e('WHATSAPP_TOKEN') && e('WHATSAPP_PHONE_ID'),
-    meta: e('META_PAGE_TOKEN'),
+    meta: e('META_PAGE_TOKEN') || (e('META_PAGE_ID') && e('WHATSAPP_TOKEN')),
     webhook_meta: e('META_APP_SECRET') && e('META_VERIFY_TOKEN'),
     stripe: e('STRIPE_SECRET_KEY'),
     webhook_stripe: e('STRIPE_WEBHOOK_SECRET'),
-    plantilla: Deno.env.get('WHATSAPP_TEMPLATE') || 'aviso_ava'
+    plantilla: K.WHATSAPP_TEMPLATE || 'aviso_ava'
   };
 }
 
@@ -42,21 +67,21 @@ async function graph(path: string, token: string, body: unknown): Promise<Envio>
 }
 
 function waTexto(to: string, texto: string): Promise<Envio> {
-  return graph(`${Deno.env.get('WHATSAPP_PHONE_ID')}/messages`, Deno.env.get('WHATSAPP_TOKEN')!, { messaging_product: 'whatsapp', to: telWa(to), type: 'text', text: { body: texto } });
+  return graph(`${K.WHATSAPP_PHONE_ID}/messages`, K.WHATSAPP_TOKEN, { messaging_product: 'whatsapp', to: telWa(to), type: 'text', text: { body: texto } });
 }
 
 // Plantilla aprobada por Meta para escribir fuera de la ventana de 24 h. Cuerpo: «Hola {{1}}, {{2}}».
 function waPlantilla(to: string, nombre: string, texto: string): Promise<Envio> {
   const limpio = (s: string) => s.replace(/[\r\n\t]+/g, ' ').replace(/ {4,}/g, '   ').trim().slice(0, 1000);
-  return graph(`${Deno.env.get('WHATSAPP_PHONE_ID')}/messages`, Deno.env.get('WHATSAPP_TOKEN')!, {
+  return graph(`${K.WHATSAPP_PHONE_ID}/messages`, K.WHATSAPP_TOKEN, {
     messaging_product: 'whatsapp', to: telWa(to), type: 'template',
-    template: { name: Deno.env.get('WHATSAPP_TEMPLATE') || 'aviso_ava', language: { code: Deno.env.get('WHATSAPP_TEMPLATE_LANG') || 'es' },
+    template: { name: K.WHATSAPP_TEMPLATE || 'aviso_ava', language: { code: Deno.env.get('WHATSAPP_TEMPLATE_LANG') || 'es' },
       components: [{ type: 'body', parameters: [{ type: 'text', text: limpio(nombre || 'cliente') }, { type: 'text', text: limpio(texto) }] }] }
   });
 }
 
-function metaTexto(psid: string, texto: string): Promise<Envio> {
-  return graph('me/messages', Deno.env.get('META_PAGE_TOKEN')!, { recipient: { id: psid }, messaging_type: 'RESPONSE', message: { text: texto.slice(0, 2000) } });
+async function metaTexto(psid: string, texto: string): Promise<Envio> {
+  return graph('me/messages', await tokenPagina(GRAPH), { recipient: { id: psid }, messaging_type: 'RESPONSE', message: { text: texto.slice(0, 2000) } });
 }
 
 async function registrar(db: SupabaseClient, convId: string, texto: string, autor: string | null, automatico: boolean, id: string) {
@@ -117,6 +142,7 @@ Deno.serve(async (req) => {
   if (req.method !== 'POST') return json(req, 405, { error: 'Método no permitido' });
   const url = Deno.env.get('SUPABASE_URL')!;
   const db = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
+  await cargarClaves(db);
   let body: Record<string, any> = {};
   try { body = await req.json(); } catch (_) { /* vacío */ }
 

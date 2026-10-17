@@ -3,8 +3,33 @@ import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2.49.8';
 
 const enc = new TextEncoder();
 
+// Claves de integración: primero los secretos de Supabase, si no las guardadas desde el panel (Vault).
+const NOMBRES = ['META_VERIFY_TOKEN', 'META_APP_SECRET', 'WHATSAPP_TOKEN', 'WHATSAPP_PHONE_ID', 'META_PAGE_ID', 'META_PAGE_TOKEN', 'WHATSAPP_TEMPLATE', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'];
+let K: Record<string, string> = {};
+let kHora = 0;
+async function cargarClaves(db: any) {
+  if (Date.now() - kHora < 60000) return K;
+  const { data } = await db.rpc('claves_integracion');
+  const v = (data || {}) as Record<string, string>;
+  const n: Record<string, string> = {};
+  NOMBRES.forEach((x) => { n[x] = Deno.env.get(x) || v[x] || ''; });
+  K = n; kHora = Date.now(); pagTok = '';
+  return K;
+}
+// Token de la página: el guardado o, si no, se pide a Meta con el token del usuario del sistema
+let pagTok = '';
+async function tokenPagina(graph: string) {
+  if (K.META_PAGE_TOKEN) return K.META_PAGE_TOKEN;
+  if (pagTok) return pagTok;
+  if (!K.META_PAGE_ID || !K.WHATSAPP_TOKEN) return '';
+  const r = await fetch(`${graph}/${K.META_PAGE_ID}?fields=access_token&access_token=${encodeURIComponent(K.WHATSAPP_TOKEN)}`);
+  const j = await r.json().catch(() => ({}));
+  pagTok = j.access_token || '';
+  return pagTok;
+}
+
 async function firmaValida(cuerpo: string, cabecera: string | null) {
-  const secreto = Deno.env.get('STRIPE_WEBHOOK_SECRET');
+  const secreto = K.STRIPE_WEBHOOK_SECRET;
   if (!secreto || !cabecera) return false;
   const partes: Record<string, string[]> = {};
   cabecera.split(',').forEach((x) => { const [k, v] = x.split('='); (partes[k] = partes[k] || []).push(v); });
@@ -33,8 +58,9 @@ async function registrarPago(db: SupabaseClient, p: { cliente_id: string; caso_i
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('Método no permitido', { status: 405 });
   const cuerpo = await req.text();
-  if (!(await firmaValida(cuerpo, req.headers.get('Stripe-Signature')))) return new Response('Firma inválida', { status: 400 });
   const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
+  await cargarClaves(db);
+  if (!(await firmaValida(cuerpo, req.headers.get('Stripe-Signature')))) return new Response('Firma inválida', { status: 400 });
   const ev = JSON.parse(cuerpo);
   const o = ev.data?.object || {};
   try {

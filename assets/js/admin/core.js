@@ -384,6 +384,7 @@
       if (!integCache) integCache = sb.functions.invoke('enviar-mensaje', { body: { estado: true } }).then(function (r) { return r.data || {}; }).catch(function () { return {}; });
       return integCache;
     },
+    limpiarIntegraciones: function () { integCache = null; },
     vista: function (nombre, def) { vistas[nombre] = def; },
     ir: function (ruta) { if (location.hash === '#/' + ruta) navegar(); else location.hash = '#/' + ruta; },
     resumenCaso: function (t) {
