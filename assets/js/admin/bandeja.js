@@ -140,13 +140,17 @@
     return el('span', { class: 'ch-pill ch-' + canal }, [logo(canal, 'icon-sm'), el('span', { text: (CANAL[canal] || CANAL.sms).n })]);
   }
   var ETAPAS = { nuevo: 'Nuevo', interesado: 'Interesado', cita: 'Cita agendada', cliente: 'Cliente', no_interesado: 'No interesado' };
-  var FILTROS_ETAPA = [['todas', 'Todas las etapas'], ['sin_responder', 'Sin responder'], ['prospectos', 'Prospectos activos'], ['nuevo', 'Nuevos'], ['interesado', 'Interesados'], ['cita', 'Con cita agendada'], ['cliente', 'Clientes'], ['no_interesado', 'No interesados']];
+  var FILTROS_ETAPA = [['todas', 'Todas las etapas'], ['sin_responder', 'Sin responder'], ['calientes', '🔥 Calientes (IA)'], ['prospectos', 'Prospectos activos'], ['nuevo', 'Nuevos'], ['interesado', 'Interesados'], ['cita', 'Con cita agendada'], ['cliente', 'Clientes'], ['no_interesado', 'No interesados']];
   // Escribió y nadie le ha contestado todavía
+  // Qué tan interesado está, según la IA
+  var TEMP = { caliente: ['🔥', 'Caliente'], tibio: ['🌤️', 'Tibio'], frio: ['❄️', 'Frío'] };
+  function chipTemp(c) { var t = TEMP[c.temperatura]; return t ? el('span', { class: 'tp tp-' + c.temperatura, title: 'Interés según la IA' + (c.ia && c.ia.motivo ? ': ' + c.ia.motivo : ''), text: t[0] + ' ' + t[1] }) : null; }
   function sinResponder(c) { return !!c.ultimo_entrante_at && (!c.ultimo_saliente_at || c.ultimo_saliente_at < c.ultimo_entrante_at); }
   function pasaEtapa(c) {
     if (st.etapa === 'todas') return true;
     if (st.etapa === 'sin_responder') return sinResponder(c) && c.etapa !== 'no_interesado';
     if (st.etapa === 'prospectos') return ['nuevo', 'interesado', 'cita'].indexOf(c.etapa) >= 0;
+    if (st.etapa === 'calientes') return c.temperatura === 'caliente' && c.etapa !== 'no_interesado';
     return c.etapa === st.etapa;
   }
   function chipEtapa(etapa) { return el('span', { class: 'et et-' + etapa, text: ETAPAS[etapa] || etapa }); }
@@ -208,7 +212,7 @@
         } }, [
           avatarConv(c),
           el('span', { class: 'conv-b' }, [el('b', { text: nombreConv(c) }), el('span', { class: 'conv-t' }, [el('span', { class: 'ch-txt ch-' + c.canal, text: CANAL[c.canal] ? CANAL[c.canal].n : 'SMS' }), el('span', { class: 'muted', text: ' · ' + (c.ultimo_texto || '') })]),
-            el('span', { class: 'conv-e' }, [chipEtapa(c.etapa), c.servicio && A.SERVICIOS[c.servicio] ? el('span', { class: 'muted', text: A.SERVICIOS[c.servicio].corto }) : null, sinResponder(c) && c.etapa !== 'no_interesado' ? el('span', { class: 'sr', text: 'Sin responder' }) : null])]),
+            el('span', { class: 'conv-e' }, [chipEtapa(c.etapa), chipTemp(c), c.servicio && A.SERVICIOS[c.servicio] ? el('span', { class: 'muted', text: A.SERVICIOS[c.servicio].corto }) : null, sinResponder(c) && c.etapa !== 'no_interesado' ? el('span', { class: 'sr', text: 'Sin responder' }) : null])]),
           el('span', { class: 'conv-m' }, [el('span', { class: 'muted', text: A.hace(c.ultimo_at) }), c.no_leidos ? el('span', { class: 'count', text: c.no_leidos }) : null])
         ]);
         items.appendChild(item);
@@ -223,7 +227,8 @@
       pintarFiltros(); pintarLista();
       var abierta = convs.filter(function (c) { return c.id === st.conv; })[0];
       // Primera vez: abre la conversación guardada. Después: solo se recarga si llegó algo nuevo a la abierta.
-      if (abierta && (primera || abierta.no_leidos)) abrir(abierta, panel, wrap, !primera);
+      // También se refresca cuando la IA termina de analizar la conversación abierta
+      if (abierta && (primera || abierta.no_leidos || abierta.ia_at !== st.iaVista)) abrir(abierta, panel, wrap, !primera);
       A.contarBandeja();
     }
     ui.recargar = function () { cargar(false); };
@@ -260,6 +265,7 @@
         enlace ? el('a', { class: 'mini-btn', href: enlace, target: '_blank', rel: 'noopener', title: 'Abrir en Meta Business Suite' }, [A.icon('i-external', 'icon-sm')]) : null
       ])
     ]));
+    st.iaVista = c.ia_at;
     dst.appendChild(barraProspecto(c, panel, wrap));
     var msgs = el('div', { class: 'chat-msgs' });
     dst.appendChild(msgs);
@@ -356,7 +362,7 @@
     txt.addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); enviar.click(); } });
     dst.appendChild(el('div', { class: 'chat-f' }, [
       cerrada ? el('div', { class: 'alert warn', style: 'margin-bottom:8px' }, [A.icon('i-alert', 'icon-sm'), 'Pasaron más de 24 horas desde su último mensaje, así que Meta no deja responderle desde el CRM. Contéstale desde Meta Business Suite (el botón la abre) o espera a que vuelva a escribir.']) : null,
-      chips, previa, txt, archivo,
+      cajaIA(c, txt, integ), chips, previa, txt, archivo,
       el('div', { style: 'display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:8px' }, [el('span', { style: 'display:flex;align-items:center;gap:10px' }, [clip, el('span', { class: 'muted', style: 'font-size:11.5px', text: 'Ctrl + Enter para enviar' })]), enviar])
     ]));
     if (refresco) { panel.replaceChildren(dst); msgs.scrollTop = msgs.scrollHeight; }
@@ -402,6 +408,39 @@
     A.toast('Guardado en los documentos del cliente.', 'ok');
   }
 
+  /* ---------- Asistente con IA: resumen, interés y respuesta sugerida (nunca envía solo) ---------- */
+  function cajaIA(c, txt, integ) {
+    var caja = el('div', { class: 'ia-box' });
+    if (!integ.ia && !c.ia) return caja;
+    function pintar(cargando) {
+      caja.innerHTML = '';
+      var ia = c.ia;
+      var analizar = el('button', { type: 'button', class: 'link-btn', text: cargando ? 'Pensando…' : ia ? 'Otra sugerencia' : '✨ Analizar con IA', disabled: !!cargando, onclick: async function () {
+        pintar(true);
+        var r = await sb.functions.invoke('ia-mensajes', { body: { conversacion_id: c.id } });
+        if (r.error) { var e = {}; try { e = await r.error.context.json(); } catch (_) { /* */ } A.toast(e.error || 'La IA no pudo responder.', 'error'); pintar(); return; }
+        if (r.data && r.data.ia) { c.ia = r.data.ia; c.temperatura = r.data.ia.temperatura; c.ia_at = r.data.ia.at; st.iaVista = c.ia_at; }
+        pintar();
+      } });
+      if (!ia) { caja.appendChild(el('div', { class: 'ia-h' }, [el('span', { class: 'ia-t', text: '✨ Asistente con IA' }), analizar])); return; }
+      var t = TEMP[ia.temperatura] || TEMP.tibio;
+      var datos = [ia.telefono ? '📞 ' + ia.telefono : null, ia.email ? '✉️ ' + ia.email : null].filter(Boolean).join(' · ');
+      caja.appendChild(el('div', { class: 'ia-h' }, [
+        el('span', { class: 'ia-t', text: '✨ IA' }), el('span', { class: 'tp tp-' + ia.temperatura, text: t[0] + ' ' + t[1] }),
+        ia.servicio && A.SERVICIOS[ia.servicio] ? el('span', { class: 'muted', text: 'Busca: ' + A.SERVICIOS[ia.servicio].corto }) : null,
+        ia.idioma === 'en' ? el('span', { class: 'muted', text: 'Escribe en inglés' }) : null,
+        el('span', { style: 'flex:1' }), analizar
+      ]));
+      if (ia.resumen) caja.appendChild(el('p', { class: 'ia-r', text: ia.resumen + (datos ? ' · ' + datos : '') }));
+      if (ia.sugerencia) {
+        caja.appendChild(el('div', { class: 'ia-s' }, [el('p', { text: ia.sugerencia }),
+          el('button', { type: 'button', class: 'mini-btn', text: 'Usar esta respuesta', onclick: function () { txt.value = ia.sugerencia; txt.focus(); } })]));
+      }
+    }
+    pintar();
+    return caja;
+  }
+
   /* ---------- Prospecto: etapa, servicio, responsable y convertir en cliente ---------- */
   async function guardarConv(c, cambios) {
     var r = await sb.from('conversaciones').update(cambios).eq('id', c.id).select('*').single();
@@ -444,15 +483,16 @@
   }
   var ORIGEN_CANAL = { whatsapp: 'whatsapp', messenger: 'facebook', instagram: 'instagram', sms: 'otro' };
   function convertir(c, panel, wrap) {
-    var partes = (c.nombre && c.nombre.charAt(0) !== '@' ? c.nombre.replace(/\.$/, '') : '').trim().split(/\s+/);
+    var ia = c.ia || {};
+    var partes = ((c.nombre && c.nombre.charAt(0) !== '@' ? c.nombre.replace(/\.$/, '') : '') || ia.nombre || '').trim().split(/\s+/);
     var servicios = [['', 'No por ahora']].concat(Object.keys(A.SERVICIOS).filter(function (k) { return !A.SERVICIOS[k].oculto; }).map(function (k) { return [k, A.SERVICIOS[k].label]; }));
     A.modal({
       titulo: 'Convertir en cliente', ok: 'Crear cliente',
       campos: [
         { k: 'nombre', label: 'Nombre', required: true, max: 120, value: partes[0] || '' },
         { k: 'apellidos', label: 'Apellidos', max: 120, value: partes.slice(1).join(' ') },
-        { k: 'telefono', label: 'Teléfono', type: 'tel', max: 40, value: c.canal === 'whatsapp' ? c.contacto : '' },
-        { k: 'email', label: 'Correo', type: 'email', max: 200 },
+        { k: 'telefono', label: 'Teléfono', type: 'tel', max: 40, value: c.canal === 'whatsapp' ? c.contacto : (ia.telefono || '') },
+        { k: 'email', label: 'Correo', type: 'email', max: 200, value: ia.email || '' },
         { k: 'servicio', label: 'Abrir un caso de', type: 'select', full: true, options: servicios, value: c.servicio && A.SERVICIOS[c.servicio] && !A.SERVICIOS[c.servicio].oculto ? c.servicio : '' }
       ],
       guardar: async function (d, aviso) {
