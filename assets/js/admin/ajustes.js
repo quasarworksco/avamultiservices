@@ -111,7 +111,8 @@
         ['META_PAGE_ID', 'ID de la página de Facebook', 'Página de AVA → Información → Identificador'],
         ['WHATSAPP_TEMPLATE', 'Nombre de la plantilla de avisos (opcional)', 'Si no se llena se usa «aviso_ava»'],
         ['STRIPE_SECRET_KEY', 'Clave secreta de Stripe', 'Stripe → Developers → API keys (sk_live_…)'],
-        ['STRIPE_WEBHOOK_SECRET', 'Firma del webhook de Stripe', 'Stripe → Developers → Webhooks (whsec_…)']
+        ['STRIPE_WEBHOOK_SECRET', 'Firma del webhook de Stripe', 'Stripe → Developers → Webhooks (whsec_…)'],
+        ['GROQ_API_KEY', 'Clave de Groq (IA gratuita)', 'console.groq.com → API Keys (gsk_…)']
       ];
       var claveCard = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Claves de integración' }),
         el('p', { class: 'muted', style: 'margin-bottom:12px', text: 'Pega aquí las claves de Meta y Stripe. Se guardan cifradas y nadie puede volver a verlas; para cambiar una, pega la nueva.' })]);
