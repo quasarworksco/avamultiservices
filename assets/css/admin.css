@@ -477,6 +477,28 @@ a.stat { display: block; color: inherit; animation: rise 0.5s var(--ease) both; 
 .bub.out { align-self: flex-end; background: var(--ch-g, var(--charcoal)); color: #fff; border-top-right-radius: 4px; }
 .inbox-chat.ch-whatsapp .bub.out { background: #d9fdd3; color: #111b21; }
 .bub.out.err { outline: 2px solid #d9534f; }
+/* Fotos y archivos en el chat */
+.bub.con-adj { padding: 6px; }
+.bub.con-adj p, .bub.con-adj > span { padding: 0 7px; }
+.bub.con-adj > span { padding-bottom: 3px; }
+.adjs { display: grid; gap: 6px; }
+.adj { display: grid; gap: 4px; }
+.adj-img { display: block; border-radius: 12px; overflow: hidden; background: rgba(0, 0, 0, 0.06); }
+.adj-img img { display: block; width: 100%; max-width: 300px; max-height: 340px; object-fit: cover; }
+.adj-vid { width: 100%; max-width: 300px; border-radius: 12px; }
+.adj audio { width: 260px; max-width: 100%; }
+.adj-f { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: rgba(0, 0, 0, 0.05); color: inherit; text-decoration: none; min-width: 0; }
+.bub.out .adj-f { background: rgba(255, 255, 255, 0.18); }
+.inbox-chat.ch-whatsapp .bub.out .adj-f { background: rgba(0, 0, 0, 0.06); }
+.adj-f b { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 210px; }
+.adj-f .muted { font-size: 11px; flex: none; }
+.adj-acc { display: flex; gap: 12px; padding: 0 6px; }
+.adj-acc .link-btn { font-size: 11.5px; color: inherit; opacity: 0.85; }
+.adj-acc .link-btn:disabled { text-decoration: none; cursor: default; opacity: 0.7; }
+.adj-prev { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; padding: 6px 8px 6px 4px; border-radius: 12px; background: var(--ch-50, var(--stone-50)); }
+.adj-prev .adj-f { background: none; padding: 4px 6px; }
+.clip { width: 34px; height: 34px; }
+.clip:hover { border-color: var(--ch, var(--accent)); color: var(--ch, var(--accent)); }
 .chat-f { padding: 12px 14px; border-top: 1px solid var(--line); }
 .chat-f textarea:focus { border-color: var(--ch, var(--accent)); }
 .chat-f .chip-s { cursor: pointer; }
@@ -611,6 +633,7 @@ a.stat { display: block; color: inherit; animation: rise 0.5s var(--ease) both; 
 @keyframes qsIn { from { opacity: 0; transform: translateY(-6px); } }
 .qs-in { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--line); }
 .qs-in input { flex: 1; min-width: 0; border: 0; outline: 0; font: inherit; font-size: 17px; background: none; }
+.qs-in input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; }
 .qs-in .icon { color: var(--muted); }
 .qs-res { overflow-y: auto; padding: 6px 0 10px; }
 .qs-g { padding: 10px 18px 4px; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }

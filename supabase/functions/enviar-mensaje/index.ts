@@ -1,5 +1,6 @@
 // Envía mensajes de AVA por WhatsApp Business, Messenger o Instagram.
-// - Desde el panel (usuario con permiso «mensajes»): { conversacion_id, texto } o { cola_id }.
+// - Desde el panel (usuario con permiso «mensajes»): { conversacion_id, texto, adjunto? } o { cola_id }.
+//   adjunto = { path, nombre, tipo } de un archivo ya subido al bucket «chat» en la carpeta de la conversación.
 // - Desde el cron (cabecera x-cron-secret): envía la cola pendiente si el envío automático está activado.
 // - { estado: true }: dice qué integraciones están conectadas (sin mostrar claves).
 import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2.49.8';
@@ -84,25 +85,49 @@ async function metaTexto(psid: string, texto: string): Promise<Envio> {
   return graph('me/messages', await tokenPagina(GRAPH), { recipient: { id: psid }, messaging_type: 'RESPONSE', message: { text: texto.slice(0, 2000) } });
 }
 
-async function registrar(db: SupabaseClient, convId: string, texto: string, autor: string | null, automatico: boolean, id: string) {
-  await db.from('mensajes_chat').insert({ conversacion_id: convId, direccion: 'saliente', texto: texto.slice(0, 4000), autor, automatico, estado: 'enviado', externo_id: id || null });
+type Adjunto = { path: string; nombre: string; tipo: string };
+const esImagen = (t: string) => /^image\/(jpeg|png|gif|webp)$/.test(t);
+function tipoMeta(t: string) { return esImagen(t) ? 'image' : /^video\//.test(t) ? 'video' : /^audio\//.test(t) ? 'audio' : 'file'; }
+
+// Meta descarga el archivo desde un enlace temporal firmado (10 min)
+async function enviarAdjunto(db: SupabaseClient, c: Record<string, any>, a: Adjunto): Promise<Envio> {
+  const f = await db.storage.from('chat').createSignedUrl(a.path, 600);
+  if (f.error || !f.data?.signedUrl) return { ok: false, error: 'No se encontró el archivo' };
+  const url = f.data.signedUrl;
+  if (c.canal === 'whatsapp') {
+    const tipo = esImagen(a.tipo) ? 'image' : 'document';
+    return graph(`${K.WHATSAPP_PHONE_ID}/messages`, K.WHATSAPP_TOKEN, { messaging_product: 'whatsapp', to: telWa(c.contacto), type: tipo, [tipo]: tipo === 'image' ? { link: url } : { link: url, filename: a.nombre } });
+  }
+  return graph('me/messages', await tokenPagina(GRAPH), { recipient: { id: c.contacto }, messaging_type: 'RESPONSE', message: { attachment: { type: tipoMeta(a.tipo), payload: { url, is_reusable: false } } } });
+}
+
+async function registrar(db: SupabaseClient, convId: string, texto: string, autor: string | null, automatico: boolean, id: string, adjuntos: Adjunto[] = []) {
+  await db.from('mensajes_chat').insert({ conversacion_id: convId, direccion: 'saliente', texto: texto.slice(0, 4000), autor, automatico, estado: 'enviado', externo_id: id || null, adjuntos });
   await db.from('conversaciones').update({ ultimo_texto: texto.slice(0, 200), ultimo_at: new Date().toISOString() }).eq('id', convId);
 }
 
-async function enviarConversacion(db: SupabaseClient, convId: string, texto: string, autor: string | null): Promise<Envio> {
+async function enviarConversacion(db: SupabaseClient, convId: string, texto: string, autor: string | null, adjunto: Adjunto | null = null): Promise<Envio> {
   const { data: c } = await db.from('conversaciones').select('*').eq('id', convId).maybeSingle();
   if (!c) return { ok: false, error: 'Conversación no encontrada' };
+  if (adjunto && !adjunto.path.startsWith(c.id + '/')) return { ok: false, error: 'Archivo no válido' };
   const abierta = c.ultimo_entrante_at && Date.now() - new Date(c.ultimo_entrante_at).getTime() < VENTANA;
   let r: Envio;
   if (c.canal === 'whatsapp') {
     if (!estado().whatsapp) return { ok: false, codigo: 'no_conectado', error: 'WhatsApp no está conectado' };
     if (!abierta) return { ok: false, codigo: 'fuera_ventana', error: 'Pasaron más de 24 h desde su último mensaje' };
-    r = await waTexto(c.contacto, texto);
+    r = texto ? await waTexto(c.contacto, texto) : { ok: true };
   } else if (c.canal === 'messenger' || c.canal === 'instagram') {
     if (!estado().meta) return { ok: false, codigo: 'no_conectado', error: 'Instagram y Messenger no están conectados' };
     if (!abierta) return { ok: false, codigo: 'fuera_ventana', error: 'Pasaron más de 24 h desde su último mensaje' };
-    r = await metaTexto(c.contacto, texto);
+    r = texto ? await metaTexto(c.contacto, texto) : { ok: true };
   } else return { ok: false, codigo: 'no_conectado', error: 'Canal sin conexión' };
+  if (r.ok && adjunto) {
+    if (texto) await registrar(db, c.id, texto, autor, false, r.id || '');
+    const ra = await enviarAdjunto(db, c, adjunto);
+    if (!ra.ok) return { ok: false, error: 'No se pudo enviar el archivo: ' + (ra.error || ''), codigo: ra.codigo };
+    await registrar(db, c.id, esImagen(adjunto.tipo) ? '[Foto]' : '[Archivo] ' + adjunto.nombre, autor, false, ra.id || '', [adjunto]);
+    return ra;
+  }
   if (r.ok) await registrar(db, c.id, texto, autor, false, r.id || '');
   return r;
 }
@@ -170,8 +195,9 @@ Deno.serve(async (req) => {
   if (body.cola_id) r = await enviarCola(db, String(body.cola_id), u.user.id);
   else {
     const texto = String(body.texto || '').trim();
-    if (!texto || texto.length > 4000) return json(req, 400, { error: 'Escribe un mensaje' });
-    r = await enviarConversacion(db, String(body.conversacion_id || ''), texto, u.user.id);
+    const a = body.adjunto && typeof body.adjunto.path === 'string' ? { path: String(body.adjunto.path).slice(0, 300), nombre: String(body.adjunto.nombre || 'archivo').slice(0, 120), tipo: String(body.adjunto.tipo || 'application/octet-stream').slice(0, 100) } : null;
+    if ((!texto && !a) || texto.length > 4000) return json(req, 400, { error: 'Escribe un mensaje' });
+    r = await enviarConversacion(db, String(body.conversacion_id || ''), texto, u.user.id, a);
   }
   return json(req, r.ok ? 200 : 400, r);
 });

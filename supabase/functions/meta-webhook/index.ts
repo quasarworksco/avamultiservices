@@ -95,7 +95,39 @@ async function enviarWhatsApp(to: string, texto: string) {
   return r.ok ? (j.messages?.[0]?.id || '') : null;
 }
 
-async function guardarEntrante(db: SupabaseClient, canal: string, contacto: string, nombre: string | null, texto: string, externoId: string, fecha: Date) {
+// Fotos y archivos que manda el cliente: se descargan al recibirlos (los enlaces de Meta caducan)
+type Archivo = { bytes: Uint8Array; tipo: string; nombre: string };
+const MAX_ARCHIVO = 25 * 1024 * 1024;
+const EXT: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif', 'application/pdf': 'pdf', 'video/mp4': 'mp4', 'audio/ogg': 'ogg', 'audio/mpeg': 'mp3', 'audio/mp4': 'm4a', 'audio/aac': 'aac' };
+const limpioNombre = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w.\-]+/g, '_').replace(/_+/g, '_').slice(-80) || 'archivo';
+
+async function descargar(url: string, nombre: string, auth?: string): Promise<Archivo | null> {
+  try {
+    const r = await fetch(url, auth ? { headers: { Authorization: 'Bearer ' + auth } } : undefined);
+    if (!r.ok) return null;
+    const bytes = new Uint8Array(await r.arrayBuffer());
+    if (!bytes.length || bytes.length > MAX_ARCHIVO) return null;
+    const tipo = (r.headers.get('content-type') || 'application/octet-stream').split(';')[0].trim();
+    let n = limpioNombre(nombre);
+    if (!/\.[a-z0-9]{2,5}$/i.test(n) && EXT[tipo]) n += '.' + EXT[tipo];
+    return { bytes, tipo, nombre: n };
+  } catch (_) { return null; }
+}
+
+async function subirArchivos(db: SupabaseClient, convId: string, archivos: Archivo[]) {
+  const adjuntos: Record<string, unknown>[] = [];
+  for (const a of archivos) {
+    const path = `${convId}/${Date.now()}-${Math.random().toString(36).slice(2, 7)}-${a.nombre}`;
+    const up = await db.storage.from('chat').upload(path, a.bytes, { contentType: a.tipo, upsert: false });
+    if (!up.error) adjuntos.push({ path, nombre: a.nombre, tipo: a.tipo, tam: a.bytes.length });
+  }
+  return adjuntos;
+}
+
+async function guardarEntrante(db: SupabaseClient, canal: string, contacto: string, nombre: string | null, texto: string, externoId: string, fecha: Date, archivos: Archivo[] = []) {
+  // Si Meta reenvía el mismo mensaje no se cuenta dos veces ni se vuelven a subir los archivos
+  const { data: ya } = await db.from('mensajes_chat').select('conversacion_id').eq('externo_id', externoId).maybeSingle();
+  if (ya) return { conv: { id: ya.conversacion_id as string, auto_fuera_at: null as string | null }, duplicado: true };
   let clienteId: string | null = null, nombreCliente: string | null = null;
   if (canal === 'whatsapp') {
     const c = await clientePorTelefono(db, contacto);
@@ -114,7 +146,8 @@ async function guardarEntrante(db: SupabaseClient, canal: string, contacto: stri
   };
   const { data: conv, error } = await db.from('conversaciones').upsert(fila, { onConflict: 'canal,contacto' }).select('id,auto_fuera_at').single();
   if (error || !conv) throw new Error('conversación: ' + (error?.message || ''));
-  const ins = await db.from('mensajes_chat').insert({ conversacion_id: conv.id, direccion: 'entrante', texto: texto.slice(0, 4000), estado: 'entregado', externo_id: externoId, created_at: fecha.toISOString() });
+  const adjuntos = archivos.length ? await subirArchivos(db, conv.id, archivos) : [];
+  const ins = await db.from('mensajes_chat').insert({ conversacion_id: conv.id, direccion: 'entrante', texto: texto.slice(0, 4000), estado: 'entregado', externo_id: externoId, created_at: fecha.toISOString(), adjuntos });
   if (ins.error && ins.error.code !== '23505') throw new Error('mensaje: ' + ins.error.message);
   return { conv, duplicado: ins.error?.code === '23505' };
 }
@@ -136,7 +169,16 @@ async function procesarWhatsApp(db: SupabaseClient, value: Record<string, any>) 
   for (const m of value.messages || []) {
     const contacto = digitos(m.from);
     const texto = textoDe(m);
-    const r = await guardarEntrante(db, 'whatsapp', contacto, nombres[m.from] || null, texto, m.id, new Date(Number(m.timestamp) * 1000));
+    const archivos: Archivo[] = [];
+    const media = m[m.type];
+    if (media?.id && ['image', 'document', 'audio', 'video', 'sticker'].includes(m.type)) {
+      const info = await fetch(`${GRAPH}/${media.id}`, { headers: { Authorization: 'Bearer ' + K.WHATSAPP_TOKEN } }).then((r) => r.json()).catch(() => ({}));
+      if (info.url) {
+        const a = await descargar(info.url, media.filename || m.type + '-' + m.id, K.WHATSAPP_TOKEN);
+        if (a) archivos.push(a);
+      }
+    }
+    const r = await guardarEntrante(db, 'whatsapp', contacto, nombres[m.from] || null, texto, m.id, new Date(Number(m.timestamp) * 1000), archivos);
     if (!r.duplicado) await respuestaFueraDeHorario(db, r.conv, contacto);
     await log(db, 'whatsapp', 'mensaje', true, contacto.slice(-4));
   }
@@ -163,10 +205,20 @@ async function procesarMensajeria(db: SupabaseClient, canal: 'messenger' | 'inst
   if (!m || m.is_echo) return;
   const contacto = String(ev.sender?.id || '');
   if (!contacto) return;
-  const texto = m.text || (m.attachments?.length ? '[' + (m.attachments[0].type === 'image' ? 'Foto' : 'Archivo') + ']' : '[Mensaje]');
+  const ETQ: Record<string, string> = { image: 'Foto', video: 'Video', audio: 'Nota de voz', file: 'Archivo' };
+  const texto = m.text || (m.attachments?.length ? '[' + (ETQ[m.attachments[0].type] || 'Archivo') + ']' : '[Mensaje]');
+  const archivos: Archivo[] = [];
+  for (const at of (m.attachments || []).slice(0, 10)) {
+    const u = at.payload?.url;
+    if (!u || !ETQ[at.type]) continue;
+    let base = at.type;
+    try { base = decodeURIComponent(new URL(u).pathname.split('/').pop() || at.type); } catch (_) { /* */ }
+    const a = await descargar(u, base);
+    if (a) archivos.push(a);
+  }
   const { data: existe } = await db.from('conversaciones').select('id,nombre').eq('canal', canal).eq('contacto', contacto).maybeSingle();
   const nombre = existe?.nombre ? null : await nombrePerfil(canal, contacto);
-  await guardarEntrante(db, canal, contacto, nombre, texto, m.mid, new Date(ev.timestamp || Date.now()));
+  await guardarEntrante(db, canal, contacto, nombre, texto, m.mid, new Date(ev.timestamp || Date.now()), archivos);
   await log(db, canal, 'mensaje', true);
 }
 
