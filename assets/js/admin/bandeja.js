@@ -265,15 +265,33 @@
     dst.appendChild(msgs);
     var r = await sb.from('mensajes_chat').select('*').eq('conversacion_id', c.id).order('created_at').limit(500);
     var dia = '';
+    // Enlaces temporales para ver las fotos y archivos del chat
+    var rutas = [];
+    (r.data || []).forEach(function (m) { (m.adjuntos || []).forEach(function (a) { rutas.push(a.path); }); });
+    var urlDe = {};
+    if (rutas.length) {
+      var fr = await sb.storage.from('chat').createSignedUrls(rutas, 3600);
+      (fr.data || []).forEach(function (x) { if (x.signedUrl) urlDe[x.path] = x.signedUrl; });
+    }
     (r.data || []).forEach(function (m) {
       var d = A.fecha(m.created_at);
       if (d !== dia) { dia = d; msgs.appendChild(el('div', { class: 'chat-dia' }, [el('span', { text: d })])); }
       var hora = new Date(m.created_at).toLocaleTimeString('es-US', { hour: 'numeric', minute: '2-digit' });
       var marca = m.direccion === 'saliente' ? ({ enviado: ' · ✓', entregado: ' · ✓✓', leido: ' · ✓✓ leído', error: ' · no se envió' })[m.estado] || '' : '';
-      msgs.appendChild(el('div', { class: 'bub ' + (m.direccion === 'entrante' ? 'in' : 'out') + (m.estado === 'error' ? ' err' : '') }, [el('p', { text: m.texto }), el('span', { text: hora + (m.automatico ? ' · automático' : '') + marca })]));
+      var adj = m.adjuntos || [];
+      var texto = m.texto || '';
+      // «[Foto]», «[Archivo] nombre»…: con el archivo a la vista sobra la etiqueta
+      if (adj.length) { texto = texto.replace(/^\[[^\]]+\]\s*/, ''); if (adj[0] && texto === adj[0].nombre) texto = ''; }
+      msgs.appendChild(el('div', { class: 'bub ' + (m.direccion === 'entrante' ? 'in' : 'out') + (m.estado === 'error' ? ' err' : '') + (adj.length ? ' con-adj' : '') }, [
+        adj.length ? el('div', { class: 'adjs' }, adj.map(function (a) { return verAdjunto(c, m, a, urlDe[a.path]); })) : null,
+        texto ? el('p', { text: texto }) : null,
+        el('span', { text: hora + (m.automatico ? ' · automático' : '') + marca })
+      ]));
     });
     if (!(r.data || []).length) msgs.appendChild(el('div', { class: 'muted', style: 'text-align:center;padding:20px', text: 'Sin mensajes todavía.' }));
     setTimeout(function () { msgs.scrollTop = msgs.scrollHeight; }, 30);
+    // Las fotos cambian el alto al cargar: se vuelve a bajar al final
+    msgs.querySelectorAll('img').forEach(function (i) { i.addEventListener('load', function () { msgs.scrollTop = msgs.scrollHeight; }, { once: true }); });
 
     var integ = await A.integraciones();
     var directo = conectado(integ, c.canal);
@@ -287,14 +305,43 @@
     var chips = el('div', { class: 'chips', style: 'margin-bottom:8px' }, rap.map(function (q) {
       return el('button', { type: 'button', class: 'chip-s', title: q.texto, text: q.titulo, onclick: function () { txt.value = q.texto.replace(/\{nombre\}/g, primerNombre).replace(/ ,/g, ','); txt.focus(); } });
     }));
+    // Adjuntar foto o archivo (solo con el canal conectado: Meta lo envía desde el CRM)
+    var pendiente = null;
+    var previa = el('div', { class: 'adj-prev', hidden: true });
+    var archivo = el('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp,image/gif,application/pdf,video/mp4', hidden: true });
+    function pintarPrevia() {
+      previa.innerHTML = ''; previa.hidden = !pendiente;
+      if (!pendiente) return;
+      previa.appendChild(el('span', { class: 'adj-f' }, [A.icon(/^image\//.test(pendiente.type) ? 'i-image' : 'i-file', 'icon-sm'), el('b', { text: pendiente.name }), el('span', { class: 'muted', text: tam(pendiente.size) })]));
+      previa.appendChild(el('button', { type: 'button', class: 'link-btn', text: 'Quitar', onclick: function () { pendiente = null; archivo.value = ''; pintarPrevia(); } }));
+    }
+    archivo.addEventListener('change', function () {
+      var f = archivo.files[0]; if (!f) return;
+      if (f.size > 25 * 1024 * 1024) { A.toast('El archivo supera 25 MB.', 'error'); archivo.value = ''; return; }
+      pendiente = f; pintarPrevia(); txt.focus();
+    });
+    var clip = el('button', { type: 'button', class: 'icon-btn clip', 'aria-label': 'Adjuntar foto o archivo', title: directo ? 'Adjuntar foto o PDF' : 'Para enviar archivos desde el CRM, el canal debe estar conectado', onclick: function () {
+      if (cerrada) { window.open(enlace, '_blank', 'noopener'); return; }
+      if (!directo) { A.toast((CANAL[c.canal] || CANAL.sms).n + ' aún no está conectado: envía el archivo desde tu teléfono.', 'error'); return; }
+      archivo.click();
+    } }, [A.icon('i-clip', 'icon-sm')]);
+
     var enviar = el('button', { class: 'btn btn-sm btn-ch ch-' + c.canal, type: 'button', onclick: async function () {
-      var t = txt.value.trim(); if (!t) { txt.focus(); return; }
+      var t = txt.value.trim(); if (!t && !pendiente) { txt.focus(); return; }
       if (cerrada) { window.open(enlace, '_blank', 'noopener'); return; }
       var boton = this; boton.disabled = true;
       if (directo) {
-        var env = await sb.functions.invoke('enviar-mensaje', { body: { conversacion_id: c.id, texto: t } });
+        var cuerpo = { conversacion_id: c.id, texto: t };
+        if (pendiente) {
+          var ruta = c.id + '/' + Date.now() + '-' + limpio(pendiente.name);
+          A.toast('Subiendo ' + pendiente.name + '…');
+          var up = await sb.storage.from('chat').upload(ruta, pendiente, { contentType: pendiente.type || 'application/octet-stream' });
+          if (up.error) { boton.disabled = false; A.toast('No se pudo subir el archivo.', 'error'); return; }
+          cuerpo.adjunto = { path: ruta, nombre: pendiente.name, tipo: pendiente.type || 'application/octet-stream' };
+        }
+        var env = await sb.functions.invoke('enviar-mensaje', { body: cuerpo });
         boton.disabled = false;
-        if (!env.error) { txt.value = ''; c.ultimo_texto = t; abrir(c, panel, wrap); return; }
+        if (!env.error) { txt.value = ''; pendiente = null; c.ultimo_texto = t || '[Archivo]'; abrir(c, panel, wrap); return; }
         var info = await leerError(env.error);
         if (!(info.codigo === 'fuera_ventana' && c.canal === 'whatsapp')) { A.toast(info.error || 'No se pudo enviar.', 'error'); return; }
         if (!confirm('Pasaron más de 24 horas desde su último mensaje, así que WhatsApp no deja escribirle desde el CRM con texto libre. ¿Abrir tu WhatsApp con el mensaje listo?')) return;
@@ -309,11 +356,50 @@
     txt.addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); enviar.click(); } });
     dst.appendChild(el('div', { class: 'chat-f' }, [
       cerrada ? el('div', { class: 'alert warn', style: 'margin-bottom:8px' }, [A.icon('i-alert', 'icon-sm'), 'Pasaron más de 24 horas desde su último mensaje, así que Meta no deja responderle desde el CRM. Contéstale desde Meta Business Suite (el botón la abre) o espera a que vuelva a escribir.']) : null,
-      chips, txt,
-      el('div', { style: 'display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:8px' }, [el('span', { class: 'muted', style: 'font-size:11.5px', text: 'Ctrl + Enter para enviar' }), enviar])
+      chips, previa, txt, archivo,
+      el('div', { style: 'display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:8px' }, [el('span', { style: 'display:flex;align-items:center;gap:10px' }, [clip, el('span', { class: 'muted', style: 'font-size:11.5px', text: 'Ctrl + Enter para enviar' })]), enviar])
     ]));
     if (refresco) { panel.replaceChildren(dst); msgs.scrollTop = msgs.scrollHeight; }
     else txt.focus({ preventScroll: true });
+  }
+
+  /* ---------- Fotos y archivos del chat ---------- */
+  function limpio(n) { return String(n || 'archivo').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w.\-]+/g, '_').slice(-80); }
+  function tam(b) { return b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+  function verAdjunto(c, m, a, url) {
+    var caja = el('div', { class: 'adj' });
+    if (!url) { caja.appendChild(el('span', { class: 'adj-f' }, [A.icon('i-file', 'icon-sm'), el('b', { text: a.nombre }), el('span', { class: 'muted', text: 'No disponible' })])); return caja; }
+    if (/^image\//.test(a.tipo)) caja.appendChild(el('a', { class: 'adj-img', href: url, target: '_blank', rel: 'noopener', title: 'Ver en grande' }, [el('img', { src: url, alt: a.nombre })]));
+    else if (/^video\//.test(a.tipo)) caja.appendChild(el('video', { src: url, controls: true, preload: 'metadata', class: 'adj-vid' }));
+    else if (/^audio\//.test(a.tipo)) caja.appendChild(el('audio', { src: url, controls: true, preload: 'none' }));
+    else caja.appendChild(el('a', { class: 'adj-f', href: url, target: '_blank', rel: 'noopener' }, [A.icon('i-file', 'icon-sm'), el('b', { text: a.nombre }), a.tam ? el('span', { class: 'muted', text: tam(a.tam) }) : null]));
+    var acc = el('div', { class: 'adj-acc' }, [
+      el('button', { type: 'button', class: 'link-btn', text: 'Descargar', onclick: async function () {
+        var d = await sb.storage.from('chat').createSignedUrl(a.path, 120, { download: a.nombre });
+        if (d.data) location.href = d.data.signedUrl; else A.toast('No se pudo descargar.', 'error');
+      } })
+    ]);
+    if (A.puede('documentos')) {
+      var g = el('button', { type: 'button', class: 'link-btn', text: a.guardado ? 'Guardado en documentos ✓' : 'Guardar en documentos', disabled: !!a.guardado, onclick: function () { guardarEnDocs(c, m, a, g); } });
+      acc.appendChild(g);
+    }
+    caja.appendChild(acc);
+    return caja;
+  }
+  // Copia el archivo del chat a los Documentos del cliente
+  async function guardarEnDocs(c, m, a, boton) {
+    if (!c.cliente_id) { A.toast('Primero conviértelo en cliente con el botón de arriba.', 'error'); return; }
+    boton.disabled = true; boton.textContent = 'Guardando…';
+    var bl = await sb.storage.from('chat').download(a.path);
+    if (bl.error) { boton.disabled = false; boton.textContent = 'Guardar en documentos'; A.toast('No se pudo leer el archivo.', 'error'); return; }
+    var ruta = 'clientes/' + c.cliente_id + '/' + Date.now() + '-' + limpio(a.nombre);
+    var up = await sb.storage.from('documentos').upload(ruta, bl.data, { contentType: a.tipo, upsert: false });
+    var ins = up.error ? up : await sb.from('documentos').insert({ cliente_id: c.cliente_id, nombre: a.nombre.slice(0, 200), path: ruta, tipo: a.tipo, tamano: a.tam || bl.data.size });
+    if (ins.error) { boton.disabled = false; boton.textContent = 'Guardar en documentos'; A.toast('No se pudo guardar en documentos.', 'error'); return; }
+    a.guardado = true;
+    await sb.from('mensajes_chat').update({ adjuntos: (m.adjuntos || []).map(function (x) { return x.path === a.path ? Object.assign({}, x, { guardado: true }) : x; }) }).eq('id', m.id);
+    boton.textContent = 'Guardado en documentos ✓';
+    A.toast('Guardado en los documentos del cliente.', 'ok');
   }
 
   /* ---------- Prospecto: etapa, servicio, responsable y convertir en cliente ---------- */

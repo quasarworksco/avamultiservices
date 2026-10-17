@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Entrega: CRM y sistema de clientes · AVA Multiservices | DGP Global Group</title>
-  <meta name="description" content="Entrega del CRM de AVA Multiservices: 11 módulos, cómo está hecho, guía de uso y checklist del dominio, correo y formularios.">
+  <meta name="description" content="Entrega del CRM de AVA Multiservices: 22 módulos, bandeja de WhatsApp, Messenger e Instagram, guía de uso con capturas y checklist completo.">
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#2a2a2a">
   <link rel="canonical" href="https://avamultiservices.com/entrega/">
@@ -232,6 +232,13 @@
       .note { margin: 0 18px 20px; }
       .progress-card { padding: 18px; }
     }
+    .shots { display: grid; gap: 22px; margin-top: 40px; }
+    .shot { margin: 0; border-radius: var(--radius-lg); overflow: hidden; background: #fff; border: 1px solid var(--line); box-shadow: 0 40px 70px -55px rgba(42, 42, 42, 0.55); }
+    .shot img { display: block; width: 100%; height: auto; border-bottom: 1px solid var(--line); }
+    .shot figcaption { padding: 16px 20px 18px; font-size: 14.5px; line-height: 1.55; color: var(--ink-2); }
+    .shot figcaption b { color: var(--ink); }
+    .shots-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; align-items: start; }
+    @media (max-width: 860px) { .shots-3 { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -276,6 +283,7 @@
   <symbol id="i-external" viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M10 14 21 3"/><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/></symbol>
   <symbol id="i-list" viewBox="0 0 24 24"><path d="M3 12h.01"/><path d="M3 18h.01"/><path d="M3 6h.01"/><path d="M8 12h13"/><path d="M8 18h13"/><path d="M8 6h13"/></symbol>
   <symbol id="i-skyline" viewBox="0 0 1200 180"><path d="M0 178V132H34V178 M38 178V114H64V178 M68 178V124H112V178 M116 178V92H146V178 M150 178V106H190V178 M196 178V32H204V24H230V32H238V178 M204 32V178M230 32V178 M244 178V80H272V178 M278 178V60L304 42L330 60V178 M338 178V46H374V178M342 46L356 28L370 46M356 28V16 M380 178V94H408V178 M414 178V68L438 28L466 74V178M438 28V178 M472 178V74H510V178 M514 178V108H540V178 M546 178V50Q568 38 590 50V178M560 66H576V82H560Z M596 178V88H630V178 M634 178V116H686V178 M690 178V130H720V178 M754 178V82M762 178V82M750 82H766 M740 64A18 18 0 1 0 776 64A18 18 0 1 0 740 64M741 58H775M741 70H775M758 46V32 M784 178V138H814V178 M820 166H1200M840 166Q1010 58 1180 166 M868 149V166 M897 136V166 M925 126V166 M953 118V166 M982 113V166 M1010 112V166 M1038 114V166 M1067 118V166 M1095 126V166 M1123 136V166 M1152 149V166 M0 178H1200"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.09-3.09a2 2 0 0 0-2.82 0L6 21"/></symbol>
   <symbol id="i-calendar" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></symbol>
   <symbol id="i-pen" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.38 3.62a1 1 0 0 1 3 3L7.37 18.64a2 2 0 0 1-.86.5l-2.87.84a.5.5 0 0 1-.62-.62l.84-2.87a2 2 0 0 1 .5-.86z"/></symbol>
   <symbol id="i-settings" viewBox="0 0 24 24"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></symbol>
@@ -307,10 +315,10 @@
         <span class="line"><span style="--d:.05s">Todo tu negocio,</span></span>
         <span class="line"><span style="--d:.15s"><span class="serif">en un solo panel.</span></span></span>
       </h1>
-      <p class="hero-lead reveal" style="--d:.3s"><strong>AVA Multiservices</strong> ya tiene su propio CRM: clientes, casos por servicio, seguimiento de crédito, taxes, cobros, tareas, documentos, mensajes, citas en línea, contratos con firma, portal para tus clientes, campañas, equipo con permisos, tu sitio web conectado y tu contenido digital. Todo hecho a medida y en un solo lugar.</p>
+      <p class="hero-lead reveal" style="--d:.3s"><strong>AVA Multiservices</strong> ya tiene su propio CRM: clientes, casos por servicio, seguimiento de crédito, taxes, cobros con recibos en PDF, tareas, documentos, una sola bandeja para WhatsApp, Messenger e Instagram con prospectos y embudo de ventas, citas en línea, contratos con firma, portal para tus clientes, campañas, equipo con permisos, tu sitio web conectado y tu contenido digital. Todo hecho a medida y en un solo lugar.</p>
 
       <div class="progress-card glass reveal" style="--d:.4s">
-        <div class="pc-top"><b>Entrega completada</b><span>18 de 18 módulos · 100%</span></div>
+        <div class="pc-top"><b>Entrega completada</b><span>22 de 22 módulos · 100%</span></div>
         <div class="pc-bar" style="--p:100%"><i></i></div>
         <div class="pc-legend">
           <span><i class="dot ok"></i>Dominio y correo</span>
@@ -319,7 +327,9 @@
           <span><i class="dot ok"></i>CRM · fase 2</span>
           <span><i class="dot ok"></i>Sitio conectado</span>
           <span><i class="dot ok"></i>CRM · fase 3</span>
-          <span><i class="dot rec"></i>Integraciones</span>
+          <span><i class="dot ok"></i>CRM · fase 4</span>
+          <span><i class="dot ok"></i>Messenger e Instagram</span>
+          <span><i class="dot rec"></i>WhatsApp API</span>
         </div>
       </div>
     </div>
@@ -330,7 +340,7 @@
     <div class="container">
       <div class="section-head center reveal">
         <span class="script-kicker">Tu CRM</span>
-        <h2 class="section-title" id="n-title">18 módulos, <span class="serif">un solo lugar</span></h2>
+        <h2 class="section-title" id="n-title">22 módulos, <span class="serif">un solo lugar</span></h2>
         <p class="section-lead">Todo lo de la propuesta ya está funcionando en tu panel, en computadora y en celular.</p>
       </div>
       <div class="mgrid">
@@ -345,13 +355,17 @@
           <article class="mcard reveal" style="--d:0.12s"><span class="mc-ico"><svg class="icon"><use href="#i-shield"/></svg></span><span class="mc-n">09</span><h3>Equipo y permisos</h3><p>Invita a tu compañera y decide qué puede ver y hacer.</p></article>
           <article class="mcard reveal" style="--d:0.00s"><span class="mc-ico"><svg class="icon"><use href="#i-globe"/></svg></span><span class="mc-n">10</span><h3>Sitio web conectado</h3><p>Cambia precios, anuncios, testimonios y preguntas de tu sitio.</p></article>
           <article class="mcard reveal" style="--d:0.06s"><span class="mc-ico"><svg class="icon"><use href="#i-sparkles"/></svg></span><span class="mc-n">11</span><h3>Contenido digital</h3><p>Los diseños que DGP crea para ti, listos para aprobar y descargar.</p></article>
-          <article class="mcard reveal" style="--d:0.12s"><span class="mc-ico"><svg class="icon"><use href="#i-message"/></svg></span><span class="mc-n">12</span><h3>Mensajes</h3><p>Chats de tus clientes, respuestas rápidas y la lista de avisos por enviar.</p></article>
+          <article class="mcard reveal" style="--d:0.12s"><span class="mc-ico"><svg class="icon"><use href="#i-message"/></svg></span><span class="mc-n">12</span><h3>Bandeja única</h3><p>WhatsApp, Messenger e Instagram en un solo lugar, cada uno con su color, fotos y archivos, y aviso con sonido.</p></article>
           <article class="mcard reveal" style="--d:0.00s"><span class="mc-ico"><svg class="icon"><use href="#i-zap"/></svg></span><span class="mc-n">13</span><h3>Avisos automáticos</h3><p>Recordatorios, cambio de etapa, fuera de horario y pedido de reseña.</p></article>
           <article class="mcard reveal" style="--d:0.06s"><span class="mc-ico"><svg class="icon"><use href="#i-calendar"/></svg></span><span class="mc-n">14</span><h3>Agenda y citas en línea</h3><p>Tus clientes reservan solos en tu sitio y tú ves la semana en el panel.</p></article>
           <article class="mcard reveal" style="--d:0.12s"><span class="mc-ico"><svg class="icon"><use href="#i-pen"/></svg></span><span class="mc-n">15</span><h3>Contratos con firma</h3><p>Envías el contrato por WhatsApp y el cliente firma desde su celular.</p></article>
           <article class="mcard reveal" style="--d:0.00s"><span class="mc-ico"><svg class="icon"><use href="#i-smartphone"/></svg></span><span class="mc-n">16</span><h3>Portal del cliente</h3><p>Tu cliente ve su etapa y su saldo, firma y te sube documentos.</p></article>
           <article class="mcard reveal" style="--d:0.06s"><span class="mc-ico"><svg class="icon"><use href="#i-send"/></svg></span><span class="mc-n">17</span><h3>Campañas</h3><p>Mensajes por grupo: temporada de taxes, Franchise Tax, promociones.</p></article>
           <article class="mcard reveal" style="--d:0.12s"><span class="mc-ico"><svg class="icon"><use href="#i-badge"/></svg></span><span class="mc-n">18</span><h3>Vender más</h3><p>Oportunidades de venta cruzada, referidos e ingresos por servicio.</p></article>
+          <article class="mcard reveal" style="--d:0.00s"><span class="mc-ico"><svg class="icon"><use href="#i-users"/></svg></span><span class="mc-n">19</span><h3>Prospectos y etapas</h3><p>Quien te escribe por primera vez queda como prospecto: Nuevo, Interesado, Cita, Cliente.</p></article>
+          <article class="mcard reveal" style="--d:0.06s"><span class="mc-ico"><svg class="icon"><use href="#i-trending"/></svg></span><span class="mc-n">20</span><h3>Embudo de ventas</h3><p>Cuántos contactos llegan, cuántos se vuelven clientes y pagan, por canal y por origen.</p></article>
+          <article class="mcard reveal" style="--d:0.12s"><span class="mc-ico"><svg class="icon"><use href="#i-clipboard"/></svg></span><span class="mc-n">21</span><h3>Documentos y recibos</h3><p>Lista de documentos por servicio en cada caso y recibos en PDF listos para enviar.</p></article>
+          <article class="mcard reveal" style="--d:0.00s"><span class="mc-ico"><svg class="icon"><use href="#i-search"/></svg></span><span class="mc-n">22</span><h3>Búsqueda rápida</h3><p>Ctrl + K y encuentras cualquier cliente, teléfono, caso o recibo en un segundo.</p></article>
         <a class="mcard mcard-cta reveal" style="--d:.06s" href="../admin/" target="_blank" rel="noopener"><span class="mc-ico"><svg class="icon"><use href="#i-lock"/></svg></span><h3>Entra y pruébalo</h3><p>Todo está listo en avamultiservices.com/admin con tu correo y contraseña.</p><span class="nc-url">Entrar al panel <svg class="icon icon-sm"><use href="#i-arrow-up-right"/></svg></span></a>
       </div>
 
@@ -368,6 +382,28 @@
   </section>
 
   <!-- Cómo está hecho -->
+  <!-- Novedades -->
+  <section class="section" id="novedades" aria-labelledby="nv-title">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="script-kicker">Lo nuevo</span>
+        <h2 class="section-title" id="nv-title">Así se ve <span class="serif">tu CRM hoy</span></h2>
+        <p class="section-lead">Capturas reales del panel con datos de ejemplo. Ningún cliente real aparece aquí.</p>
+      </div>
+      <div class="shots">
+        <figure class="shot reveal"><img src="img/bandeja.jpg" alt="Bandeja con conversaciones de Messenger, Instagram y WhatsApp, etapas del prospecto y una foto de un W-2 dentro del chat" width="1944" height="1902" loading="lazy">
+          <figcaption><b>Bandeja única.</b> Cada canal con su color: Messenger azul, Instagram degradado y WhatsApp verde. Arriba del chat eliges la etapa, el servicio y quién lo atiende. Las fotos y PDF que manda el cliente se ven en el chat y se guardan con un clic en sus documentos.</figcaption></figure>
+        <div class="shots-3">
+          <figure class="shot reveal"><img src="img/bandeja-celular.jpg" alt="La bandeja en el celular" width="716" height="1802" loading="lazy"><figcaption><b>En tu celular.</b> El chat se abre a pantalla completa y respondes desde ahí.</figcaption></figure>
+          <figure class="shot reveal" style="--d:.06s"><img src="img/sin-responder.jpg" alt="Filtro Sin responder" width="720" height="640" loading="lazy"><figcaption><b>Nadie se queda sin respuesta.</b> El filtro «Sin responder» te muestra a quién le falta contestar.</figcaption></figure>
+          <figure class="shot reveal" style="--d:.12s"><img src="img/busqueda.jpg" alt="Búsqueda rápida" width="1240" height="676" loading="lazy"><figcaption><b>Búsqueda rápida.</b> Ctrl + K (o la lupa en el celular) y escribes un nombre, teléfono, correo o número de recibo.</figcaption></figure>
+        </div>
+        <figure class="shot reveal"><img src="img/contenido.jpg" alt="Contenido digital con los diseños de AVA" width="2384" height="1960" loading="lazy">
+          <figcaption><b>Contenido digital.</b> Tus diseños listos para aprobar, comentar y descargar, cada uno con su texto para publicar.</figcaption></figure>
+      </div>
+    </div>
+  </section>
+
   <section class="section section-soft" id="como" aria-labelledby="c-title">
     <div class="container">
       <div class="section-head center reveal">
@@ -452,11 +488,17 @@
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-globe"/></svg></span><span class="g-t">Tu sitio web</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Precios y servicios</b><p>En <b>Sitio web</b> escribe el precio «desde» de cada servicio o apaga los que no estés ofreciendo. Se publica al instante.</p></div></li><li><span>2</span><div><b>Anuncio</b><p>Activa un aviso flotante en tu sitio, por ejemplo «¡Temporada de taxes abierta!», con botón para agendar.</p></div></li><li><span>3</span><div><b>Testimonios y preguntas</b><p>Agrega lo que dicen tus clientes y preguntas frecuentes. Puedes ocultarlos o editarlos cuando quieras.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-sparkles"/></svg></span><span class="g-t">Contenido digital</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Lo creamos nosotros</b><p>DGP diseña tus posts, historias y flyers y los sube a <b>Contenido</b>. Tú no tienes que subir nada.</p></div></li><li><span>2</span><div><b>Apruébalos</b><p>Ábrelo, revisa el diseño y el texto, y toca <b>Aprobar</b> o <b>Pedir cambios</b> con un comentario. Lo verás también en el calendario.</p></div></li><li><span>3</span><div><b>Publícalos</b><p>Descarga el diseño, copia el texto con un clic, publícalo y márcalo como <b>Publicado</b>.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-shield"/></svg></span><span class="g-t">Equipo y permisos</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Invitar a tu compañera</b><p>En <b>Equipo → Invitar usuario</b> escribe su nombre y correo y marca qué puede usar. Le llega un correo para crear su contraseña.</p></div></li><li><span>2</span><div><b>Permisos</b><p>Activa o desactiva cada permiso con un interruptor. «Datos sensibles» controla quién ve el Seguro Social y las claves del monitor.</p></div></li><li><span>3</span><div><b>Quitar acceso y actividad</b><p>Desactiva su acceso al instante si deja de trabajar contigo. Abajo verás quién creó, editó o eliminó cada cosa.</p></div></li><li><span>4</span><div><b>Roles listos</b><p>Elige un rol al invitar: <b>Redes sociales</b> (solo solicitudes, mensajes y campañas) o <b>Ayudante de taxes</b> (solo taxes y los clientes que tú le asignes como responsable).</p></div></li><li><span>5</span><div><b>Acceso hasta</b><p>Pon una fecha y el acceso se apaga solo, por ejemplo al terminar la temporada de taxes.</p></div></li></ol></details>
-          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-message"/></svg></span><span class="g-t">Mensajes y avisos automáticos</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Chats</b><p>En <b>Mensajes</b> ves las conversaciones con tus clientes. Tú contestas personalmente; usa las <b>respuestas rápidas</b> para no escribir lo mismo cada vez.</p></div></li><li><span>2</span><div><b>Por enviar</b><p>Los recordatorios de documentos, pagos y citas, los cambios de etapa y los pedidos de reseña aparecen en la pestaña <b>Por enviar</b>. Toca <b>Enviar</b> y se abre WhatsApp con el mensaje listo.</p></div></li><li><span>3</span><div><b>Automatizaciones</b><p>En la pestaña <b>Automatizaciones</b> enciende o apaga cada aviso y edita su texto, incluida la respuesta fuera de horario.</p></div></li><li><span>4</span><div><b>Pronto, solos</b><p>Cuando conectemos la API de WhatsApp, estos avisos saldrán sin que tengas que tocar nada.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-message"/></svg></span><span class="g-t">Bandeja: WhatsApp, Messenger e Instagram</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Todo llega solo</b><p>Los mensajes de Messenger e Instagram entran a <b>Mensajes</b> sin recargar la página. Suena un aviso y verás «Nuevo mensaje de…» aunque estés en otra parte del panel. El botón <b>🔔 Sonido</b> lo enciende o apaga.</p></div></li><li><span>2</span><div><b>Reconoce el canal por su color</b><p>Azul es Messenger, el degradado rosa y morado es Instagram y verde es WhatsApp. Arriba de la lista filtras por canal y por etapa.</p></div></li><li><span>3</span><div><b>Contesta desde el CRM</b><p>Escribe abajo y toca <b>Enviar por Messenger</b> o <b>Enviar por Instagram</b> (o Ctrl + Enter). Las <b>respuestas rápidas</b> llenan el texto con un toque.</p></div></li><li><span>4</span><div><b>La regla de las 24 horas</b><p>Meta solo deja responder desde el CRM durante 24 horas después del último mensaje del cliente. Si pasó más tiempo, el botón te lleva a Meta Business Suite para contestar desde ahí.</p></div></li><li><span>5</span><div><b>WhatsApp</b><p>Mientras conectamos la API de WhatsApp, el botón abre tu WhatsApp con el mensaje listo y queda registrado aquí.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-users"/></svg></span><span class="g-t">Prospectos y etapas</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Prospecto automático</b><p>Quien te escribe por primera vez y no es cliente queda como prospecto, con el canal por el que llegó.</p></div></li><li><span>2</span><div><b>Mueve la etapa</b><p>Arriba del chat toca <b>Nuevo</b>, <b>Interesado</b>, <b>Cita agendada</b>, <b>Cliente</b> o <b>No interesado</b>. Elige también el servicio que le interesa y quién de tu equipo lo atiende.</p></div></li><li><span>3</span><div><b>Convertir en cliente</b><p>Toca <b>Convertir en cliente</b>: se crea su ficha con nombre y teléfono y, si quieres, se abre el caso del servicio en el mismo paso.</p></div></li><li><span>4</span><div><b>Que nadie espere</b><p>El filtro <b>Sin responder</b> te muestra a quién le falta contestar. Si un prospecto lleva más de 1 día sin respuesta, el CRM te crea una tarea para recordártelo.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-image"/></svg></span><span class="g-t">Fotos y archivos en el chat</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Ver lo que te mandan</b><p>Las fotos y PDF que el cliente envía por Messenger o Instagram se ven dentro del chat. Toca la foto para verla en grande o <b>Descargar</b>.</p></div></li><li><span>2</span><div><b>Guardar en sus documentos</b><p>Toca <b>Guardar en documentos</b> y el archivo pasa a la ficha del cliente, en Documentos. Si todavía es prospecto, primero conviértelo en cliente.</p></div></li><li><span>3</span><div><b>Enviar un archivo</b><p>Toca el clip 📎 junto al botón de enviar, elige una foto o un PDF (hasta 25 MB) y envíalo con o sin texto.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-zap"/></svg></span><span class="g-t">Avisos automáticos</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Por enviar</b><p>Los recordatorios de documentos, pagos y citas, los cambios de etapa y los pedidos de reseña aparecen en la pestaña <b>Por enviar</b>. Toca <b>Enviar</b> y se abre WhatsApp con el mensaje listo.</p></div></li><li><span>2</span><div><b>Automatizaciones</b><p>En la pestaña <b>Automatizaciones</b> enciende o apaga cada aviso y edita su texto, incluida la respuesta fuera de horario.</p></div></li><li><span>3</span><div><b>Pronto, solos</b><p>Cuando quede conectada la API de WhatsApp, estos avisos saldrán sin que tengas que tocar nada.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-calendar"/></svg></span><span class="g-t">Agenda y citas en línea</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Tus clientes reservan</b><p>Comparte <b>avamultiservices.com/citas</b>: eligen servicio, día y hora libre, y la cita aparece en tu <b>Agenda</b>.</p></div></li><li><span>2</span><div><b>Tu semana</b><p>En <b>Agenda</b> ves la semana, confirmas, mueves o cancelas citas y creas citas tú misma.</p></div></li><li><span>3</span><div><b>Horario</b><p>En <b>Ajustes</b> defines los días y horas en que atiendes, cuánto dura cada cita y con cuánta anticipación pueden reservar.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-pen"/></svg></span><span class="g-t">Contratos y planes mensuales</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Crear el contrato</b><p>En la ficha del cliente, en <b>Contratos</b>, elige una plantilla (crédito, contabilidad o general) y revisa el texto.</p></div></li><li><span>2</span><div><b>Enviar a firmar</b><p>Toca <b>Enviar</b>: se abre WhatsApp con un enlace privado. El cliente lee, dibuja su firma con el dedo y acepta.</p></div></li><li><span>3</span><div><b>Firmado</b><p>Verás la fecha, el nombre y la firma en la ficha, y el cliente lo puede volver a ver en su portal.</p></div></li><li><span>4</span><div><b>Planes mensuales</b><p>En <b>Planes mensuales</b> registras lo que el cliente paga cada mes (por ejemplo, contabilidad). Con la conexión a Stripe se cobrará solo con tarjeta.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-smartphone"/></svg></span><span class="g-t">Portal del cliente</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Darle acceso</b><p>En la ficha del cliente toca <b>Invitar al portal</b>. Le llega un correo y entra sin contraseña, con un enlace seguro.</p></div></li><li><span>2</span><div><b>Lo que ve</b><p>En <b>avamultiservices.com/portal</b> ve en qué etapa va su trámite, su saldo, sus contratos y sus próximas citas.</p></div></li><li><span>3</span><div><b>Te sube documentos</b><p>Desde el portal te envía fotos o PDF, y aparecen en su ficha en el panel.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-send"/></svg></span><span class="g-t">Campañas y ventas</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Campañas</b><p>En <b>Campañas</b> elige una plantilla (temporada de taxes, Franchise Tax, crédito o contabilidad), filtra a quién va y toca <b>Preparar envío</b>. Los mensajes pasan a <b>Por enviar</b>.</p></div></li><li><span>2</span><div><b>Oportunidades</b><p>En <b>Inicio</b> verás a quién ofrecerle otro servicio: clientes de taxes sin crédito y clientes con LLC sin contabilidad.</p></div></li><li><span>3</span><div><b>Referidos</b><p>En la ficha del cliente marca quién lo refirió; el panel cuenta los referidos y muestra el descuento que definiste en Ajustes.</p></div></li><li><span>4</span><div><b>Ingresos por servicio</b><p>En <b>Inicio</b> ves cuánto deja cada servicio.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-clipboard"/></svg></span><span class="g-t">Lista de documentos por servicio</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Se crea sola</b><p>Cada caso nuevo trae la lista de documentos de su servicio, por ejemplo ID, W-2 y 1099 en Taxes. La editas en <b>Ajustes → Documentos por servicio</b>.</p></div></li><li><span>2</span><div><b>Marca lo que llega</b><p>Dentro del caso toca cada documento para marcarlo como recibido, o <b>No aplica</b>. La barra muestra el avance y en el tablero ves «Docs 3/5».</p></div></li><li><span>3</span><div><b>Pide lo que falta</b><p>Toca <b>Pedir lo que falta</b> y se arma el mensaje de WhatsApp con la lista exacta. El cliente también puede subirlos desde su portal, uno por uno.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-file"/></svg></span><span class="g-t">Recibos en PDF</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Al registrar un pago</b><p>Cada pago recibe su número de recibo y el CRM te ofrece enviárselo al cliente por WhatsApp.</p></div></li><li><span>2</span><div><b>Ver o reenviar</b><p>En Cobros, en la ficha del cliente o en el caso, usa los botones del recibo para abrirlo, descargar el PDF o enviarlo de nuevo.</p></div></li><li><span>3</span><div><b>Encuéntralo</b><p>En la búsqueda rápida escribe el número del recibo (por ejemplo, 1001) y te lleva directo.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-trending"/></svg></span><span class="g-t">Embudo de ventas y búsqueda rápida</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Tu embudo</b><p>En <b>Inicio</b> ves cuántos contactos llegaron, cuántos se hicieron clientes, cuántos tienen servicio y cuántos pagaron. Puedes verlo del mes, 90 días o 12 meses.</p></div></li><li><span>2</span><div><b>Por canal</b><p>Debajo ves de dónde llegan tus clientes y cuántos prospectos de WhatsApp, Messenger e Instagram se volvieron clientes.</p></div></li><li><span>3</span><div><b>Búsqueda rápida</b><p>Presiona <b>Ctrl + K</b> (o toca <b>Buscar</b> en el menú o la lupa en el celular) y escribe nombre, teléfono, correo, caso o número de recibo.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-settings"/></svg></span><span class="g-t">Ajustes</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Datos del negocio</b><p>En <b>Ajustes</b> escribe tu enlace de reseñas de Google, tu Zelle y el descuento por referido. Se usan en los mensajes y en el portal.</p></div></li><li><span>2</span><div><b>Integraciones</b><p>Ahí mismo verás el estado de WhatsApp, Instagram, Meta Ads, QuickBooks, Stripe y Google Calendar a medida que los conectemos.</p></div></li></ol></details>
         </div>
       </div>
@@ -596,17 +638,18 @@
           <div class="block-head">
             <span class="bh-ico sage"><svg class="icon"><use href="#i-share"/></svg></span>
             <div class="bh-txt"><div class="k">06 · Integraciones</div><h2>Conexiones con otras apps</h2></div>
-            <span class="status wip">Siguiente fase</span>
+            <span class="status wip">En curso</span>
           </div>
           <ul class="checks">
-            <li><span class="ck rec"></span><div><b>WhatsApp Business API</b><p>Para que los avisos salgan solos y los chats entren al panel.</p></div></li>
-            <li><span class="ck rec"></span><div><b>Instagram y Messenger</b><p>Para tener todos los mensajes en una sola bandeja.</p></div></li>
-            <li><span class="ck rec"></span><div><b>Leads de Meta Ads</b><p>Para que los formularios de tus anuncios lleguen a Solicitudes.</p></div></li>
-            <li><span class="ck rec"></span><div><b>Stripe</b><p>Pago con tarjeta en el portal y cobros mensuales automáticos.</p></div></li>
+            <li><span class="ck rec"></span><div><b>WhatsApp Business API</b><p>App de Meta, token y webhook listos. Falta que Meta verifique el negocio para conectar el número de Ana sin quitárselo del celular.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Instagram y Messenger</b><p>Conectados: los mensajes, fotos y archivos llegan a la bandeja y se responden desde el CRM.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Leads de Meta Ads</b><p>Conectado: cada formulario de tus anuncios llega solo a Solicitudes.</p></div></li>
+            <li><span class="ck rec"></span><div><b>Stripe</b><p>Programado y listo: se activa al pegar las claves de Stripe en Ajustes.</p></div></li>
             <li><span class="ck rec"></span><div><b>Google Calendar</b><p>Para ver tus citas en tu calendario.</p></div></li>
-            <li><span class="ck rec"></span><div><b>QuickBooks</b><p>Para sincronizar pagos y clientes con tu contabilidad.</p></div></li>
+            <li><span class="ck rec"></span><div><b>QuickBooks</b><p>Para sincronizar pagos y clientes con tu contabilidad (requiere QuickBooks Online).</p></div></li>
+            <li><span class="ck rec"></span><div><b>Asistente con IA</b><p>Lee cada mensaje, detecta el servicio y qué tan interesado está, y te sugiere una respuesta. Se activa con la clave gratuita de Groq.</p></div></li>
           </ul>
-          <div class="note"><svg class="icon"><use href="#i-clock"/></svg><span><b>Mientras tanto:</b> todo funciona. Los avisos se envían con un toque desde «Por enviar», que abre WhatsApp con el mensaje listo.</span></div>
+          <div class="note"><svg class="icon"><use href="#i-clock"/></svg><span><b>Mientras tanto:</b> todo funciona. Messenger e Instagram ya están en la bandeja y los avisos de WhatsApp se envían con un toque desde «Por enviar».</span></div>
         </article>
 
       </div>
