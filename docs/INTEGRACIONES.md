@@ -7,8 +7,8 @@ El código ya está publicado en Supabase. Cada integración se activa sola en c
 |---|---|---|
 | `meta-webhook` | Recibe WhatsApp, Instagram, Messenger y leads de Meta Ads | `https://szmkcwtkorsndvmxywai.supabase.co/functions/v1/meta-webhook` |
 | `enviar-mensaje` | Envía desde el panel y, cada 10 min, la cola «Por enviar» (si está activado) | — |
-| `stripe-pago` | Crea enlaces de pago (saldo del portal, cobro único y plan mensual) | — |
-| `stripe-webhook` | Registra en Cobros los pagos con tarjeta | `https://szmkcwtkorsndvmxywai.supabase.co/functions/v1/stripe-webhook` |
+| `square-pago` | Crea enlaces de pago de Square (saldo del portal, cobro único y mensualidad de un plan) | — |
+| `square-webhook` | Registra en Cobros los pagos con tarjeta de Square | `https://szmkcwtkorsndvmxywai.supabase.co/functions/v1/square-webhook` |
 
 ## 1. WhatsApp Business (API oficial de Meta)
 
@@ -46,18 +46,26 @@ Secrets:
 
 Los leads entran a **Solicitudes → Mensajes de contacto** con la etiqueta «Meta Ads».
 
-## 3. Stripe (tarjeta y cobros mensuales)
+## 3. Square (pagos con tarjeta)
 
-1. Crear la cuenta en [stripe.com](https://stripe.com) a nombre del negocio y conectar la cuenta bancaria.
-2. Developers → API keys → copiar la **Secret key** (`sk_live_…`).
-3. Developers → Webhooks → **Add endpoint** con la URL de `stripe-webhook` y los eventos:
-   `checkout.session.completed`, `invoice.paid`, `invoice.payment_failed`, `customer.subscription.deleted`.
-4. Copiar el **Signing secret** (`whsec_…`).
+1. Entrar a [developer.squareup.com](https://developer.squareup.com) con la cuenta de Square de AVA → **Create an app** («AVA CRM»).
+2. En la app → **Credentials** → pestaña **Production** → copiar el **Production Access token**.
+3. En la app → **Webhooks → Subscriptions** → **Add subscription** (pestaña Production):
+   - URL: la de `square-webhook` (arriba).
+   - Eventos: `payment.created`, `payment.updated`, `refund.updated`.
+   - Guardar y copiar la **Signature key**.
+4. Pegar ambas en el panel → **Ajustes → Claves de integración**.
 
 | Nombre | Valor |
 |---|---|
-| `STRIPE_SECRET_KEY` | `sk_live_…` |
-| `STRIPE_WEBHOOK_SECRET` | `whsec_…` |
+| `SQUARE_ACCESS_TOKEN` | Production access token |
+| `SQUARE_WEBHOOK_SIGNATURE_KEY` | Signature key del webhook |
+| `SQUARE_LOCATION_ID` | Opcional: solo si hay varias sucursales (si no, se usa la primera activa) |
+
+Cómo funciona: el panel o el portal crean un enlace de pago de Square (Checkout API). Cuando el cliente paga,
+Square avisa al webhook, que registra el pago en Cobros con su número de recibo y marca el enlace como pagado.
+Los pagos cobrados en Square fuera del CRM aparecen en Ajustes → Actividad reciente para registrarlos.
+Los mensuales se cobran enviando el enlace del mes desde la ficha del cliente.
 
 ## Comprobar
 
