@@ -3,9 +3,14 @@
 (function () {
   'use strict';
   var A = window.AVA, el = A.el, sb = A.sb;
-  var CANALES = { whatsapp: 'WhatsApp', instagram: 'Instagram', messenger: 'Messenger', sms: 'SMS' };
+  var CANAL = {
+    whatsapp: { n: 'WhatsApp', ic: 'i-whatsapp', relleno: true },
+    messenger: { n: 'Messenger', ic: 'i-messenger', relleno: true },
+    instagram: { n: 'Instagram', ic: 'i-instagram' },
+    sms: { n: 'SMS', ic: 'i-message' }
+  };
   var TIPOS = { aviso_etapa: 'Cambio de etapa', recordatorio_documentos: 'Documentos', recordatorio_pago: 'Pago', recordatorio_cita: 'Cita', resena: 'Reseña de Google', campana: 'Campaña', franchise_tax: 'Franchise Tax', fuera_horario: 'Fuera de horario', manual: 'Manual' };
-  var st = { tab: 'chats', conv: null };
+  var st = { tab: 'chats', conv: null, canal: 'todos' };
   var ui = {};
 
   A.wa = function (tel, texto) {
@@ -66,72 +71,163 @@
   }
 
   /* ---------- Conversaciones ---------- */
+  // Cada canal con su logo y su color para reconocerlo de un vistazo
+  function logo(canal, cls) {
+    var c = CANAL[canal] || CANAL.sms;
+    return A.icon(c.ic, (cls || '') + (c.relleno ? ' icon-fill' : ''));
+  }
+  function pastilla(canal) {
+    return el('span', { class: 'ch-pill ch-' + canal }, [logo(canal, 'icon-sm'), el('span', { text: (CANAL[canal] || CANAL.sms).n })]);
+  }
+  function nombreConv(c) {
+    if (c.nombre) return c.nombre;
+    if (c.clientes) return A.nombreDe(c.clientes);
+    return c.canal === 'whatsapp' || c.canal === 'sms' ? '+' + c.contacto : 'Contacto de ' + (CANAL[c.canal] || CANAL.sms).n;
+  }
+  // En Messenger e Instagram el «contacto» es un número interno de Meta: no se muestra
+  function detalleConv(c) {
+    if (c.canal === 'whatsapp' || c.canal === 'sms') return '+' + c.contacto;
+    if (c.canal === 'instagram') return 'Mensaje directo de Instagram';
+    return 'Mensaje de la página de Facebook';
+  }
+  function avatarConv(c) {
+    return el('span', { class: 'conv-av' }, [
+      el('span', { class: 'avatar ch-' + c.canal, text: A.iniciales(nombreConv(c).replace(/^[@+]/, '')) }),
+      el('span', { class: 'ch-badge ch-' + c.canal, title: (CANAL[c.canal] || CANAL.sms).n }, [logo(c.canal)])
+    ]);
+  }
+
   async function chats(box) {
     var wrap = el('div', { class: 'inbox' });
     var lista = el('div', { class: 'inbox-list' });
     var panel = el('div', { class: 'inbox-chat' }, [el('div', { class: 'empty' }, [el('b', { text: 'Elige una conversación' }), 'O empieza una nueva con un cliente.'])]);
+    var filtros = el('div', { class: 'ch-filtros', role: 'tablist', 'aria-label': 'Filtrar por canal' });
+    var items = el('div');
+    lista.appendChild(filtros); lista.appendChild(items);
     wrap.appendChild(lista); wrap.appendChild(panel);
     box.appendChild(el('div', { class: 'tools' }, [el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: nuevaConv }, [A.icon('i-plus'), el('span', { text: 'Nueva conversación' })])]));
     box.appendChild(wrap);
-    var r = await sb.from('conversaciones').select('*, clientes(id,nombre,apellidos,telefono)').order('ultimo_at', { ascending: false }).limit(300);
-    var convs = r.data || [];
-    if (!convs.length) lista.appendChild(el('div', { class: 'muted', style: 'padding:16px', text: 'Aún no hay conversaciones. Cuando conectemos WhatsApp, Instagram y Messenger llegarán aquí solas.' }));
-    convs.forEach(function (c) {
-      var item = el('button', { type: 'button', class: 'conv' + (st.conv === c.id ? ' on' : ''), onclick: function () { st.conv = c.id; lista.querySelectorAll('.conv').forEach(function (x) { x.classList.remove('on'); }); item.classList.add('on'); abrir(c, panel); } }, [
-        el('span', { class: 'avatar ch-' + c.canal, text: A.iniciales(c.nombre || c.contacto) }),
-        el('span', { class: 'conv-b' }, [el('b', { text: c.nombre || (c.clientes ? A.nombreDe(c.clientes) : c.contacto) }), el('span', { class: 'muted', text: CANALES[c.canal] + ' · ' + (c.ultimo_texto || '') })]),
-        el('span', { class: 'conv-m' }, [el('span', { class: 'muted', text: A.hace(c.ultimo_at) }), c.no_leidos ? el('span', { class: 'count', text: c.no_leidos }) : null])
-      ]);
-      lista.appendChild(item);
-      if (st.conv === c.id) abrir(c, panel);
-    });
+    var convs = [], firma = '';
+
+    function pintarFiltros() {
+      filtros.innerHTML = '';
+      [['todos', 'Todos'], ['whatsapp', 'WhatsApp'], ['messenger', 'Messenger'], ['instagram', 'Instagram']].forEach(function (f) {
+        var de = f[0] === 'todos' ? convs : convs.filter(function (c) { return c.canal === f[0]; });
+        var sinLeer = de.reduce(function (a, c) { return a + (c.no_leidos || 0); }, 0);
+        filtros.appendChild(el('button', { type: 'button', role: 'tab', 'aria-selected': String(st.canal === f[0]), class: 'ch-f ch-' + f[0] + (st.canal === f[0] ? ' on' : ''), title: f[1], 'aria-label': f[1], onclick: function () { st.canal = f[0]; pintarFiltros(); pintarLista(); } }, [
+          f[0] === 'todos' ? null : logo(f[0], 'icon-sm'), el('span', { text: f[1] }), sinLeer ? el('span', { class: 'count', text: sinLeer }) : null
+        ]));
+      });
+    }
+    function pintarLista() {
+      items.innerHTML = '';
+      var vis = st.canal === 'todos' ? convs : convs.filter(function (c) { return c.canal === st.canal; });
+      if (!vis.length) {
+        items.appendChild(el('div', { class: 'muted', style: 'padding:16px', text: convs.length ? 'No hay conversaciones de ' + CANAL[st.canal].n + ' todavía.' : 'Aún no hay conversaciones. Los mensajes de WhatsApp, Instagram y Messenger llegarán aquí solos.' }));
+        return;
+      }
+      vis.forEach(function (c) {
+        var item = el('button', { type: 'button', class: 'conv ch-' + c.canal + (st.conv === c.id ? ' on' : '') + (c.no_leidos ? ' nueva' : ''), onclick: function () {
+          st.conv = c.id; items.querySelectorAll('.conv').forEach(function (x) { x.classList.remove('on'); }); item.classList.add('on', 'abierta');
+          if (c.no_leidos) { c.no_leidos = 0; item.classList.remove('nueva'); var n = item.querySelector('.count'); if (n) n.remove(); pintarFiltros(); }
+          abrir(c, panel, wrap);
+        } }, [
+          avatarConv(c),
+          el('span', { class: 'conv-b' }, [el('b', { text: nombreConv(c) }), el('span', { class: 'conv-t' }, [el('span', { class: 'ch-txt ch-' + c.canal, text: CANAL[c.canal] ? CANAL[c.canal].n : 'SMS' }), el('span', { class: 'muted', text: ' · ' + (c.ultimo_texto || '') })])]),
+          el('span', { class: 'conv-m' }, [el('span', { class: 'muted', text: A.hace(c.ultimo_at) }), c.no_leidos ? el('span', { class: 'count', text: c.no_leidos }) : null])
+        ]);
+        items.appendChild(item);
+      });
+    }
+    async function cargar(primera) {
+      var r = await sb.from('conversaciones').select('*, clientes(id,nombre,apellidos,telefono)').order('ultimo_at', { ascending: false }).limit(300);
+      if (r.error) return;
+      var f = (r.data || []).map(function (c) { return c.id + c.ultimo_at + c.no_leidos + (c.nombre || ''); }).join('|');
+      if (!primera && f === firma) return;
+      firma = f; convs = r.data || [];
+      pintarFiltros(); pintarLista();
+      var abierta = convs.filter(function (c) { return c.id === st.conv; })[0];
+      // Primera vez: abre la conversación guardada. Después: solo se recarga si llegó algo nuevo a la abierta.
+      if (abierta && (primera || abierta.no_leidos)) abrir(abierta, panel, wrap, !primera);
+      A.contarBandeja();
+    }
+    await cargar(true);
+    // Mensajes nuevos: se revisa cada 15 s mientras la bandeja está abierta
+    var t = setInterval(function () {
+      if (!document.body.contains(wrap)) { clearInterval(t); return; }
+      if (!document.hidden) cargar(false);
+    }, 15000);
   }
 
-  async function abrir(c, panel) {
+  async function abrir(c, panel, wrap, refresco) {
+    var borrador = refresco && panel.querySelector('textarea') ? panel.querySelector('textarea').value : '';
     panel.innerHTML = '';
-    if (c.no_leidos) { await sb.from('conversaciones').update({ no_leidos: 0 }).eq('id', c.id); A.contarBandeja(); }
-    var nombre = c.nombre || (c.clientes ? A.nombreDe(c.clientes) : c.contacto);
+    if (wrap) wrap.classList.add('con-chat');
+    if (c.no_leidos) { c.no_leidos = 0; await sb.from('conversaciones').update({ no_leidos: 0 }).eq('id', c.id); A.contarBandeja(); }
+    var nombre = nombreConv(c);
+    var enlace = c.canal === 'messenger' ? 'https://business.facebook.com/latest/inbox/messenger' : c.canal === 'instagram' ? 'https://business.facebook.com/latest/inbox/instagram_direct' : null;
+    panel.className = 'inbox-chat ch-' + c.canal;
     panel.appendChild(el('div', { class: 'chat-h' }, [
-      el('div', null, [el('b', { text: nombre }), el('span', { class: 'muted', text: CANALES[c.canal] + ' · ' + c.contacto })]),
-      c.cliente_id ? el('a', { class: 'mini-btn', href: '#/clientes/' + c.cliente_id, text: 'Ver ficha' }) : null
+      el('button', { type: 'button', class: 'icon-btn chat-volver', 'aria-label': 'Volver a la lista', onclick: function () { wrap.classList.remove('con-chat'); } }, [A.icon('i-chevron-left', 'icon-sm')]),
+      avatarConv(c),
+      el('div', { class: 'chat-h-b' }, [el('b', { text: nombre }), el('span', { class: 'chat-h-s' }, [pastilla(c.canal), el('span', { class: 'muted', text: detalleConv(c) })])]),
+      el('div', { class: 'chat-h-a' }, [
+        c.cliente_id ? el('a', { class: 'mini-btn', href: '#/clientes/' + c.cliente_id, text: 'Ver ficha' }) : null,
+        enlace ? el('a', { class: 'mini-btn', href: enlace, target: '_blank', rel: 'noopener', title: 'Abrir en Meta Business Suite' }, [A.icon('i-external', 'icon-sm')]) : null
+      ])
     ]));
     var msgs = el('div', { class: 'chat-msgs' });
     panel.appendChild(msgs);
     var r = await sb.from('mensajes_chat').select('*').eq('conversacion_id', c.id).order('created_at').limit(500);
+    var dia = '';
     (r.data || []).forEach(function (m) {
-      msgs.appendChild(el('div', { class: 'bub ' + (m.direccion === 'entrante' ? 'in' : 'out') }, [el('p', { text: m.texto }), el('span', { text: A.fecha(m.created_at, true) + (m.automatico ? ' · automático' : '') })]));
+      var d = A.fecha(m.created_at);
+      if (d !== dia) { dia = d; msgs.appendChild(el('div', { class: 'chat-dia' }, [el('span', { text: d })])); }
+      var hora = new Date(m.created_at).toLocaleTimeString('es-US', { hour: 'numeric', minute: '2-digit' });
+      var marca = m.direccion === 'saliente' ? ({ enviado: ' · ✓', entregado: ' · ✓✓', leido: ' · ✓✓ leído', error: ' · no se envió' })[m.estado] || '' : '';
+      msgs.appendChild(el('div', { class: 'bub ' + (m.direccion === 'entrante' ? 'in' : 'out') + (m.estado === 'error' ? ' err' : '') }, [el('p', { text: m.texto }), el('span', { text: hora + (m.automatico ? ' · automático' : '') + marca })]));
     });
     if (!(r.data || []).length) msgs.appendChild(el('div', { class: 'muted', style: 'text-align:center;padding:20px', text: 'Sin mensajes todavía.' }));
     setTimeout(function () { msgs.scrollTop = msgs.scrollHeight; }, 30);
 
     var integ = await A.integraciones();
     var directo = conectado(integ, c.canal);
-    var txt = el('textarea', { class: 'input', placeholder: 'Escribe tu respuesta…', maxlength: 4000, style: 'min-height:70px' });
+    // Meta solo deja responder con texto libre dentro de las 24 h siguientes al último mensaje del cliente
+    var horas = c.ultimo_entrante_at ? (Date.now() - new Date(c.ultimo_entrante_at).getTime()) / 3600e3 : null;
+    var cerrada = directo && c.canal !== 'whatsapp' && horas !== null && horas > 24;
+    var txt = el('textarea', { class: 'input', placeholder: 'Escribe tu respuesta por ' + (CANAL[c.canal] || CANAL.sms).n + '…', maxlength: 4000, style: 'min-height:70px' });
+    txt.value = borrador;
     var rap = (await sb.from('respuestas_rapidas').select('*').order('orden')).data || [];
-    var primerNombre = (c.clientes && c.clientes.nombre) || (c.nombre || '').split(' ')[0] || '';
+    var primerNombre = (c.clientes && c.clientes.nombre) || (c.nombre && c.nombre.charAt(0) !== '@' ? c.nombre.split(' ')[0] : '');
     var chips = el('div', { class: 'chips', style: 'margin-bottom:8px' }, rap.map(function (q) {
-      return el('button', { type: 'button', class: 'chip-s', title: q.texto, text: q.titulo, onclick: function () { txt.value = q.texto.replace(/\{nombre\}/g, primerNombre); txt.focus(); } });
+      return el('button', { type: 'button', class: 'chip-s', title: q.texto, text: q.titulo, onclick: function () { txt.value = q.texto.replace(/\{nombre\}/g, primerNombre).replace(/ ,/g, ','); txt.focus(); } });
     }));
-    panel.appendChild(el('div', { class: 'chat-f' }, [chips, txt, el('div', { class: 'row2', style: 'display:flex;gap:8px;justify-content:flex-end;margin-top:8px' }, [
-      el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: async function () {
-        var t = txt.value.trim(); if (!t) { txt.focus(); return; }
-        var boton = this; boton.disabled = true;
-        if (directo) {
-          var env = await sb.functions.invoke('enviar-mensaje', { body: { conversacion_id: c.id, texto: t } });
-          boton.disabled = false;
-          if (!env.error) { txt.value = ''; abrir(c, panel); return; }
-          var info = await leerError(env.error);
-          if (!(info.codigo === 'fuera_ventana' && c.canal === 'whatsapp')) { A.toast(info.error || 'No se pudo enviar.', 'error'); return; }
-          if (!confirm('Pasaron más de 24 horas desde su último mensaje, así que WhatsApp no deja escribirle desde el CRM con texto libre. ¿Abrir tu WhatsApp con el mensaje listo?')) return;
-        }
+    var enviar = el('button', { class: 'btn btn-sm btn-ch ch-' + c.canal, type: 'button', onclick: async function () {
+      var t = txt.value.trim(); if (!t) { txt.focus(); return; }
+      if (cerrada) { window.open(enlace, '_blank', 'noopener'); return; }
+      var boton = this; boton.disabled = true;
+      if (directo) {
+        var env = await sb.functions.invoke('enviar-mensaje', { body: { conversacion_id: c.id, texto: t } });
         boton.disabled = false;
-        if (c.canal === 'whatsapp' || c.canal === 'sms') window.open(A.wa(c.contacto, t), '_blank', 'noopener');
-        await sb.from('mensajes_chat').insert({ conversacion_id: c.id, direccion: 'saliente', texto: t });
-        await sb.from('conversaciones').update({ ultimo_texto: t.slice(0, 200), ultimo_at: new Date().toISOString() }).eq('id', c.id);
-        txt.value = '';
-        abrir(c, panel);
-      } }, [A.icon('i-send'), el('span', { text: directo ? 'Enviar' : c.canal === 'whatsapp' ? 'Enviar por WhatsApp' : 'Registrar respuesta' })])
-    ])]));
+        if (!env.error) { txt.value = ''; c.ultimo_texto = t; abrir(c, panel, wrap); return; }
+        var info = await leerError(env.error);
+        if (!(info.codigo === 'fuera_ventana' && c.canal === 'whatsapp')) { A.toast(info.error || 'No se pudo enviar.', 'error'); return; }
+        if (!confirm('Pasaron más de 24 horas desde su último mensaje, así que WhatsApp no deja escribirle desde el CRM con texto libre. ¿Abrir tu WhatsApp con el mensaje listo?')) return;
+      }
+      boton.disabled = false;
+      if (c.canal === 'whatsapp' || c.canal === 'sms') window.open(A.wa(c.contacto, t), '_blank', 'noopener');
+      await sb.from('mensajes_chat').insert({ conversacion_id: c.id, direccion: 'saliente', texto: t });
+      await sb.from('conversaciones').update({ ultimo_texto: t.slice(0, 200), ultimo_at: new Date().toISOString() }).eq('id', c.id);
+      txt.value = '';
+      abrir(c, panel, wrap);
+    } }, [logo(c.canal, 'icon-sm'), el('span', { text: cerrada ? 'Responder en Meta Business Suite' : directo ? 'Enviar por ' + (CANAL[c.canal] || CANAL.sms).n : c.canal === 'whatsapp' ? 'Enviar por WhatsApp' : 'Registrar respuesta' })]);
+    txt.addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); enviar.click(); } });
+    panel.appendChild(el('div', { class: 'chat-f' }, [
+      cerrada ? el('div', { class: 'alert warn', style: 'margin-bottom:8px' }, [A.icon('i-alert', 'icon-sm'), 'Pasaron más de 24 horas desde su último mensaje, así que Meta no deja responderle desde el CRM. Contéstale desde Meta Business Suite (el botón la abre) o espera a que vuelva a escribir.']) : null,
+      chips, txt,
+      el('div', { style: 'display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:8px' }, [el('span', { class: 'muted', style: 'font-size:11.5px', text: 'Ctrl + Enter para enviar' }), enviar])
+    ]));
+    if (!refresco) txt.focus({ preventScroll: true });
   }
 
   async function nuevaConv() {
@@ -149,7 +245,7 @@
         if (tel.length < 7) { A.msg(aviso, 'Escribe un teléfono válido.'); return false; }
         var r = await sb.from('conversaciones').upsert({ canal: 'whatsapp', contacto: tel, nombre: c ? A.nombreDe(c) : d.nombre, cliente_id: c ? c.id : null }, { onConflict: 'canal,contacto' }).select('id').single();
         if (r.error) { A.msg(aviso, 'No se pudo crear.'); return false; }
-        st.conv = r.data.id; st.tab = 'chats'; pintarTabs();
+        st.conv = r.data.id; st.tab = 'chats'; st.canal = 'todos'; pintarTabs();
       }
     });
   }
