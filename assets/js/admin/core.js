@@ -267,6 +267,7 @@
     AVA.contarTareas();
     AVA.contarContenido();
     if (AVA.contarBandeja) AVA.contarBandeja();
+    if (AVA.escucharBandeja) AVA.escucharBandeja();
     if (AVA.contarCitas) AVA.contarCitas();
     // Precarga en segundo plano lo que usan las ventanas emergentes
     if (puede('clientes|casos|cobros|tareas|documentos|mensajes|citas|taxes')) cargarClientes();

@@ -10,7 +10,7 @@
     sms: { n: 'SMS', ic: 'i-message' }
   };
   var TIPOS = { aviso_etapa: 'Cambio de etapa', recordatorio_documentos: 'Documentos', recordatorio_pago: 'Pago', recordatorio_cita: 'Cita', resena: 'Reseña de Google', campana: 'Campaña', franchise_tax: 'Franchise Tax', fuera_horario: 'Fuera de horario', manual: 'Manual' };
-  var st = { tab: 'chats', conv: null, canal: 'todos' };
+  var st = { tab: 'chats', conv: null, canal: 'todos', etapa: 'todas' };
   var ui = {};
 
   A.wa = function (tel, texto) {
@@ -36,7 +36,67 @@
     var n = (r[0].data || []).reduce(function (a, x) { return a + x.no_leidos; }, 0) + (r[1].count || 0);
     var b = document.getElementById('count-ban');
     if (b) b.textContent = n ? n : '';
+    document.title = (n ? '(' + n + ') ' : '') + document.title.replace(/^\(\d+\) /, '');
   };
+
+  /* ---------- Avisos al instante: los mensajes nuevos llegan solos y suenan ---------- */
+  var rt = null, visto = {}, audio = null;
+  function sonidoActivo() { try { return localStorage.getItem('ava-sonido') !== 'no'; } catch (_) { return true; } }
+  // El navegador solo deja sonar después de que la persona tocó la página una vez
+  function prepararAudio() {
+    if (audio || !(window.AudioContext || window.webkitAudioContext)) return;
+    audio = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  ['pointerdown', 'keydown'].forEach(function (ev) { document.addEventListener(ev, prepararAudio, { once: true, capture: true }); });
+  function sonar() {
+    if (!sonidoActivo() || !audio) return;
+    if (audio.state === 'suspended') audio.resume();
+    var t = audio.currentTime;
+    [[880, 0], [1320, 0.13]].forEach(function (n) {
+      var o = audio.createOscillator(), g = audio.createGain();
+      o.type = 'sine'; o.frequency.value = n[0];
+      g.gain.setValueAtTime(0.0001, t + n[1]);
+      g.gain.exponentialRampToValueAtTime(0.18, t + n[1] + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + n[1] + 0.35);
+      o.connect(g); g.connect(audio.destination);
+      o.start(t + n[1]); o.stop(t + n[1] + 0.4);
+    });
+  }
+  A.escucharBandeja = function () {
+    if (rt || !A.puede('mensajes')) return;
+    rt = sb.channel('bandeja-avisos').on('postgres_changes', { event: '*', schema: 'public', table: 'conversaciones' }, function (p) {
+      var c = p.new || {};
+      window.dispatchEvent(new CustomEvent('ava:conversacion', { detail: c }));
+      // Solo avisa de mensajes recién llegados (no de cambios de etapa ni de marcar como leído)
+      if (!c.id || !c.ultimo_entrante_at || !c.no_leidos || visto[c.id] === c.ultimo_entrante_at) return;
+      visto[c.id] = c.ultimo_entrante_at;
+      if (Date.now() - new Date(c.ultimo_entrante_at).getTime() > 5 * 60000) return;
+      var canal = (CANAL[c.canal] || CANAL.sms).n;
+      sonar();
+      A.contarBandeja();
+      if (location.hash.indexOf('#/bandeja') !== 0) A.toast('Nuevo mensaje de ' + (c.nombre || 'un contacto') + ' por ' + canal, 'ok');
+      if (document.hidden && window.Notification && Notification.permission === 'granted' && sonidoActivo()) {
+        try { new Notification('Nuevo mensaje · ' + canal, { body: (c.nombre ? c.nombre + ': ' : '') + (c.ultimo_texto || ''), tag: c.id, icon: '/assets/img/favicon.svg' }); } catch (_) { /* */ }
+      }
+    }).subscribe();
+  };
+  function botonSonido() {
+    var b = el('button', { type: 'button', class: 'btn btn-ghost btn-sm' });
+    function pintar() {
+      b.innerHTML = '';
+      b.appendChild(el('span', { text: sonidoActivo() ? '🔔 Sonido activado' : '🔕 Sonido apagado' }));
+      b.title = sonidoActivo() ? 'Suena cuando llega un mensaje nuevo. Toca para silenciar.' : 'Toca para que suene cuando llegue un mensaje.';
+    }
+    b.addEventListener('click', function () {
+      var on = !sonidoActivo();
+      try { localStorage.setItem('ava-sonido', on ? 'si' : 'no'); } catch (_) { /* */ }
+      prepararAudio();
+      if (on) { sonar(); if (window.Notification && Notification.permission === 'default') Notification.requestPermission(); }
+      pintar();
+    });
+    pintar();
+    return b;
+  }
 
   A.vista('bandeja', {
     permiso: 'mensajes',
@@ -79,6 +139,17 @@
   function pastilla(canal) {
     return el('span', { class: 'ch-pill ch-' + canal }, [logo(canal, 'icon-sm'), el('span', { text: (CANAL[canal] || CANAL.sms).n })]);
   }
+  var ETAPAS = { nuevo: 'Nuevo', interesado: 'Interesado', cita: 'Cita agendada', cliente: 'Cliente', no_interesado: 'No interesado' };
+  var FILTROS_ETAPA = [['todas', 'Todas las etapas'], ['sin_responder', 'Sin responder'], ['prospectos', 'Prospectos activos'], ['nuevo', 'Nuevos'], ['interesado', 'Interesados'], ['cita', 'Con cita agendada'], ['cliente', 'Clientes'], ['no_interesado', 'No interesados']];
+  // Escribió y nadie le ha contestado todavía
+  function sinResponder(c) { return !!c.ultimo_entrante_at && (!c.ultimo_saliente_at || c.ultimo_saliente_at < c.ultimo_entrante_at); }
+  function pasaEtapa(c) {
+    if (st.etapa === 'todas') return true;
+    if (st.etapa === 'sin_responder') return sinResponder(c) && c.etapa !== 'no_interesado';
+    if (st.etapa === 'prospectos') return ['nuevo', 'interesado', 'cita'].indexOf(c.etapa) >= 0;
+    return c.etapa === st.etapa;
+  }
+  function chipEtapa(etapa) { return el('span', { class: 'et et-' + etapa, text: ETAPAS[etapa] || etapa }); }
   function nombreConv(c) {
     if (c.nombre) return c.nombre;
     if (c.clientes) return A.nombreDe(c.clientes);
@@ -103,16 +174,19 @@
     var panel = el('div', { class: 'inbox-chat' }, [el('div', { class: 'empty' }, [el('b', { text: 'Elige una conversación' }), 'O empieza una nueva con un cliente.'])]);
     var filtros = el('div', { class: 'ch-filtros', role: 'tablist', 'aria-label': 'Filtrar por canal' });
     var items = el('div');
-    lista.appendChild(filtros); lista.appendChild(items);
+    var selEtapa = el('select', { class: 'input sm et-filtro', 'aria-label': 'Filtrar por etapa' }, FILTROS_ETAPA.map(function (f) { return el('option', { value: f[0], text: f[1] }); }));
+    selEtapa.value = st.etapa;
+    selEtapa.addEventListener('change', function () { st.etapa = selEtapa.value; pintarFiltros(); pintarLista(); });
+    lista.appendChild(el('div', { class: 'inbox-fil' }, [filtros, el('div', { class: 'et-fil' }, [selEtapa])])); lista.appendChild(items);
     wrap.appendChild(lista); wrap.appendChild(panel);
-    box.appendChild(el('div', { class: 'tools' }, [el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: nuevaConv }, [A.icon('i-plus'), el('span', { text: 'Nueva conversación' })])]));
+    box.appendChild(el('div', { class: 'tools' }, [el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: nuevaConv }, [A.icon('i-plus'), el('span', { text: 'Nueva conversación' })]), botonSonido()]));
     box.appendChild(wrap);
     var convs = [], firma = '';
 
     function pintarFiltros() {
       filtros.innerHTML = '';
       [['todos', 'Todos'], ['whatsapp', 'WhatsApp'], ['messenger', 'Messenger'], ['instagram', 'Instagram']].forEach(function (f) {
-        var de = f[0] === 'todos' ? convs : convs.filter(function (c) { return c.canal === f[0]; });
+        var de = convs.filter(function (c) { return (f[0] === 'todos' || c.canal === f[0]) && pasaEtapa(c); });
         var sinLeer = de.reduce(function (a, c) { return a + (c.no_leidos || 0); }, 0);
         filtros.appendChild(el('button', { type: 'button', role: 'tab', 'aria-selected': String(st.canal === f[0]), class: 'ch-f ch-' + f[0] + (st.canal === f[0] ? ' on' : ''), title: f[1], 'aria-label': f[1], onclick: function () { st.canal = f[0]; pintarFiltros(); pintarLista(); } }, [
           f[0] === 'todos' ? null : logo(f[0], 'icon-sm'), el('span', { text: f[1] }), sinLeer ? el('span', { class: 'count', text: sinLeer }) : null
@@ -121,9 +195,9 @@
     }
     function pintarLista() {
       items.innerHTML = '';
-      var vis = st.canal === 'todos' ? convs : convs.filter(function (c) { return c.canal === st.canal; });
+      var vis = convs.filter(function (c) { return (st.canal === 'todos' || c.canal === st.canal) && pasaEtapa(c); });
       if (!vis.length) {
-        items.appendChild(el('div', { class: 'muted', style: 'padding:16px', text: convs.length ? 'No hay conversaciones de ' + CANAL[st.canal].n + ' todavía.' : 'Aún no hay conversaciones. Los mensajes de WhatsApp, Instagram y Messenger llegarán aquí solos.' }));
+        items.appendChild(el('div', { class: 'muted', style: 'padding:16px', text: !convs.length ? 'Aún no hay conversaciones. Los mensajes de WhatsApp, Instagram y Messenger llegarán aquí solos.' : st.etapa === 'sin_responder' ? '¡Todo respondido! No hay nadie esperando respuesta.' : 'No hay conversaciones con este filtro.' }));
         return;
       }
       vis.forEach(function (c) {
@@ -133,7 +207,8 @@
           abrir(c, panel, wrap);
         } }, [
           avatarConv(c),
-          el('span', { class: 'conv-b' }, [el('b', { text: nombreConv(c) }), el('span', { class: 'conv-t' }, [el('span', { class: 'ch-txt ch-' + c.canal, text: CANAL[c.canal] ? CANAL[c.canal].n : 'SMS' }), el('span', { class: 'muted', text: ' · ' + (c.ultimo_texto || '') })])]),
+          el('span', { class: 'conv-b' }, [el('b', { text: nombreConv(c) }), el('span', { class: 'conv-t' }, [el('span', { class: 'ch-txt ch-' + c.canal, text: CANAL[c.canal] ? CANAL[c.canal].n : 'SMS' }), el('span', { class: 'muted', text: ' · ' + (c.ultimo_texto || '') })]),
+            el('span', { class: 'conv-e' }, [chipEtapa(c.etapa), c.servicio && A.SERVICIOS[c.servicio] ? el('span', { class: 'muted', text: A.SERVICIOS[c.servicio].corto }) : null, sinResponder(c) && c.etapa !== 'no_interesado' ? el('span', { class: 'sr', text: 'Sin responder' }) : null])]),
           el('span', { class: 'conv-m' }, [el('span', { class: 'muted', text: A.hace(c.ultimo_at) }), c.no_leidos ? el('span', { class: 'count', text: c.no_leidos }) : null])
         ]);
         items.appendChild(item);
@@ -142,7 +217,7 @@
     async function cargar(primera) {
       var r = await sb.from('conversaciones').select('*, clientes(id,nombre,apellidos,telefono)').order('ultimo_at', { ascending: false }).limit(300);
       if (r.error) return;
-      var f = (r.data || []).map(function (c) { return c.id + c.ultimo_at + c.no_leidos + (c.nombre || ''); }).join('|');
+      var f = (r.data || []).map(function (c) { return [c.id, c.ultimo_at, c.no_leidos, c.nombre, c.etapa, c.servicio, c.asignado_a, c.ultimo_saliente_at, c.cliente_id].join(','); }).join('|');
       if (!primera && f === firma) return;
       firma = f; convs = r.data || [];
       pintarFiltros(); pintarLista();
@@ -151,23 +226,32 @@
       if (abierta && (primera || abierta.no_leidos)) abrir(abierta, panel, wrap, !primera);
       A.contarBandeja();
     }
+    ui.recargar = function () { cargar(false); };
     await cargar(true);
-    // Mensajes nuevos: se revisa cada 15 s mientras la bandeja está abierta
+    // Los mensajes nuevos llegan al instante (Realtime); cada 60 s se revisa por si acaso
+    var espera = null;
+    function alCambiar() {
+      if (!document.body.contains(wrap)) { window.removeEventListener('ava:conversacion', alCambiar); return; }
+      clearTimeout(espera); espera = setTimeout(function () { cargar(false); }, 250);
+    }
+    window.addEventListener('ava:conversacion', alCambiar);
     var t = setInterval(function () {
       if (!document.body.contains(wrap)) { clearInterval(t); return; }
       if (!document.hidden) cargar(false);
-    }, 15000);
+    }, 60000);
   }
 
   async function abrir(c, panel, wrap, refresco) {
     var borrador = refresco && panel.querySelector('textarea') ? panel.querySelector('textarea').value : '';
-    panel.innerHTML = '';
+    // Al refrescar, se arma aparte y se cambia de una vez (sin parpadeo)
+    var dst = refresco ? document.createDocumentFragment() : panel;
+    if (!refresco) panel.innerHTML = '';
     if (wrap) wrap.classList.add('con-chat');
     if (c.no_leidos) { c.no_leidos = 0; await sb.from('conversaciones').update({ no_leidos: 0 }).eq('id', c.id); A.contarBandeja(); }
     var nombre = nombreConv(c);
     var enlace = c.canal === 'messenger' ? 'https://business.facebook.com/latest/inbox/messenger' : c.canal === 'instagram' ? 'https://business.facebook.com/latest/inbox/instagram_direct' : null;
     panel.className = 'inbox-chat ch-' + c.canal;
-    panel.appendChild(el('div', { class: 'chat-h' }, [
+    dst.appendChild(el('div', { class: 'chat-h' }, [
       el('button', { type: 'button', class: 'icon-btn chat-volver', 'aria-label': 'Volver a la lista', onclick: function () { wrap.classList.remove('con-chat'); } }, [A.icon('i-chevron-left', 'icon-sm')]),
       avatarConv(c),
       el('div', { class: 'chat-h-b' }, [el('b', { text: nombre }), el('span', { class: 'chat-h-s' }, [pastilla(c.canal), el('span', { class: 'muted', text: detalleConv(c) })])]),
@@ -176,8 +260,9 @@
         enlace ? el('a', { class: 'mini-btn', href: enlace, target: '_blank', rel: 'noopener', title: 'Abrir en Meta Business Suite' }, [A.icon('i-external', 'icon-sm')]) : null
       ])
     ]));
+    dst.appendChild(barraProspecto(c, panel, wrap));
     var msgs = el('div', { class: 'chat-msgs' });
-    panel.appendChild(msgs);
+    dst.appendChild(msgs);
     var r = await sb.from('mensajes_chat').select('*').eq('conversacion_id', c.id).order('created_at').limit(500);
     var dia = '';
     (r.data || []).forEach(function (m) {
@@ -222,12 +307,81 @@
       abrir(c, panel, wrap);
     } }, [logo(c.canal, 'icon-sm'), el('span', { text: cerrada ? 'Responder en Meta Business Suite' : directo ? 'Enviar por ' + (CANAL[c.canal] || CANAL.sms).n : c.canal === 'whatsapp' ? 'Enviar por WhatsApp' : 'Registrar respuesta' })]);
     txt.addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); enviar.click(); } });
-    panel.appendChild(el('div', { class: 'chat-f' }, [
+    dst.appendChild(el('div', { class: 'chat-f' }, [
       cerrada ? el('div', { class: 'alert warn', style: 'margin-bottom:8px' }, [A.icon('i-alert', 'icon-sm'), 'Pasaron más de 24 horas desde su último mensaje, así que Meta no deja responderle desde el CRM. Contéstale desde Meta Business Suite (el botón la abre) o espera a que vuelva a escribir.']) : null,
       chips, txt,
       el('div', { style: 'display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:8px' }, [el('span', { class: 'muted', style: 'font-size:11.5px', text: 'Ctrl + Enter para enviar' }), enviar])
     ]));
-    if (!refresco) txt.focus({ preventScroll: true });
+    if (refresco) { panel.replaceChildren(dst); msgs.scrollTop = msgs.scrollHeight; }
+    else txt.focus({ preventScroll: true });
+  }
+
+  /* ---------- Prospecto: etapa, servicio, responsable y convertir en cliente ---------- */
+  async function guardarConv(c, cambios) {
+    var r = await sb.from('conversaciones').update(cambios).eq('id', c.id).select('*').single();
+    if (r.error) { A.toast('No se pudo guardar.', 'error'); return false; }
+    Object.assign(c, r.data);
+    if (ui.recargar) ui.recargar();
+    return true;
+  }
+  function barraProspecto(c, panel, wrap) {
+    var barra = el('div', { class: 'chat-p' });
+    var etapas = el('div', { class: 'et-seg', role: 'radiogroup', 'aria-label': 'Etapa' });
+    function pintarEtapas() {
+      etapas.innerHTML = '';
+      Object.keys(ETAPAS).forEach(function (k) {
+        etapas.appendChild(el('button', { type: 'button', role: 'radio', 'aria-checked': String(c.etapa === k), class: 'et-b et-' + k + (c.etapa === k ? ' on' : ''), text: ETAPAS[k], onclick: async function () {
+          if (c.etapa === k) return;
+          if (k === 'cliente' && !c.cliente_id) { convertir(c, panel, wrap); return; }
+          var antes = c.etapa; c.etapa = k; pintarEtapas();
+          if (!(await guardarConv(c, { etapa: k }))) { c.etapa = antes; pintarEtapas(); }
+        } }));
+      });
+    }
+    pintarEtapas();
+    var serv = el('select', { class: 'input sm', 'aria-label': 'Servicio de interés' }, [el('option', { value: '', text: 'Servicio de interés…' })].concat(Object.keys(A.SERVICIOS).filter(function (k) { return k !== 'otro'; }).map(function (k) {
+      return el('option', { value: k, text: A.SERVICIOS[k].corto === 'Otro' ? A.SERVICIOS[k].label : A.SERVICIOS[k].corto });
+    })));
+    serv.value = c.servicio || '';
+    serv.addEventListener('change', function () { guardarConv(c, { servicio: serv.value || null }); });
+    var asig = el('select', { class: 'input sm', 'aria-label': 'Responsable' }, [el('option', { value: '', text: 'Sin asignar' })]);
+    A.equipo().then(function (eq) {
+      eq.forEach(function (m) { asig.appendChild(el('option', { value: m.user_id, text: m.nombre || 'Equipo' })); });
+      asig.value = c.asignado_a || '';
+    });
+    asig.addEventListener('change', function () { guardarConv(c, { asignado_a: asig.value || null }); });
+    barra.appendChild(etapas);
+    barra.appendChild(el('div', { class: 'chat-p-r' }, [serv, asig,
+      c.cliente_id ? null : el('button', { type: 'button', class: 'btn btn-dark btn-sm', onclick: function () { convertir(c, panel, wrap); } }, [A.icon('i-user-plus', 'icon-sm'), el('span', { text: 'Convertir en cliente' })])
+    ]));
+    return barra;
+  }
+  var ORIGEN_CANAL = { whatsapp: 'whatsapp', messenger: 'facebook', instagram: 'instagram', sms: 'otro' };
+  function convertir(c, panel, wrap) {
+    var partes = (c.nombre && c.nombre.charAt(0) !== '@' ? c.nombre.replace(/\.$/, '') : '').trim().split(/\s+/);
+    var servicios = [['', 'No por ahora']].concat(Object.keys(A.SERVICIOS).filter(function (k) { return !A.SERVICIOS[k].oculto; }).map(function (k) { return [k, A.SERVICIOS[k].label]; }));
+    A.modal({
+      titulo: 'Convertir en cliente', ok: 'Crear cliente',
+      campos: [
+        { k: 'nombre', label: 'Nombre', required: true, max: 120, value: partes[0] || '' },
+        { k: 'apellidos', label: 'Apellidos', max: 120, value: partes.slice(1).join(' ') },
+        { k: 'telefono', label: 'Teléfono', type: 'tel', max: 40, value: c.canal === 'whatsapp' ? c.contacto : '' },
+        { k: 'email', label: 'Correo', type: 'email', max: 200 },
+        { k: 'servicio', label: 'Abrir un caso de', type: 'select', full: true, options: servicios, value: c.servicio && A.SERVICIOS[c.servicio] && !A.SERVICIOS[c.servicio].oculto ? c.servicio : '' }
+      ],
+      guardar: async function (d, aviso) {
+        if (!d.nombre) { A.msg(aviso, 'Escribe el nombre.'); return false; }
+        var r = await A.nuevoClienteBD({ nombre: d.nombre, apellidos: d.apellidos || null, telefono: d.telefono || null, email: d.email || null, origen: ORIGEN_CANAL[c.canal] || 'otro' }).select('id').single();
+        if (r.error) { A.msg(aviso, 'No se pudo crear el cliente.'); return false; }
+        if (d.servicio) {
+          var sv = A.SERVICIOS[d.servicio];
+          await sb.from('casos').insert({ cliente_id: r.data.id, servicio: d.servicio, etapa: sv.etapas[0] });
+        }
+        await guardarConv(c, { cliente_id: r.data.id, etapa: 'cliente', nombre: [d.nombre, d.apellidos].filter(Boolean).join(' ').slice(0, 120), servicio: d.servicio || c.servicio || null });
+        A.toast('Cliente creado' + (d.servicio ? ' con su caso abierto.' : '.'), 'ok');
+        abrir(c, panel, wrap, true);
+      }
+    });
   }
 
   async function nuevaConv() {
