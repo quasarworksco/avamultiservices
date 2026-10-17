@@ -147,13 +147,15 @@ async function procesarWhatsApp(db: SupabaseClient, value: Record<string, any>) 
   }
 }
 
-async function nombrePerfil(id: string) {
+// Messenger solo da first_name/last_name; Instagram da name/username
+async function nombrePerfil(canal: string, id: string) {
   const token = await tokenPagina(GRAPH);
   if (!token) return null;
-  const r = await fetch(`${GRAPH}/${id}?fields=name,username&access_token=${encodeURIComponent(token)}`);
+  const campos = canal === 'messenger' ? 'first_name,last_name' : 'name,username';
+  const r = await fetch(`${GRAPH}/${id}?fields=${campos}&access_token=${encodeURIComponent(token)}`);
   if (!r.ok) return null;
   const j = await r.json();
-  return j.name || (j.username ? '@' + j.username : null);
+  return [j.first_name, j.last_name].filter(Boolean).join(' ') || j.name || (j.username ? '@' + j.username : null);
 }
 
 async function procesarMensajeria(db: SupabaseClient, canal: 'messenger' | 'instagram', ev: Record<string, any>) {
@@ -162,8 +164,8 @@ async function procesarMensajeria(db: SupabaseClient, canal: 'messenger' | 'inst
   const contacto = String(ev.sender?.id || '');
   if (!contacto) return;
   const texto = m.text || (m.attachments?.length ? '[' + (m.attachments[0].type === 'image' ? 'Foto' : 'Archivo') + ']' : '[Mensaje]');
-  const { data: existe } = await db.from('conversaciones').select('id').eq('canal', canal).eq('contacto', contacto).maybeSingle();
-  const nombre = existe ? null : await nombrePerfil(contacto);
+  const { data: existe } = await db.from('conversaciones').select('id,nombre').eq('canal', canal).eq('contacto', contacto).maybeSingle();
+  const nombre = existe?.nombre ? null : await nombrePerfil(canal, contacto);
   await guardarEntrante(db, canal, contacto, nombre, texto, m.mid, new Date(ev.timestamp || Date.now()));
   await log(db, canal, 'mensaje', true);
 }
