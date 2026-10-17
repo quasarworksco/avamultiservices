@@ -706,6 +706,7 @@ a.stat { display: block; color: inherit; animation: rise 0.5s var(--ease) both; 
 
 .cb-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 14px; }
 .cb-grid:empty { display: none; }
+.cb-grid > .card { margin: 0; }
 .cb-stack { display: flex; gap: 3px; height: 16px; margin: 4px 0 10px; border-radius: 8px; overflow: hidden; }
 .cb-stack i { min-width: 6px; background: var(--mt-g); animation: grow 0.9s var(--ease) both; transform-origin: left; }
 .cb-leg { display: grid; grid-template-columns: 30px 1fr auto 46px auto; align-items: center; gap: 10px; width: 100%; padding: 8px 8px; border: 0; border-radius: 12px; background: none; text-align: left; font-size: 13.5px; cursor: pointer; transition: background 0.15s; }
