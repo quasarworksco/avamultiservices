@@ -1,6 +1,8 @@
 // Crea enlaces de pago con tarjeta de Square para AVA.
 // - Portal del cliente: { tipo: 'saldo' } paga su saldo pendiente.
 // - Panel (permiso «cobros»): { tipo: 'monto', cliente_id, monto, descripcion, caso_id?, plan_id? }.
+// - { tipo: 'verificar', cliente_id? }: pregunta a Square por los enlaces pendientes y registra los pagados
+//   (respaldo por si el webhook no llega). El cron lo llama cada 10 minutos con x-cron-secret.
 // Cuando el cliente paga, square-webhook registra el pago en Cobros.
 import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2.49.8';
 
@@ -105,6 +107,47 @@ async function crearEnlace(db: SupabaseClient, p: Cobro) {
   return l.url as string;
 }
 
+// Mismo registro que hace square-webhook: pago en Cobros (con recibo) y enlace marcado como pagado
+const hoy = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Chicago' });
+async function registrarPago(db: SupabaseClient, e: Record<string, any>, p: Record<string, any>) {
+  const centavos = Number(p.amount_money?.amount || 0);
+  if (!(centavos > 0)) return false;
+  const { data: ya } = await db.from('pagos').select('id').eq('pasarela_id', p.id).maybeSingle();
+  let pagoId = ya?.id;
+  if (!pagoId) {
+    const ins = await db.from('pagos').insert({
+      cliente_id: e.cliente_id, caso_id: e.caso_id, monto: centavos / 100, fecha: hoy(), metodo: 'tarjeta',
+      nota: ('Pago con tarjeta (Square)' + (e.concepto ? ': ' + e.concepto : '')).slice(0, 500), pasarela_id: p.id
+    }).select('id').single();
+    if (ins.error && ins.error.code !== '23505') throw new Error(ins.error.message);
+    pagoId = ins.data?.id || (await db.from('pagos').select('id').eq('pasarela_id', p.id).maybeSingle()).data?.id;
+    await db.from('integraciones_eventos').insert({ fuente: 'square', tipo: 'pago', ok: true, detalle: ('$' + (centavos / 100).toFixed(2) + (e.concepto ? ' · ' + e.concepto : '') + ' (verificado con Square)').slice(0, 1000) });
+  }
+  await db.from('enlaces_pago').update({ estado: 'pagado', pago_id: pagoId || null, pagado_at: new Date().toISOString() }).eq('id', e.id);
+  return true;
+}
+async function verificarPendientes(db: SupabaseClient, clienteId?: string) {
+  let q = db.from('enlaces_pago').select('*').eq('estado', 'pendiente').not('orden_id', 'is', null).gte('created_at', new Date(Date.now() - 45 * 864e5).toISOString()).order('created_at', { ascending: false }).limit(100);
+  if (clienteId) q = q.eq('cliente_id', clienteId);
+  const { data: pend } = await q;
+  if (!(pend || []).length) return 0;
+  const porOrden: Record<string, Record<string, any>> = {};
+  pend!.forEach((e) => { porOrden[e.orden_id] = e; });
+  let registrados = 0;
+  const ids = Object.keys(porOrden);
+  for (let i = 0; i < ids.length; i += 100) {
+    const j = await square('orders/batch-retrieve', 'POST', { location_id: await ubicacion(), order_ids: ids.slice(i, i + 100) });
+    for (const o of j.orders || []) {
+      for (const t of o.tenders || []) {
+        if (!t.payment_id) continue;
+        const pj = await square('payments/' + t.payment_id);
+        if (pj.payment?.status === 'COMPLETED' && await registrarPago(db, porOrden[o.id], pj.payment)) registrados++;
+      }
+    }
+  }
+  return registrados;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors(req) });
   if (req.method !== 'POST') return json(req, 405, { error: 'Método no permitido' });
@@ -112,6 +155,11 @@ Deno.serve(async (req) => {
   const db = createClient(url, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
   await cargarClaves(db);
   if (!K.SQUARE_ACCESS_TOKEN) return json(req, 400, { error: 'Los pagos con tarjeta todavía no están conectados.', codigo: 'no_conectado' });
+  // Cron: verifica todos los enlaces pendientes
+  const dado = req.headers.get('x-cron-secret');
+  if (dado && dado === (await db.rpc('cron_secreto')).data) {
+    try { return json(req, 200, { registrados: await verificarPendientes(db) }); } catch (e) { return json(req, 400, { error: (e as Error).message }); }
+  }
   const comoUsuario = createClient(url, Deno.env.get('SUPABASE_ANON_KEY')!, { global: { headers: { Authorization: req.headers.get('Authorization') || '' } }, auth: { persistSession: false } });
   const { data: u } = await comoUsuario.auth.getUser();
   if (!u?.user) return json(req, 401, { error: 'Inicia sesión' });
@@ -129,6 +177,7 @@ Deno.serve(async (req) => {
 
     const { data: ok } = await comoUsuario.rpc('puede', { modulo: 'cobros' });
     if (!ok) return json(req, 403, { error: 'Sin permiso' });
+    if (b.tipo === 'verificar') return json(req, 200, { registrados: await verificarPendientes(db, b.cliente_id ? String(b.cliente_id) : undefined) });
     if (b.tipo === 'monto') {
       if (b.caso_id) {
         const { data: k } = await db.from('casos').select('servicio').eq('id', String(b.caso_id)).maybeSingle();

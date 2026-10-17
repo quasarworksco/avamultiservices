@@ -142,6 +142,7 @@
     else { try { await navigator.clipboard.writeText(r.data.url); } catch (_) { /* */ } A.toast('Enlace copiado: el cliente no tiene teléfono.'); }
   }
   A.enlacePago = enlacePago;
+  var verificado = {};
   A.tarjetaPlanes = function (c) {
     var card = el('div', { class: 'card' });
     async function pintar() {
@@ -171,6 +172,13 @@
       if (A.puede('cobros')) {
         var en = await sb.from('enlaces_pago').select('*').eq('cliente_id', c.id).order('created_at', { ascending: false }).limit(5);
         if ((en.data || []).length) {
+          // Si hay enlaces esperando pago, se le pregunta a Square una vez (por si el aviso de Square no llegó)
+          if (!verificado[c.id] && en.data.some(function (e) { return e.estado === 'pendiente'; })) {
+            verificado[c.id] = true;
+            sb.functions.invoke('square-pago', { body: { tipo: 'verificar', cliente_id: c.id } }).then(function (v) {
+              if (v.data && v.data.registrados) { A.toast('Pago con tarjeta recibido y registrado en Cobros.', 'ok'); pintar(); }
+            });
+          }
           card.appendChild(el('div', { class: 'muted', style: 'margin:12px 0 4px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase', text: 'Enlaces de pago con tarjeta' }));
           en.data.forEach(function (e) {
             var EST = { pendiente: ['pendiente', 'Esperando pago'], pagado: ['completado', 'Pagado'], cancelado: ['cancelado', 'Cancelado'] }[e.estado];
