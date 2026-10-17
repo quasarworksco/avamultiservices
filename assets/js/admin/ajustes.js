@@ -12,7 +12,7 @@
     ['Pagos con tarjeta (Square)', 'Enlaces de pago por WhatsApp y botón de pago en el portal. Cada pago entra solo a Cobros con su recibo.', 'pagos', 'i-dollar'],
     ['Asistente con IA (Groq)', 'Lee cada mensaje: qué servicio busca, qué tan interesado está y una respuesta sugerida que tú envías.', 'ia', 'i-sparkles'],
     ['QuickBooks', 'Sincronizar tus cobros y la contabilidad de tus clientes.', null, 'i-calculator'],
-    ['Google Calendar', 'Ver tus citas en tu calendario y bloquear horarios ocupados.', null, 'i-calendar'],
+    ['Google Calendar', 'Tus citas del CRM aparecen en tu Google Calendar con aviso 30 minutos antes. Cada persona saca su enlace en Agenda → «Google Calendar».', 'calendario', 'i-calendar'],
     ['Firma electrónica', 'Contratos firmados desde el celular con nombre, firma, fecha y dispositivo.', true, 'i-edit'],
     ['Portal del cliente', 'Tus clientes ven su avance, suben documentos y firman.', true, 'i-lock'],
     ['Citas en línea', 'Reservas en avamultiservices.com/citas con recordatorio.', true, 'i-clock']
@@ -85,7 +85,9 @@
       var integ = await A.integraciones();
       INTEG.forEach(function (x) {
         var on = x[2] === true || (x[2] && integ[x[2]]);
-        intCard.appendChild(el('div', { class: 'integ' }, [el('span', { class: 'ti-ico' }, [A.icon(x[3], 'icon-sm')]), el('div', null, [el('b', { text: x[0] }), el('span', { class: 'muted', text: x[1] })]),
+        var detalle = x[1];
+        if (x[2] === 'calendario' && on && integ.calendarioInfo && integ.calendarioInfo.ultima) detalle += ' Google lo revisó por última vez ' + A.hace(integ.calendarioInfo.ultima) + '.';
+        intCard.appendChild(el('div', { class: 'integ' }, [el('span', { class: 'ti-ico' }, [A.icon(x[3], 'icon-sm')]), el('div', null, [el('b', { text: x[0] }), el('span', { class: 'muted', text: detalle })]),
           el('span', { class: 'pill ' + (on ? 'completado' : 'pendiente'), text: on ? 'Activo' : 'Por conectar' })]));
       });
       // Direcciones para configurar en Meta y Square

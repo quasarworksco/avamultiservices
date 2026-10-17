@@ -380,12 +380,13 @@
     puede: puede, yo: function () { return me; }, equipo: equipo, limpiarEquipo: function () { equipoCache = null; },
     clientesBasicos: clientesBasicos,
     nuevoClienteBD: function (d) { cliCache = null; return sb.from('clientes').insert(d); }, limpiarClientes: function () { cliCache = null; }, recordar: recordar, olvidar: function (clave) { delete memo[clave]; },
-    // Qué integraciones están conectadas (WhatsApp, Meta, Square, IA). Se pregunta una vez por sesión.
+    // Qué integraciones están conectadas (WhatsApp, Meta, Square, IA, Google Calendar). Se pregunta una vez por sesión.
     integraciones: function () {
       if (!integCache) integCache = Promise.all([
         sb.functions.invoke('enviar-mensaje', { body: { estado: true } }).then(function (r) { return r.data || {}; }).catch(function () { return {}; }),
-        sb.rpc('claves_configuradas').then(function (r) { return r.data || {}; }, function () { return {}; })
-      ]).then(function (r) { r[0].ia = !!r[1].GROQ_API_KEY; return r[0]; });
+        sb.rpc('claves_configuradas').then(function (r) { return r.data || {}; }, function () { return {}; }),
+        sb.rpc('calendario_estado').then(function (r) { return r.data || {}; }, function () { return {}; })
+      ]).then(function (r) { r[0].ia = !!r[1].GROQ_API_KEY; r[0].calendario = !!r[2].conectado; r[0].calendarioInfo = r[2]; return r[0]; });
       return integCache;
     },
     limpiarIntegraciones: function () { integCache = null; },
