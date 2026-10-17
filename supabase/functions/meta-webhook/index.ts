@@ -152,6 +152,18 @@ async function guardarEntrante(db: SupabaseClient, canal: string, contacto: stri
   return { conv, duplicado: ins.error?.code === '23505' };
 }
 
+// La IA (si está conectada) analiza la conversación en segundo plano; Meta recibe su respuesta sin esperar
+let cronSec = '';
+async function pedirAnalisis(db: SupabaseClient, convId: string) {
+  if (!cronSec) cronSec = (await db.rpc('cron_secreto')).data || '';
+  if (!cronSec) return;
+  const p = fetch(Deno.env.get('SUPABASE_URL') + '/functions/v1/ia-mensajes', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'x-cron-secret': cronSec }, body: JSON.stringify({ conversacion_id: convId })
+  }).catch(() => null);
+  // @ts-ignore EdgeRuntime existe en Supabase
+  if (typeof EdgeRuntime !== 'undefined') EdgeRuntime.waitUntil(p); else await p;
+}
+
 async function respuestaFueraDeHorario(db: SupabaseClient, conv: { id: string; auto_fuera_at: string | null }, to: string) {
   const { data: aj } = await db.from('ajustes').select('valor').eq('clave', 'whatsapp').maybeSingle();
   const cfg = aj?.valor?.fuera_horario;
@@ -179,7 +191,7 @@ async function procesarWhatsApp(db: SupabaseClient, value: Record<string, any>) 
       }
     }
     const r = await guardarEntrante(db, 'whatsapp', contacto, nombres[m.from] || null, texto, m.id, new Date(Number(m.timestamp) * 1000), archivos);
-    if (!r.duplicado) await respuestaFueraDeHorario(db, r.conv, contacto);
+    if (!r.duplicado) { await respuestaFueraDeHorario(db, r.conv, contacto); await pedirAnalisis(db, r.conv.id); }
     await log(db, 'whatsapp', 'mensaje', true, contacto.slice(-4));
   }
   for (const s of value.statuses || []) {
@@ -218,8 +230,9 @@ async function procesarMensajeria(db: SupabaseClient, canal: 'messenger' | 'inst
   }
   const { data: existe } = await db.from('conversaciones').select('id,nombre').eq('canal', canal).eq('contacto', contacto).maybeSingle();
   const nombre = existe?.nombre ? null : await nombrePerfil(canal, contacto);
-  await guardarEntrante(db, canal, contacto, nombre, texto, m.mid, new Date(ev.timestamp || Date.now()), archivos);
+  const r = await guardarEntrante(db, canal, contacto, nombre, texto, m.mid, new Date(ev.timestamp || Date.now()), archivos);
   await log(db, canal, 'mensaje', true);
+  if (!r.duplicado) await pedirAnalisis(db, r.conv.id);
 }
 
 async function procesarLead(db: SupabaseClient, v: Record<string, any>) {

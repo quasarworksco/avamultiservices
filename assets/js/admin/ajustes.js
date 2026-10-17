@@ -10,6 +10,7 @@
     ['Instagram y Messenger', 'Mensajes directos de Instagram y Facebook en la misma bandeja.', 'meta', 'i-message'],
     ['Meta Ads (formularios de anuncios)', 'Los leads de tus anuncios entran solos a Solicitudes con origen «Meta Ads».', 'meta', 'i-trending'],
     ['Pagos con tarjeta (Square)', 'Enlaces de pago por WhatsApp y botón de pago en el portal. Cada pago entra solo a Cobros con su recibo.', 'pagos', 'i-dollar'],
+    ['Asistente con IA (Groq)', 'Lee cada mensaje: qué servicio busca, qué tan interesado está y una respuesta sugerida que tú envías.', 'ia', 'i-sparkles'],
     ['QuickBooks', 'Sincronizar tus cobros y la contabilidad de tus clientes.', null, 'i-calculator'],
     ['Google Calendar', 'Ver tus citas en tu calendario y bloquear horarios ocupados.', null, 'i-calendar'],
     ['Firma electrónica', 'Contratos firmados desde el celular con nombre, firma, fecha y dispositivo.', true, 'i-edit'],
