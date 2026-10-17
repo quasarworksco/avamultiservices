@@ -28,15 +28,17 @@
     card.appendChild(cuerpo);
     async function cargar() {
       var desde = desdeDe(periodo), desdeTs = new Date(desde + 'T00:00:00').toISOString();
-      var cobros = A.puede('cobros'), sol = A.puede('solicitudes');
+      var cobros = A.puede('cobros'), sol = A.puede('solicitudes'), msj = A.puede('mensajes');
       var r = await Promise.all([
         sol ? sb.from('solicitudes').select('id', { count: 'exact', head: true }).gte('created_at', desdeTs) : Promise.resolve({ count: 0 }),
         sol ? sb.from('mensajes_web').select('origen').gte('created_at', desdeTs) : Promise.resolve({ data: [] }),
         sb.from('clientes').select('id,origen').gte('created_at', desdeTs).limit(5000),
         sb.from('casos').select('cliente_id').gte('created_at', desdeTs).limit(10000),
-        cobros ? sb.from('pagos').select('cliente_id,monto').gte('fecha', desde).limit(10000) : Promise.resolve({ data: [] })
+        cobros ? sb.from('pagos').select('cliente_id,monto').gte('fecha', desde).limit(10000) : Promise.resolve({ data: [] }),
+        msj ? sb.from('conversaciones').select('canal,etapa,cliente_id').eq('prospecto', true).gte('created_at', desdeTs).limit(5000) : Promise.resolve({ data: [] })
       ]);
-      var contactos = (r[0].count || 0) + (r[1].data || []).length;
+      var prospectos = r[5].data || [];
+      var contactos = (r[0].count || 0) + (r[1].data || []).length + prospectos.length;
       var nuevos = r[2].data || [];
       var conCaso = new Set((r[3].data || []).map(function (x) { return x.cliente_id; }));
       var pagoDe = {};
@@ -44,7 +46,7 @@
       var servicio = nuevos.filter(function (c) { return conCaso.has(c.id); }).length;
       var pagaron = nuevos.filter(function (c) { return pagoDe[c.id] > 0; }).length;
       var pasos = [];
-      if (sol) pasos.push(['Contactos', contactos, 'Solicitudes, mensajes del sitio y leads de anuncios']);
+      if (sol || msj) pasos.push(['Contactos', contactos, 'Solicitudes, mensajes del sitio, leads de anuncios y prospectos de WhatsApp, Messenger e Instagram']);
       pasos.push(['Clientes nuevos', nuevos.length, 'Personas que registraste como cliente']);
       pasos.push(['Con servicio', servicio, 'Clientes nuevos con al menos un caso']);
       if (cobros) pasos.push(['Pagaron', pagaron, 'Clientes nuevos con al menos un pago']);
@@ -75,6 +77,21 @@
         });
         cuerpo.appendChild(el('table', { class: 'tbl-org' }, [el('thead', null, [el('tr', null, [el('th', { text: 'Origen' }), el('th', { text: 'Clientes' }),
           cobros ? el('th', { text: 'Pagaron' }) : null, cobros ? el('th', { class: 'hide-m', text: 'Conversión' }) : null, cobros ? el('th', { text: 'Ingresos' }) : null])]), tb]));
+      }
+      // Prospectos que escribieron por redes: cuántos se interesaron y cuántos se volvieron clientes
+      if (prospectos.length) {
+        var porCanal = {};
+        prospectos.forEach(function (c) {
+          var o = porCanal[c.canal] = porCanal[c.canal] || { n: 0, int: 0, cli: 0 };
+          o.n++; if (['interesado', 'cita', 'cliente'].indexOf(c.etapa) >= 0 || c.cliente_id) o.int++; if (c.cliente_id) o.cli++;
+        });
+        var NOMBRE = { whatsapp: 'WhatsApp', messenger: 'Messenger', instagram: 'Instagram', sms: 'SMS' };
+        var tp = el('tbody');
+        Object.keys(porCanal).sort(function (a, b) { return porCanal[b].n - porCanal[a].n; }).forEach(function (k) {
+          var o = porCanal[k];
+          tp.appendChild(el('tr', null, [el('td', null, [el('span', { class: 'ch-txt ch-' + k, text: NOMBRE[k] || k })]), el('td', { text: o.n }), el('td', { text: o.int }), el('td', { text: o.cli }), el('td', { class: 'hide-m', text: Math.round(o.cli / o.n * 100) + '%' })]));
+        });
+        cuerpo.appendChild(el('table', { class: 'tbl-org' }, [el('thead', null, [el('tr', null, [el('th', { text: 'Prospectos por chat' }), el('th', { text: 'Llegaron' }), el('th', { text: 'Interesados' }), el('th', { text: 'Clientes' }), el('th', { class: 'hide-m', text: 'Conversión' })])]), tp]));
       }
       if (leadsMeta) cuerpo.appendChild(el('p', { class: 'muted', style: 'margin-top:10px;font-size:12.5px', text: leadsMeta + (leadsMeta === 1 ? ' lead llegó' : ' leads llegaron') + ' de tus anuncios de Meta en este periodo.' }));
     }
