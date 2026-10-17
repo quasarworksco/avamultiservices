@@ -66,13 +66,15 @@ function e164(tel: string | null) {
   return null;
 }
 
+// Square no permite cobrar reparación de crédito: el saldo con tarjeta deja fuera esos casos y sus pagos
 async function saldo(db: SupabaseClient, clienteId: string) {
   const [casos, pagos] = await Promise.all([
-    db.from('casos').select('precio').eq('cliente_id', clienteId).neq('estado', 'cancelado'),
-    db.from('pagos').select('monto').eq('cliente_id', clienteId)
+    db.from('casos').select('id,precio,servicio').eq('cliente_id', clienteId).neq('estado', 'cancelado'),
+    db.from('pagos').select('monto,caso_id').eq('cliente_id', clienteId)
   ]);
-  const total = (casos.data || []).reduce((a, k) => a + Number(k.precio || 0), 0);
-  const pagado = (pagos.data || []).reduce((a, p) => a + Number(p.monto), 0);
+  const credito = new Set((casos.data || []).filter((k) => k.servicio === 'credito').map((k) => k.id));
+  const total = (casos.data || []).filter((k) => k.servicio !== 'credito').reduce((a, k) => a + Number(k.precio || 0), 0);
+  const pagado = (pagos.data || []).filter((p) => !credito.has(p.caso_id)).reduce((a, p) => a + Number(p.monto), 0);
   return Math.round(Math.max(0, total - pagado) * 100) / 100;
 }
 
@@ -121,13 +123,21 @@ Deno.serve(async (req) => {
       const { data: id } = await comoUsuario.rpc('mi_cliente');
       if (!id) return json(req, 403, { error: 'Sin acceso' });
       const monto = await saldo(db, id);
-      if (monto < 1) return json(req, 400, { error: 'No tienes saldo pendiente.' });
+      if (monto < 1) return json(req, 400, { error: 'No tienes saldo pendiente para pagar con tarjeta. Los pagos de reparación de crédito se hacen por Zelle o en la oficina.' });
       return json(req, 200, { url: await crearEnlace(db, { cliente_id: id, monto, concepto: 'Pago a AVA Multiservices', origen: 'portal', autor: u.user.id }) });
     }
 
     const { data: ok } = await comoUsuario.rpc('puede', { modulo: 'cobros' });
     if (!ok) return json(req, 403, { error: 'Sin permiso' });
     if (b.tipo === 'monto') {
+      if (b.caso_id) {
+        const { data: k } = await db.from('casos').select('servicio').eq('id', String(b.caso_id)).maybeSingle();
+        if (k?.servicio === 'credito') return json(req, 400, { error: 'Square no permite cobrar reparación de crédito con tarjeta. Usa Zelle o efectivo.' });
+      }
+      if (b.plan_id) {
+        const { data: pl } = await db.from('planes').select('servicio').eq('id', String(b.plan_id)).maybeSingle();
+        if (pl?.servicio === 'credito') return json(req, 400, { error: 'Square no permite cobrar reparación de crédito con tarjeta. Usa Zelle o efectivo.' });
+      }
       const monto = Math.round(Number(b.monto) * 100) / 100;
       if (!(monto >= 1 && monto <= 50000)) return json(req, 400, { error: 'Monto inválido' });
       const concepto = String(b.descripcion || 'Pago a AVA Multiservices').trim() || 'Pago a AVA Multiservices';
