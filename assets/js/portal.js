@@ -104,12 +104,12 @@
     if (total - pagado > 0) {
       var how = el('p', null, 'Puedes pagar en la oficina' + (info.zelle ? ' o por Zelle a ' + info.zelle : '') + '. ');
       how.style.cssText = 'margin-top:10px;font-size:14px;color:var(--muted)'; pb.appendChild(how);
-      var conTarjeta = !!(r[6].data && r[6].data.stripe);
+      var conTarjeta = !!(r[6].data && r[6].data.pagos);
       var card = el('button', conTarjeta ? 'btn btn-primary btn-sm' : 'btn btn-ghost btn-sm', conTarjeta ? 'Pagar con tarjeta' : 'Pagar con tarjeta (muy pronto)');
       card.disabled = !conTarjeta; card.style.marginTop = '8px';
       card.onclick = async function () {
         card.disabled = true; card.textContent = 'Abriendo pago seguro…';
-        var s = await sb.functions.invoke('stripe-pago', { body: { tipo: 'saldo' } });
+        var s = await sb.functions.invoke('square-pago', { body: { tipo: 'saldo' } });
         if (s.data && s.data.url) { location.href = s.data.url; return; }
         var e = {}; try { e = await s.error.context.json(); } catch (_) { /* */ }
         msg('pmsg', e.error || 'No se pudo abrir el pago. Intenta de nuevo.');
