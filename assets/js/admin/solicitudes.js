@@ -15,16 +15,17 @@
     if (!A.puede('solicitudes')) return;
     var r = await Promise.all([
       sb.from('solicitudes').select('id', { count: 'exact', head: true }).eq('estado', 'nuevo'),
-      sb.from('mensajes_web').select('id', { count: 'exact', head: true }).eq('estado', 'nuevo')
+      sb.from('mensajes_web').select('id', { count: 'exact', head: true }).eq('estado', 'nuevo'),
+      sb.from('formulario_respuestas').select('id', { count: 'exact', head: true }).eq('estado', 'nuevo')
     ]);
-    var n = (r[0].count || 0) + (r[1].count || 0);
+    var n = (r[0].count || 0) + (r[1].count || 0) + (r[2].count || 0);
     document.getElementById('count-sol').textContent = n ? n : '';
-    A.nuevas = { solicitudes: r[0].count || 0, mensajes: r[1].count || 0 };
+    A.nuevas = { solicitudes: r[0].count || 0, mensajes: r[1].count || 0, respuestas: r[2].count || 0 };
     document.querySelectorAll('[data-tab-count]').forEach(function (x) { var c = A.nuevas[x.dataset.tabCount]; x.textContent = c ? c : ''; });
   };
 
   A.pestanasEntrada = function (actual) {
-    return el('div', { class: 'tabs', style: 'margin-top:20px' }, [['solicitudes', 'Formulario de inicio'], ['mensajes', 'Mensajes de contacto']].map(function (t) {
+    return el('div', { class: 'tabs', style: 'margin-top:20px' }, [['solicitudes', 'Formulario de crédito'], ['respuestas', 'Otros formularios'], ['mensajes', 'Mensajes de contacto']].map(function (t) {
       return el('a', { class: 'tab' + (t[0] === actual ? ' on' : ''), href: '#/' + t[0] }, [t[1], el('span', { class: 'n', 'data-tab-count': t[0], text: A.nuevas && A.nuevas[t[0]] ? A.nuevas[t[0]] : '' })]);
     }));
   };

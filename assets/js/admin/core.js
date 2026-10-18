@@ -204,7 +204,7 @@
     notaria: { label: 'Notaría', corto: 'Notaría', etapas: ['Pendiente', 'En proceso', 'Completado'], finales: ['Completado'], oculto: true }
   };
   function esFinal(servicio, etapa) { var s = SERVICIOS[servicio]; return !!s && s.finales.indexOf(etapa) !== -1; }
-  var ORIGENES = { meta_ads: 'Meta Ads', whatsapp: 'WhatsApp', instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok', referido: 'Referido', walk_in: 'Walk-in (oficina)', sitio_web: 'Sitio web', formulario: 'Formulario de inicio', google: 'Google', otro: 'Otro' };
+  var ORIGENES = { meta_ads: 'Meta Ads', whatsapp: 'WhatsApp', instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok', referido: 'Referido', walk_in: 'Walk-in (oficina)', sitio_web: 'Sitio web', formulario: 'Formulario del sitio', google: 'Google', otro: 'Otro' };
   var PERMISOS = [
     ['solicitudes', 'Solicitudes', 'Ver las solicitudes que llegan del sitio'],
     ['sensibles', 'Datos sensibles', 'Ver SSN y claves del monitor de crédito'],
@@ -324,7 +324,7 @@
       location.replace('#/' + primera);
       return;
     }
-    document.querySelectorAll('.nav-item').forEach(function (a) { a.classList.toggle('on', a.dataset.route === nombre || a.dataset.alias === nombre); });
+    document.querySelectorAll('.nav-item').forEach(function (a) { a.classList.toggle('on', a.dataset.route === nombre || (a.dataset.alias || '').split(' ').indexOf(nombre) !== -1); });
     cerrarDrawer();
     var main = $('main');
     main.innerHTML = '';
