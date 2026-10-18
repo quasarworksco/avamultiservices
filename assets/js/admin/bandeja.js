@@ -103,6 +103,7 @@
     permiso: 'mensajes',
     render: function (cont, params) {
       if (params[0]) st.tab = params[0];
+      if (params[0] === 'chats' && params[1]) { st.conv = params[1]; st.canal = 'todos'; st.etapa = 'todas'; }
       ui.body = el('div');
       cont.appendChild(A.cabecera('Comunicación', 'Mensajes', 'con tus clientes', []));
       var aviso = el('div');
@@ -141,7 +142,7 @@
     return el('span', { class: 'ch-pill ch-' + canal }, [logo(canal, 'icon-sm'), el('span', { text: (CANAL[canal] || CANAL.sms).n })]);
   }
   var ETAPAS = { nuevo: 'Nuevo', interesado: 'Interesado', cita: 'Cita agendada', cliente: 'Cliente', no_interesado: 'No interesado' };
-  var FILTROS_ETAPA = [['todas', 'Todas las etapas'], ['sin_responder', 'Sin responder'], ['calientes', 'Calientes (IA)'], ['prospectos', 'Prospectos activos'], ['nuevo', 'Nuevos'], ['interesado', 'Interesados'], ['cita', 'Con cita agendada'], ['cliente', 'Clientes'], ['no_interesado', 'No interesados']];
+  var FILTROS_ETAPA = [['todas', 'Todas las etapas'], ['sin_responder', 'Sin responder'], ['seguimiento', 'Toca seguimiento'], ['calientes', 'Calientes (IA)'], ['prospectos', 'Prospectos activos'], ['nuevo', 'Nuevos'], ['interesado', 'Interesados'], ['cita', 'Con cita agendada'], ['cliente', 'Clientes'], ['no_interesado', 'No interesados']];
   // Escribió y nadie le ha contestado todavía
   // Qué tan interesado está, según la IA
   var TEMP = { caliente: ['i-flame', 'Caliente'], tibio: ['i-sun', 'Tibio'], frio: ['i-snow', 'Frío'] };
@@ -153,8 +154,12 @@
     if (st.etapa === 'sin_responder') return sinResponder(c) && c.etapa !== 'no_interesado';
     if (st.etapa === 'prospectos') return ['nuevo', 'interesado', 'cita'].indexOf(c.etapa) >= 0;
     if (st.etapa === 'calientes') return c.temperatura === 'caliente' && c.etapa !== 'no_interesado';
+    if (st.etapa === 'seguimiento') return enSeguimiento(c);
     return c.etapa === st.etapa;
   }
+  // Prospecto que no ha cerrado y ya le tocó seguimiento (día 2, 5, 7…)
+  function enSeguimiento(c) { return (c.seguimientos || []).length && !c.cliente_id && ['nuevo', 'interesado', 'cita'].indexOf(c.etapa) !== -1; }
+  function chipSeg(c) { return enSeguimiento(c) ? el('span', { class: 'seg-chip', title: 'Le tocó seguimiento y aún no cierra' }, [A.icon('i-clock', 'icon-sm'), 'Seguimiento día ' + Math.max.apply(null, c.seguimientos)]) : null; }
   function chipEtapa(etapa) { return el('span', { class: 'et et-' + etapa, text: ETAPAS[etapa] || etapa }); }
   function nombreConv(c) {
     if (c.nombre) return c.nombre;
@@ -214,7 +219,7 @@
         } }, [
           avatarConv(c),
           el('span', { class: 'conv-b' }, [el('b', { text: nombreConv(c) }), el('span', { class: 'conv-t' }, [el('span', { class: 'ch-txt ch-' + c.canal, text: CANAL[c.canal] ? CANAL[c.canal].n : 'SMS' }), el('span', { class: 'muted', text: ' · ' + (c.ultimo_texto || '') })]),
-            el('span', { class: 'conv-e' }, [chipEtapa(c.etapa), chipTemp(c), c.servicio && A.SERVICIOS[c.servicio] ? el('span', { class: 'muted', text: A.SERVICIOS[c.servicio].corto }) : null, sinResponder(c) && c.etapa !== 'no_interesado' ? el('span', { class: 'sr', text: 'Sin responder' }) : null])]),
+            el('span', { class: 'conv-e' }, [chipEtapa(c.etapa), chipTemp(c), chipSeg(c), c.servicio && A.SERVICIOS[c.servicio] ? el('span', { class: 'muted', text: A.SERVICIOS[c.servicio].corto }) : null, sinResponder(c) && c.etapa !== 'no_interesado' ? el('span', { class: 'sr', text: 'Sin responder' }) : null])]),
           el('span', { class: 'conv-m' }, [el('span', { class: 'muted', text: A.hace(c.ultimo_at) }), c.no_leidos ? el('span', { class: 'count', text: c.no_leidos }) : null])
         ]);
         items.appendChild(item);
@@ -630,7 +635,8 @@
     ['recordatorio_pago', 'Recordatorio de pago', '2 días antes de cada cobro mensual.', ['nombre', 'monto', 'servicio', 'fecha']],
     ['recordatorio_cita', 'Recordatorio de cita', 'Un día antes de cada cita.', ['nombre', 'fecha', 'hora']],
     ['resena', 'Pedir reseña de Google', 'Un día después de terminar un caso.', ['nombre', 'link_resena']],
-    ['franchise_tax', 'Aviso de Franchise Tax', 'El 1 de abril, a los clientes con LLC.', ['nombre']]
+    ['franchise_tax', 'Aviso de Franchise Tax', 'El 1 de abril, a los clientes con LLC.', ['nombre']],
+    ['seguimiento', 'Seguimiento de prospectos', 'Si un prospecto deja de escribir o alguien llena un formulario y no se vuelve cliente, te creo una tarea esos días con este mensaje listo para copiar. Si vuelve a escribir, el conteo empieza de nuevo.', ['nombre', 'servicio']]
   ];
   async function auto(box) {
     var r = await sb.from('ajustes').select('valor').eq('clave', 'whatsapp').single();
@@ -651,6 +657,9 @@
       var on = el('input', { type: 'checkbox' }); on.checked = !!c.activo;
       var ta = el('textarea', { class: 'input', maxlength: 1000, style: 'min-height:96px' }); ta.value = c.mensaje || '';
       var extra = null;
+      if (a[0] === 'seguimiento') {
+        extra = el('label', { class: 'seg-dias' }, [el('span', { text: 'Días después del último mensaje' }), el('input', { class: 'input sm', 'data-dias': '1', value: (c.dias || [2, 5, 7]).join(', '), placeholder: '2, 5, 7' })]);
+      }
       if (a[0] === 'fuera_horario') {
         var h = c.horario || {};
         extra = el('div', { class: 'horario' }, ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'].map(function (dn, i) {
@@ -666,7 +675,7 @@
         extra
       ]));
       on.addEventListener('change', guardar); ta.addEventListener('change', guardar);
-      if (extra) extra.querySelectorAll('input').forEach(function (i) { i.addEventListener('change', guardar); });
+      if (extra) (extra.tagName === 'INPUT' ? [extra] : extra.querySelectorAll('input')).forEach(function (i) { i.addEventListener('change', guardar); });
     });
     async function guardar() {
       var n = Object.assign({}, cfg, { envio_automatico: envio.checked });
@@ -674,6 +683,12 @@
         var k = card.dataset.k, o = Object.assign({}, n[k] || {});
         o.activo = card.querySelector('.switch input').checked;
         o.mensaje = card.querySelector('textarea').value;
+        if (k === 'seguimiento') {
+          var dd = (card.querySelector('[data-dias]').value.match(/\d+/g) || []).map(Number).filter(function (x) { return x >= 1 && x <= 60; });
+          o.dias = dd.filter(function (x, i) { return dd.indexOf(x) === i; }).sort(function (x, y) { return x - y; }).slice(0, 6);
+          if (!o.dias.length) o.dias = [2, 5, 7];
+          card.querySelector('[data-dias]').value = o.dias.join(', ');
+        }
         if (k === 'fuera_horario') {
           var h = {};
           card.querySelectorAll('.horario input').forEach(function (i) { if (i.value) { (h[i.dataset.d] = h[i.dataset.d] || ['', ''])[i.dataset.p] = i.value; } });
