@@ -239,6 +239,84 @@
     .shot figcaption b { color: var(--ink); }
     .shots-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; align-items: start; }
     @media (max-width: 860px) { .shots-3 { grid-template-columns: 1fr; } }
+    /* Videos de la guía */
+    .vg-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+    .vg-prog { min-width: 260px; padding: 16px 18px; border-radius: 18px; background: #fff; border: 1px solid var(--line); }
+    .vg-prog b { font-size: 14px; }
+    .vg-prog .bar { height: 8px; margin-top: 10px; border-radius: 4px; background: var(--stone-100); overflow: hidden; }
+    .vg-prog .bar i { display: block; height: 100%; width: 0; border-radius: 4px; background: linear-gradient(90deg, var(--sage), var(--accent)); transition: width 0.6s var(--ease); }
+    .vg-prog small { display: block; margin-top: 6px; font-size: 12.5px; color: var(--muted); }
+    .vg-tabs { display: flex; gap: 8px; margin-top: 30px; overflow-x: auto; padding-bottom: 4px; }
+    .vg-tab { flex: none; display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--line-strong); background: #fff; font: 600 14px var(--font-sans); color: var(--ink); cursor: pointer; transition: background 0.25s, color 0.25s, border-color 0.25s; }
+    .vg-tab span { font-size: 12px; color: var(--muted); font-weight: 500; }
+    .vg-tab.on { background: var(--charcoal); border-color: var(--charcoal); color: #fff; }
+    .vg-tab.on span { color: rgba(255, 255, 255, 0.7); }
+    .vg-dia { margin-top: 26px; }
+    .vg-dia h3 { display: flex; align-items: baseline; gap: 12px; font-family: var(--font-serif); font-size: 30px; font-weight: 500; }
+    .vg-dia h3 small { font: 600 11px var(--font-sans); letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); }
+    .vg-dia > p { margin-top: 4px; color: var(--muted); font-size: 14.5px; }
+    .vg-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 18px; }
+    .vg-card { display: block; width: 100%; padding: 0; border: 1px solid var(--line); border-radius: 20px; background: #fff; text-align: left; cursor: pointer; overflow: hidden; font: inherit; color: inherit; box-shadow: 0 24px 48px -40px rgba(42, 42, 42, 0.55); transition: transform 0.45s var(--ease), box-shadow 0.45s var(--ease), border-color 0.3s; }
+    .vg-card:hover, .vg-card:focus-visible { transform: translateY(-4px); box-shadow: 0 34px 60px -38px rgba(42, 42, 42, 0.6); border-color: var(--accent-100); }
+    .vg-thumb { position: relative; aspect-ratio: 16 / 10; background: var(--charcoal); overflow: hidden; }
+    .vg-thumb img { width: 100%; height: 100%; object-fit: cover; object-position: top left; transition: transform 0.8s var(--ease), filter 0.4s; filter: saturate(0.9); }
+    .vg-card:hover .vg-thumb img { transform: scale(1.04); filter: saturate(1); }
+    .vg-thumb::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(27, 27, 26, 0) 40%, rgba(27, 27, 26, 0.55)); }
+    .vg-play { position: absolute; left: 50%; top: 50%; z-index: 1; display: grid; place-items: center; width: 58px; height: 58px; margin: -29px 0 0 -29px; border-radius: 50%; background: rgba(255, 255, 255, 0.94); color: var(--charcoal); box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.5); transition: transform 0.4s var(--ease), background 0.3s, color 0.3s; }
+    .vg-play svg { width: 22px; height: 22px; margin-left: 3px; fill: currentColor; }
+    .vg-card:hover .vg-play { transform: scale(1.1); background: var(--accent); color: #fff; }
+    .vg-num { position: absolute; left: 14px; top: 12px; z-index: 1; padding: 3px 10px; border-radius: 999px; background: rgba(27, 27, 26, 0.72); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; }
+    .vg-dur { position: absolute; right: 12px; bottom: 10px; z-index: 1; display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: rgba(27, 27, 26, 0.72); color: #fff; font-size: 12px; font-weight: 600; }
+    .vg-dur svg { width: 13px; height: 13px; }
+    .vg-visto { position: absolute; right: 12px; top: 12px; z-index: 1; display: none; align-items: center; gap: 4px; padding: 3px 10px 3px 7px; border-radius: 999px; background: #e3f3e7; color: #2f7a3e; font-size: 12px; font-weight: 700; }
+    .vg-visto svg { width: 14px; height: 14px; }
+    .vg-card.visto .vg-visto { display: inline-flex; }
+    .vg-body { padding: 16px 18px 18px; }
+    .vg-body b { display: block; font-family: var(--font-serif); font-size: 22px; font-weight: 500; line-height: 1.15; }
+    .vg-body p { margin-top: 6px; font-size: 13.5px; color: var(--muted); }
+    .vg-modal { position: fixed; inset: 0; z-index: 200; display: none; place-items: center; padding: 20px; background: rgba(20, 20, 19, 0.82); }
+    .vg-modal.on { display: grid; animation: vgin 0.3s var(--ease); }
+    @keyframes vgin { from { opacity: 0; } }
+    .vg-box { width: min(1080px, 100%, calc((100vh - 250px) * 1.4286)); min-width: min(640px, 100%); max-height: calc(100vh - 40px); overflow: auto; border-radius: 22px; background: #fff; box-shadow: 0 40px 90px -30px rgba(0, 0, 0, 0.6); animation: vgup 0.45s var(--ease); }
+    @keyframes vgup { from { transform: translateY(18px) scale(0.98); } }
+    .vg-box video { display: block; width: 100%; aspect-ratio: 1280 / 896; background: #1b1b1a; }
+    .vg-info { display: grid; grid-template-columns: 1fr auto; gap: 18px; padding: 20px 24px 24px; }
+    .vg-info .k { font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); }
+    .vg-info h3 { margin-top: 4px; font-family: var(--font-serif); font-size: 30px; font-weight: 500; line-height: 1.1; }
+    .vg-pasos { display: grid; gap: 8px; margin-top: 14px; counter-reset: p; }
+    .vg-pasos li { display: flex; gap: 12px; font-size: 14.5px; color: var(--ink-2); }
+    .vg-pasos li::before { counter-increment: p; content: counter(p); display: grid; place-items: center; width: 24px; height: 24px; flex: none; border-radius: 50%; background: var(--accent-50); color: var(--accent); font-size: 12px; font-weight: 700; }
+    .vg-acc { display: flex; flex-direction: column; gap: 8px; align-items: stretch; min-width: 200px; }
+    .vg-acc button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 999px; border: 1px solid var(--line-strong); background: #fff; font: 600 14px var(--font-sans); color: var(--ink); cursor: pointer; transition: background 0.25s, color 0.25s, border-color 0.25s; }
+    .vg-acc button:hover { border-color: var(--accent); }
+    .vg-acc .dark { background: var(--charcoal); border-color: var(--charcoal); color: #fff; }
+    .vg-acc .dark:hover { background: var(--accent); border-color: var(--accent); }
+    .vg-acc .ok { background: #e3f3e7; border-color: #cfe8d5; color: #2f7a3e; }
+    .vg-acc svg { width: 16px; height: 16px; }
+    .vg-x { position: absolute; right: 18px; top: 18px; width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.95); cursor: pointer; }
+    .vg-x::before, .vg-x::after { content: ""; position: absolute; width: 16px; height: 1.8px; background: var(--ink); transform: rotate(45deg); }
+    .vg-x::after { transform: rotate(-45deg); }
+    .vg-girar { display: none; margin-top: 10px; font-size: 13px; color: var(--muted); }
+    .vg-nota { margin-top: 22px; display: flex; gap: 10px; align-items: flex-start; padding: 14px 16px; border-radius: 14px; background: var(--accent-50); font-size: 13.5px; color: var(--ink-2); }
+    .vg-nota svg { flex: none; width: 18px; height: 18px; color: var(--accent); margin-top: 1px; }
+    .g-buscar { position: relative; margin-bottom: 8px; }
+    .g-buscar input { width: 100%; height: 50px; padding: 0 16px 0 46px; border-radius: 14px; border: 1px solid var(--line-strong); background: #fff; font: 500 15px var(--font-sans); color: var(--ink); }
+    .g-buscar input:focus { outline: 2px solid var(--accent-100); border-color: var(--accent); }
+    .g-buscar svg { position: absolute; left: 16px; top: 15px; width: 20px; height: 20px; color: var(--muted); }
+    .g-nada { padding: 22px 0; color: var(--muted); font-size: 14.5px; }
+    @media (max-width: 960px) { .vg-grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 640px) {
+      .vg-grid { grid-template-columns: 1fr; }
+      .vg-info { grid-template-columns: 1fr; padding: 16px 18px 20px; }
+      .vg-info h3 { font-size: 25px; }
+      .vg-modal { padding: 0; align-items: end; }
+      .vg-box { border-radius: 20px 20px 0 0; max-height: 100vh; }
+      .vg-x { right: 10px; top: 10px; width: 38px; height: 38px; }
+      .vg-box { width: 100%; min-width: 0; }
+      .vg-girar { display: block; }
+      .vg-prog { min-width: 0; width: 100%; }
+    }
+    @media (prefers-reduced-motion: reduce) { .vg-card, .vg-thumb img, .vg-play, .vg-box, .vg-modal.on { transition: none; animation: none; } }
   </style>
 </head>
 <body>
@@ -298,7 +376,7 @@
         <img class="brand-logo" src="../assets/img/logo.svg" alt="AVA" width="72" height="34"><span class="brand-divider"></span><span class="brand-sub">Entrega<br>técnica</span>
       </a>
       <div class="nav-cta">
-        <nav class="e-nav" aria-label="Secciones"><a href="#crm">Módulos</a><a href="#como">Cómo está hecho</a><a href="#guia">Guía</a><a href="#checklist">Checklist</a></nav>
+        <nav class="e-nav" aria-label="Secciones"><a href="#crm">Módulos</a><a href="#como">Cómo está hecho</a><a href="#videos">Videos</a><a href="#guia">Guía</a><a href="#checklist">Checklist</a></nav>
         <a href="../admin/" target="_blank" rel="noopener" class="btn btn-primary btn-sm"><span>Entrar al panel</span><svg class="icon icon-sm arrow"><use href="#i-arrow-up-right"/></svg></a>
       </div>
     </div>
@@ -463,17 +541,56 @@
     </div>
   </section>
 
+  <!-- Videos de la guía -->
+  <section class="section section-soft" id="videos" aria-labelledby="v-title">
+    <div class="container">
+      <div class="vg-head">
+        <div class="reveal">
+          <span class="script-kicker">Aprende en 3 días</span>
+          <h2 class="section-title" id="v-title">Videos de <span class="serif">tu CRM</span></h2>
+          <p class="section-lead">14 videos cortos, de menos de un minuto cada uno, grabados en el CRM con clientes de ejemplo. Míralos en orden y haz lo mismo en tu panel.</p>
+        </div>
+        <div class="vg-prog reveal" aria-live="polite"><b id="vg-prog-t">Tu avance</b><div class="bar"><i id="vg-prog-b"></i></div><small id="vg-prog-s">0 de 14 videos vistos</small></div>
+      </div>
+      <div class="vg-tabs" role="tablist" aria-label="Días" id="vg-tabs"></div>
+      <div id="vg-dias"></div>
+      <div class="vg-nota reveal"><svg class="icon"><use href="#i-eye"/></svg><span>Los nombres, teléfonos y montos de los videos son de ejemplo: no son clientes reales. Los videos no tienen sonido; los subtítulos explican cada paso.</span></div>
+    </div>
+  </section>
+
+  <div class="vg-modal" id="vg-modal" role="dialog" aria-modal="true" aria-labelledby="vg-m-t">
+    <div class="vg-box" style="position:relative">
+      <button class="vg-x" type="button" id="vg-x" aria-label="Cerrar video"></button>
+      <video id="vg-video" controls playsinline preload="metadata"></video>
+      <div class="vg-info">
+        <div>
+          <div class="k" id="vg-m-k"></div>
+          <h3 id="vg-m-t"></h3>
+          <ol class="vg-pasos" id="vg-m-p"></ol>
+          <p class="vg-girar">Para leer los subtítulos en grande, toca pantalla completa y gira el celular.</p>
+        </div>
+        <div class="vg-acc">
+          <button type="button" id="vg-visto"><svg class="icon"><use href="#i-check"/></svg><span>Marcar como visto</span></button>
+          <button type="button" class="dark" id="vg-sig"><span>Siguiente video</span><svg class="icon"><use href="#i-arrow-right"/></svg></button>
+          <button type="button" id="vg-ant"><span>Video anterior</span></button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Guía de uso -->
   <section class="section" id="guia" aria-labelledby="g-title">
     <div class="container">
       <div class="guide">
         <div class="guide-aside reveal">
-          <span class="script-kicker">Guía de uso</span>
+          <span class="script-kicker">Guía escrita</span>
           <h2 class="section-title" id="g-title">Cómo usar <span class="serif">tu CRM</span></h2>
-          <p class="section-lead">Paso a paso, módulo por módulo. Toca cada tema para abrirlo.</p>
+          <p class="section-lead">Todo por escrito, módulo por módulo. Busca un tema o toca cada uno para abrirlo.</p>
           <a href="../admin/" target="_blank" rel="noopener" class="btn btn-primary" style="margin-top:24px"><svg class="icon"><use href="#i-lock"/></svg><span>Entrar al panel</span></a>
           <div class="g-tip"><b>Consejo</b><p>Guarda avamultiservices.com/admin en la pantalla de inicio de tu celular para abrirlo como una app.</p></div>
         </div>
+        <div class="g-list-wrap">
+        <label class="g-buscar"><svg class="icon"><use href="#i-search"/></svg><input type="search" id="g-buscar" placeholder="Busca: recibo, contrato, Google Calendar…" aria-label="Buscar en la guía"></label>
         <div class="g-list">
           <details class="g-item reveal" open><summary><span class="g-ico"><svg class="icon"><use href="#i-lock"/></svg></span><span class="g-t">Primeros pasos</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Entra</b><p>Ve a <b>avamultiservices.com/admin</b> con tu correo <b>anavargas@avamultiservices.com</b> y tu contraseña. Si la olvidas, escribe tu correo y toca «Olvidé mi contraseña».</p></div></li><li><span>2</span><div><b>Muévete por el menú</b><p>En computadora el menú está a la izquierda; en el celular, abajo (deslízalo para ver todas las secciones). Los números en el menú son pendientes nuevos.</p></div></li><li><span>3</span><div><b>Empieza por Inicio</b><p>Cada mañana revisa «Para hoy»: tareas vencidas, disputas que llegan a los 30 días, entregas próximas y clientes en periodo de cancelación.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-message"/></svg></span><span class="g-t">Solicitudes y mensajes</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Formulario de inicio</b><p>En <b>Solicitudes</b> llegan los clientes de crédito que llenan avamultiservices.com/formularios/inicio. Toca uno para ver sus datos y documentos.</p></div></li><li><span>2</span><div><b>Mensajes de contacto</b><p>En la pestaña <b>Mensajes de contacto</b> llegan los mensajes de «Solicita tu cita» de tu sitio. Escríbeles por WhatsApp o correo con un clic.</p></div></li><li><span>3</span><div><b>Conviértelos en clientes</b><p>Toca <b>Convertir en cliente</b>: se crea su ficha y su caso automáticamente. Si ya existe alguien con ese correo o teléfono, el panel te avisa.</p></div></li></ol></details>
@@ -482,17 +599,17 @@
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-layout"/></svg></span><span class="g-t">Servicios nuevos</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Plan de pago IRS</b><p>Si un caso de taxes termina en <b>Quedó con deuda</b>, el panel crea solo el caso de plan de pago. Ahí guardas el monto, el pago mensual y el día de pago.</p></div></li><li><span>2</span><div><b>Contabilidad mensual</b><p>El día 1 de cada mes se crea solo un caso por cada cliente con plan de contabilidad: pedir estados de cuenta, conciliar, reporte y enviado.</p></div></li><li><span>3</span><div><b>LLC y Franchise Tax</b><p>El 1 de abril se crea un caso de Franchise Tax por cada cliente con LLC y en Inicio verás el aviso hasta el 15 de mayo.</p></div></li><li><span>4</span><div><b>Inmigración</b><p>Guarda el número de recibo y la fecha de vencimiento; el panel te avisa en «Para hoy» antes de que venza.</p></div></li><li><span>5</span><div><b>Crédito por rondas</b><p>Cada ronda es una etapa. Escribe la fecha de la próxima ronda y verás el puntaje inicial contra el actual por buró.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-gauge"/></svg></span><span class="g-t">Seguimiento de crédito</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Contrato</b><p>Escribe la fecha en que firmó el contrato: el panel calcula los 3 días hábiles de cancelación y te avisa mientras no puedas cobrar ni disputar.</p></div></li><li><span>2</span><div><b>Puntajes</b><p>Agrega los puntajes de Equifax, Experian y TransUnion cada vez que el cliente saque su reporte. Verás la gráfica y cuántos puntos ha subido.</p></div></li><li><span>3</span><div><b>Disputas</b><p>Registra cada cuenta disputada por ronda (puedes hacerlo en los 3 burós de una vez). Al pasar 30 días sin respuesta te aparece en «Para hoy». Cambia el resultado: eliminado, corregido o verificado.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-calculator"/></svg></span><span class="g-t">Taxes</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Datos de la declaración</b><p>En el caso de taxes guarda el año fiscal y el tipo (individual, negocio propio, LLC, corporación o enmienda).</p></div></li><li><span>2</span><div><b>Resultado</b><p>Cuando la tengas lista, marca si sale reembolso o monto a pagar y la cantidad.</p></div></li></ol></details>
-          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-trending"/></svg></span><span class="g-t">Cobros</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Registrar un pago</b><p>Desde <b>Cobros</b>, la ficha o el caso toca <b>Registrar pago</b>: monto, fecha, método (Zelle, efectivo, Cash App…) y una nota, por ejemplo «Cuota 2 de 5».</p></div></li><li><span>2</span><div><b>Saber quién debe</b><p>Si el caso tiene precio, el panel calcula el saldo. En <b>Cobros</b> verás los ingresos del mes, el mes anterior y la lista de saldos pendientes.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-trending"/></svg></span><span class="g-t">Cobros</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Registrar un pago</b><p>Desde <b>Cobros</b>, la ficha o el caso toca <b>Registrar pago</b>: monto, fecha, método (Zelle, efectivo, Cash App…) y una nota, por ejemplo «Cuota 2 de 5».</p></div></li><li><span>2</span><div><b>Saber quién debe</b><p>Si el caso tiene precio, el panel calcula el saldo. En <b>Cobros</b> verás lo cobrado en el mes comparado con el anterior, cómo te pagaron (Zelle, tarjeta, efectivo…), cuánto deja cada servicio y la lista de saldos pendientes.</p></div></li><li><span>3</span><div><b>Cobrar con tarjeta</b><p>En la ficha del cliente toca <b>Cobrar con tarjeta</b>: se abre WhatsApp con un enlace seguro de Square. Cuando el cliente paga, el pago entra solo a Cobros con su recibo. Square no permite cobrar reparación de crédito: esos pagos van por Zelle o efectivo.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-clipboard"/></svg></span><span class="g-t">Tareas</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Crear tareas</b><p>Crea tareas con fecha límite y asígnalas a ti o a tu compañera, ligadas a un cliente o a un caso.</p></div></li><li><span>2</span><div><b>Completarlas</b><p>Marca la casilla cuando esté hecha. En <b>Tareas</b> se agrupan en vencidas, hoy, próximos 7 días y más adelante.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-file"/></svg></span><span class="g-t">Documentos</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Subir</b><p>En la ficha del cliente arrastra los archivos (o toca para elegirlos): fotos o PDF de hasta 10 MB.</p></div></li><li><span>2</span><div><b>Ver</b><p>Toca «Ver»: se abre con un enlace privado que caduca en 2 minutos. Los documentos del formulario de inicio también aparecen en la ficha.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-globe"/></svg></span><span class="g-t">Tu sitio web</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Precios y servicios</b><p>En <b>Sitio web</b> escribe el precio «desde» de cada servicio o apaga los que no estés ofreciendo. Se publica al instante.</p></div></li><li><span>2</span><div><b>Anuncio</b><p>Activa un aviso flotante en tu sitio, por ejemplo «¡Temporada de taxes abierta!», con botón para agendar.</p></div></li><li><span>3</span><div><b>Testimonios y preguntas</b><p>Agrega lo que dicen tus clientes y preguntas frecuentes. Puedes ocultarlos o editarlos cuando quieras.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-sparkles"/></svg></span><span class="g-t">Contenido digital</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Lo creamos nosotros</b><p>DGP diseña tus posts, historias y flyers y los sube a <b>Contenido</b>. Tú no tienes que subir nada.</p></div></li><li><span>2</span><div><b>Apruébalos</b><p>Ábrelo, revisa el diseño y el texto, y toca <b>Aprobar</b> o <b>Pedir cambios</b> con un comentario. Lo verás también en el calendario.</p></div></li><li><span>3</span><div><b>Publícalos</b><p>Descarga el diseño, copia el texto con un clic, publícalo y márcalo como <b>Publicado</b>.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-shield"/></svg></span><span class="g-t">Equipo y permisos</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Invitar a tu compañera</b><p>En <b>Equipo → Invitar usuario</b> escribe su nombre y correo y marca qué puede usar. Le llega un correo para crear su contraseña.</p></div></li><li><span>2</span><div><b>Permisos</b><p>Activa o desactiva cada permiso con un interruptor. «Datos sensibles» controla quién ve el Seguro Social y las claves del monitor.</p></div></li><li><span>3</span><div><b>Quitar acceso y actividad</b><p>Desactiva su acceso al instante si deja de trabajar contigo. Abajo verás quién creó, editó o eliminó cada cosa.</p></div></li><li><span>4</span><div><b>Roles listos</b><p>Elige un rol al invitar: <b>Redes sociales</b> (solo solicitudes, mensajes y campañas) o <b>Ayudante de taxes</b> (solo taxes y los clientes que tú le asignes como responsable).</p></div></li><li><span>5</span><div><b>Acceso hasta</b><p>Pon una fecha y el acceso se apaga solo, por ejemplo al terminar la temporada de taxes.</p></div></li></ol></details>
-          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-message"/></svg></span><span class="g-t">Bandeja: WhatsApp, Messenger e Instagram</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Todo llega solo</b><p>Los mensajes de Messenger e Instagram entran a <b>Mensajes</b> sin recargar la página. Suena un aviso y verás «Nuevo mensaje de…» aunque estés en otra parte del panel. El botón <b>🔔 Sonido</b> lo enciende o apaga.</p></div></li><li><span>2</span><div><b>Reconoce el canal por su color</b><p>Azul es Messenger, el degradado rosa y morado es Instagram y verde es WhatsApp. Arriba de la lista filtras por canal y por etapa.</p></div></li><li><span>3</span><div><b>Contesta desde el CRM</b><p>Escribe abajo y toca <b>Enviar por Messenger</b> o <b>Enviar por Instagram</b> (o Ctrl + Enter). Las <b>respuestas rápidas</b> llenan el texto con un toque.</p></div></li><li><span>4</span><div><b>La regla de las 24 horas</b><p>Meta solo deja responder desde el CRM durante 24 horas después del último mensaje del cliente. Si pasó más tiempo, el botón te lleva a Meta Business Suite para contestar desde ahí.</p></div></li><li><span>5</span><div><b>WhatsApp</b><p>Mientras conectamos la API de WhatsApp, el botón abre tu WhatsApp con el mensaje listo y queda registrado aquí.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-message"/></svg></span><span class="g-t">Bandeja: WhatsApp, Messenger e Instagram</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Todo llega solo</b><p>Los mensajes de Messenger e Instagram entran a <b>Mensajes</b> sin recargar la página. Suena un aviso y verás «Nuevo mensaje de…» aunque estés en otra parte del panel. El botón <b>Sonido</b>, con la campana, lo enciende o apaga.</p></div></li><li><span>2</span><div><b>Reconoce el canal por su color</b><p>Azul es Messenger, el degradado rosa y morado es Instagram y verde es WhatsApp. Arriba de la lista filtras por canal y por etapa.</p></div></li><li><span>3</span><div><b>Contesta desde el CRM</b><p>Escribe abajo y toca <b>Enviar por Messenger</b> o <b>Enviar por Instagram</b> (o Ctrl + Enter). Las <b>respuestas rápidas</b> llenan el texto con un toque.</p></div></li><li><span>4</span><div><b>La regla de las 24 horas</b><p>Meta solo deja responder desde el CRM durante 24 horas después del último mensaje del cliente. Si pasó más tiempo, el botón te lleva a Meta Business Suite para contestar desde ahí.</p></div></li><li><span>5</span><div><b>WhatsApp</b><p>Mientras conectamos la API de WhatsApp, el botón abre tu WhatsApp con el mensaje listo y queda registrado aquí.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-users"/></svg></span><span class="g-t">Prospectos y etapas</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Prospecto automático</b><p>Quien te escribe por primera vez y no es cliente queda como prospecto, con el canal por el que llegó.</p></div></li><li><span>2</span><div><b>Mueve la etapa</b><p>Arriba del chat toca <b>Nuevo</b>, <b>Interesado</b>, <b>Cita agendada</b>, <b>Cliente</b> o <b>No interesado</b>. Elige también el servicio que le interesa y quién de tu equipo lo atiende.</p></div></li><li><span>3</span><div><b>Convertir en cliente</b><p>Toca <b>Convertir en cliente</b>: se crea su ficha con nombre y teléfono y, si quieres, se abre el caso del servicio en el mismo paso.</p></div></li><li><span>4</span><div><b>Que nadie espere</b><p>El filtro <b>Sin responder</b> te muestra a quién le falta contestar. Si un prospecto lleva más de 1 día sin respuesta, el CRM te crea una tarea para recordártelo.</p></div></li></ol></details>
-          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-image"/></svg></span><span class="g-t">Fotos y archivos en el chat</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Ver lo que te mandan</b><p>Las fotos y PDF que el cliente envía por Messenger o Instagram se ven dentro del chat. Toca la foto para verla en grande o <b>Descargar</b>.</p></div></li><li><span>2</span><div><b>Guardar en sus documentos</b><p>Toca <b>Guardar en documentos</b> y el archivo pasa a la ficha del cliente, en Documentos. Si todavía es prospecto, primero conviértelo en cliente.</p></div></li><li><span>3</span><div><b>Enviar un archivo</b><p>Toca el clip 📎 junto al botón de enviar, elige una foto o un PDF (hasta 25 MB) y envíalo con o sin texto.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-image"/></svg></span><span class="g-t">Fotos y archivos en el chat</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Ver lo que te mandan</b><p>Las fotos y PDF que el cliente envía por Messenger o Instagram se ven dentro del chat. Toca la foto para verla en grande o <b>Descargar</b>.</p></div></li><li><span>2</span><div><b>Guardar en sus documentos</b><p>Toca <b>Guardar en documentos</b> y el archivo pasa a la ficha del cliente, en Documentos. Si todavía es prospecto, primero conviértelo en cliente.</p></div></li><li><span>3</span><div><b>Enviar un archivo</b><p>Toca el clip junto al botón de enviar, elige una foto o un PDF (hasta 25 MB) y envíalo con o sin texto.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-zap"/></svg></span><span class="g-t">Avisos automáticos</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Por enviar</b><p>Los recordatorios de documentos, pagos y citas, los cambios de etapa y los pedidos de reseña aparecen en la pestaña <b>Por enviar</b>. Toca <b>Enviar</b> y se abre WhatsApp con el mensaje listo.</p></div></li><li><span>2</span><div><b>Automatizaciones</b><p>En la pestaña <b>Automatizaciones</b> enciende o apaga cada aviso y edita su texto, incluida la respuesta fuera de horario.</p></div></li><li><span>3</span><div><b>Pronto, solos</b><p>Cuando quede conectada la API de WhatsApp, estos avisos saldrán sin que tengas que tocar nada.</p></div></li></ol></details>
-          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-calendar"/></svg></span><span class="g-t">Agenda y citas en línea</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Tus clientes reservan</b><p>Comparte <b>avamultiservices.com/citas</b>: eligen servicio, día y hora libre, y la cita aparece en tu <b>Agenda</b>.</p></div></li><li><span>2</span><div><b>Tu semana</b><p>En <b>Agenda</b> ves la semana, confirmas, mueves o cancelas citas y creas citas tú misma.</p></div></li><li><span>3</span><div><b>Horario</b><p>En <b>Ajustes</b> defines los días y horas en que atiendes, cuánto dura cada cita y con cuánta anticipación pueden reservar.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-calendar"/></svg></span><span class="g-t">Agenda y citas en línea</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Tus clientes reservan</b><p>Comparte <b>avamultiservices.com/citas</b>: eligen servicio, día y hora libre, y la cita aparece en tu <b>Agenda</b>.</p></div></li><li><span>2</span><div><b>Tu semana</b><p>En <b>Agenda</b> ves la semana, confirmas, mueves o cancelas citas y creas citas tú misma.</p></div></li><li><span>3</span><div><b>Horario</b><p>En <b>Ajustes</b> defines los días y horas en que atiendes, cuánto dura cada cita y con cuánta anticipación pueden reservar.</p></div></li><li><span>4</span><div><b>Google Calendar</b><p>En <b>Agenda</b> toca <b>Google Calendar</b>, copia tu enlace privado y agrégalo en Google Calendar → Otros calendarios → <b>Desde URL</b>. Tus citas aparecen en el celular con aviso 30 minutos antes. Google lo actualiza cada pocas horas.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-pen"/></svg></span><span class="g-t">Contratos y planes mensuales</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Crear el contrato</b><p>En la ficha del cliente, en <b>Contratos</b>, elige una plantilla (crédito, contabilidad o general) y revisa el texto.</p></div></li><li><span>2</span><div><b>Enviar a firmar</b><p>Toca <b>Enviar</b>: se abre WhatsApp con un enlace privado. El cliente lee, dibuja su firma con el dedo y acepta.</p></div></li><li><span>3</span><div><b>Firmado</b><p>Verás la fecha, el nombre y la firma en la ficha, y el cliente lo puede volver a ver en su portal.</p></div></li><li><span>4</span><div><b>Planes mensuales</b><p>En <b>Planes mensuales</b> registras lo que el cliente paga cada mes (por ejemplo, contabilidad). El sistema te avisa antes de cada cobro y, con Square conectado, le envías al cliente el enlace para pagar el mes con tarjeta.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-smartphone"/></svg></span><span class="g-t">Portal del cliente</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Darle acceso</b><p>En la ficha del cliente toca <b>Invitar al portal</b>. Le llega un correo y entra sin contraseña, con un enlace seguro.</p></div></li><li><span>2</span><div><b>Lo que ve</b><p>En <b>avamultiservices.com/portal</b> ve en qué etapa va su trámite, su saldo, sus contratos y sus próximas citas.</p></div></li><li><span>3</span><div><b>Te sube documentos</b><p>Desde el portal te envía fotos o PDF, y aparecen en su ficha en el panel.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-send"/></svg></span><span class="g-t">Campañas y ventas</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Campañas</b><p>En <b>Campañas</b> elige una plantilla (temporada de taxes, Franchise Tax, crédito o contabilidad), filtra a quién va y toca <b>Preparar envío</b>. Los mensajes pasan a <b>Por enviar</b>.</p></div></li><li><span>2</span><div><b>Oportunidades</b><p>En <b>Inicio</b> verás a quién ofrecerle otro servicio: clientes de taxes sin crédito y clientes con LLC sin contabilidad.</p></div></li><li><span>3</span><div><b>Referidos</b><p>En la ficha del cliente marca quién lo refirió; el panel cuenta los referidos y muestra el descuento que definiste en Ajustes.</p></div></li><li><span>4</span><div><b>Ingresos por servicio</b><p>En <b>Inicio</b> ves cuánto deja cada servicio.</p></div></li></ol></details>
@@ -500,6 +617,8 @@
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-file"/></svg></span><span class="g-t">Recibos en PDF</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Al registrar un pago</b><p>Cada pago recibe su número de recibo y el CRM te ofrece enviárselo al cliente por WhatsApp.</p></div></li><li><span>2</span><div><b>Ver o reenviar</b><p>En Cobros, en la ficha del cliente o en el caso, usa los botones del recibo para abrirlo, descargar el PDF o enviarlo de nuevo.</p></div></li><li><span>3</span><div><b>Encuéntralo</b><p>En la búsqueda rápida escribe el número del recibo (por ejemplo, 1001) y te lleva directo.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-trending"/></svg></span><span class="g-t">Embudo de ventas y búsqueda rápida</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Tu embudo</b><p>En <b>Inicio</b> ves cuántos contactos llegaron, cuántos se hicieron clientes, cuántos tienen servicio y cuántos pagaron. Puedes verlo del mes, 90 días o 12 meses.</p></div></li><li><span>2</span><div><b>Por canal</b><p>Debajo ves de dónde llegan tus clientes y cuántos prospectos de WhatsApp, Messenger e Instagram se volvieron clientes.</p></div></li><li><span>3</span><div><b>Búsqueda rápida</b><p>Presiona <b>Ctrl + K</b> (o toca <b>Buscar</b> en el menú o la lupa en el celular) y escribe nombre, teléfono, correo, caso o número de recibo.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-settings"/></svg></span><span class="g-t">Ajustes</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Datos del negocio</b><p>En <b>Ajustes</b> escribe tu enlace de reseñas de Google, tu Zelle y el descuento por referido. Se usan en los mensajes y en el portal.</p></div></li><li><span>2</span><div><b>Integraciones</b><p>Ahí mismo verás el estado de WhatsApp, Instagram, Meta Ads, Square, QuickBooks y Google Calendar a medida que los conectemos.</p></div></li></ol></details>
+        </div>
+        <div class="g-nada" id="g-nada" hidden>No encontramos ese tema. Prueba con otra palabra o mira los videos.</div>
         </div>
       </div>
     </div>
@@ -664,6 +783,149 @@
   </div>
 </footer>
 
+<script>
+/* Videos de la guía: tarjetas por día, reproductor, avance y buscador de la guía escrita */
+(function () {
+  'use strict';
+  var DIAS = [
+    { t: 'Día 1', n: 'Lo básico', d: 'Clientes, casos y cobros: lo que usarás todos los días.' },
+    { t: 'Día 2', n: 'Mensajes', d: 'La bandeja con IA, los prospectos y las solicitudes de tu sitio.' },
+    { t: 'Día 3', n: 'Organización', d: 'Tareas, agenda, documentos, contratos, campañas y tu equipo.' }
+  ];
+  var V = [
+    { id: 'recorrido', d: 0, t: 'Tu panel en un minuto', s: 'Dónde está cada cosa y qué revisar cada mañana.', p: ['Entra en avamultiservices.com/admin con tu correo y contraseña.', 'En Inicio revisa los números del negocio y la lista «Para hoy».', 'Usa el menú para ir a cada sección; los números son pendientes nuevos.', 'Con Ctrl + K o Buscar encuentras cualquier cliente, caso o recibo.'] },
+    { id: 'cliente', d: 0, t: 'Agregar un cliente', s: 'Su ficha guarda contacto, casos, cobros y documentos.', p: ['Ve a Clientes y toca Nuevo cliente.', 'Escribe nombre, teléfono y correo (solo el nombre es obligatorio).', 'Marca cómo llegó y agrega etiquetas si quieres.', 'Toca Guardar: se abre su ficha.'] },
+    { id: 'caso', d: 0, t: 'Abrir un caso y moverlo de etapa', s: 'Cada servicio tiene su tablero con etapas.', p: ['En la ficha del cliente toca Nuevo caso.', 'Elige el servicio y pon el precio.', 'En Casos, elige el servicio arriba.', 'Arrastra la tarjeta a la siguiente etapa (en el celular, ábrela y cambia la etapa).'] },
+    { id: 'pago', d: 0, t: 'Registrar un pago y enviar el recibo', s: 'Zelle, efectivo, Cash App… cada pago con su recibo.', p: ['En Cobros toca Registrar pago.', 'Elige cliente y caso, escribe el monto y el método.', 'Toca Registrar: el pago recibe su número de recibo.', 'Envíale el recibo por WhatsApp con un toque.'] },
+    { id: 'tarjeta', d: 0, t: 'Cobrar con tarjeta', s: 'Un enlace de Square que el cliente paga desde su celular.', p: ['En la ficha del cliente toca Cobrar con tarjeta.', 'Escribe el monto y el concepto.', 'Toca Crear enlace y enviar: se abre WhatsApp con el enlace.', 'Cuando paga, el pago entra solo a Cobros. No uses tarjeta para reparación de crédito.'] },
+    { id: 'bandeja', d: 1, t: 'Contestar mensajes con ayuda de la IA', s: 'Messenger, Instagram y WhatsApp en un solo lugar.', p: ['Abre Mensajes: cada canal tiene su color.', 'Toca una conversación: arriba ves el resumen de la IA.', 'Toca Usar esta respuesta, ajústala si quieres y envíala.', 'La IA nunca envía nada sola.'] },
+    { id: 'prospecto', d: 1, t: 'De prospecto a cliente', s: 'Etapas, filtro «Sin responder» y conversión en un paso.', p: ['Quien te escribe por primera vez queda como prospecto.', 'Cambia su etapa arriba del chat: Nuevo, Interesado, Cita agendada…', 'Toca Convertir en cliente para crear su ficha y su caso.', 'Usa el filtro Sin responder para que nadie se quede esperando.'] },
+    { id: 'solicitudes', d: 1, t: 'Atender una solicitud', s: 'Lo que llega de tu formulario y de «Solicita tu cita».', p: ['En Solicitudes abre la que llegó.', 'Revisa sus datos, objetivos y documentos.', 'Toca Convertir en cliente: se crea su ficha y su caso.', 'En Mensajes de contacto contesta las de «Solicita tu cita».'] },
+    { id: 'tareas', d: 2, t: 'Crear una tarea', s: 'Para ti o para tu compañera, con fecha límite.', p: ['En Tareas toca Nueva tarea.', 'Escribe qué hay que hacer y ponle fecha.', 'Asígnala y, si quieres, lígala a un cliente.', 'Marca la casilla cuando la termines.'] },
+    { id: 'agenda', d: 2, t: 'Agenda y Google Calendar', s: 'Tus clientes reservan solos y tú ves la semana.', p: ['En Agenda ves la semana; usa las flechas para cambiar.', 'Abre una cita Solicitada para confirmarla, moverla o cancelarla.', 'Toca Google Calendar y copia tu enlace.', 'Agrégalo en Google Calendar → Otros calendarios → Desde URL.'] },
+    { id: 'documentos', d: 2, t: 'Documentos del caso', s: 'Lista por servicio y pedir lo que falta en un mensaje.', p: ['Abre el caso desde la ficha del cliente.', 'Marca cada documento cuando llegue.', 'Toca Pedir lo que falta: se arma el WhatsApp con la lista.', 'Los archivos quedan en la ficha, en Documentos.'] },
+    { id: 'contrato', d: 2, t: 'Contrato con firma y portal', s: 'El cliente firma desde su celular y ve su avance.', p: ['En la ficha toca Nuevo contrato y elige la plantilla.', 'Revisa el texto y guárdalo.', 'Toca Enviar: el cliente firma con el dedo desde su celular.', 'Toca Invitar al portal para que vea su avance y te suba documentos.'] },
+    { id: 'campana', d: 2, t: 'Preparar una campaña', s: 'Un mensaje para un grupo de clientes.', p: ['En Campañas elige una plantilla.', 'Revisa el mensaje y a quién va.', 'Guárdala y toca Preparar envío.', 'En Mensajes → Por enviar mandas cada mensaje con un toque.'] },
+    { id: 'equipo', d: 2, t: 'Invitar a tu compañera', s: 'Tú decides qué puede ver y hacer.', p: ['En Equipo toca Invitar usuario.', 'Escribe su nombre y correo.', 'Elige un rol listo o marca los permisos uno por uno.', 'Con Acceso hasta, el acceso se apaga solo en la fecha que elijas.'] }
+  ];
+  var DUR = { recorrido: 29, cliente: 27, caso: 29, pago: 29, tarjeta: 19, bandeja: 32, prospecto: 27, solicitudes: 17, tareas: 23, agenda: 20, documentos: 19, contrato: 24, campana: 22, equipo: 26 };
+  var CLAVE = 'ava-guia-vistos';
+  var vistos = {};
+  try { vistos = JSON.parse(localStorage.getItem(CLAVE) || '{}') || {}; } catch (_) { vistos = {}; }
+  function guardar() { try { localStorage.setItem(CLAVE, JSON.stringify(vistos)); } catch (_) { /* sin almacenamiento */ } }
+  function $(id) { return document.getElementById(id); }
+  function h(tag, attrs, hijos) {
+    var e = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) { if (k === 'text') e.textContent = attrs[k]; else if (k === 'html') e.innerHTML = attrs[k]; else e.setAttribute(k, attrs[k]); });
+    (hijos || []).forEach(function (c) { if (c) e.appendChild(c); });
+    return e;
+  }
+  var PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"/></svg>';
+  var tarjetas = {};
+  var actual = 0, dia = 0;
+
+  function avance() {
+    var n = V.filter(function (v) { return vistos[v.id]; }).length;
+    $('vg-prog-b').style.width = Math.round(n / V.length * 100) + '%';
+    $('vg-prog-s').textContent = n === V.length ? '¡Completaste los 14 videos!' : n + ' de ' + V.length + ' videos vistos';
+    V.forEach(function (v) { tarjetas[v.id].classList.toggle('visto', !!vistos[v.id]); });
+    var tabs = $('vg-tabs').children;
+    DIAS.forEach(function (d, i) {
+      var de = V.filter(function (v) { return v.d === i; });
+      tabs[i].querySelector('span').textContent = de.filter(function (v) { return vistos[v.id]; }).length + '/' + de.length;
+    });
+  }
+
+  function pintar() {
+    var cont = $('vg-dias'); cont.innerHTML = '';
+    var tabs = $('vg-tabs'); tabs.innerHTML = '';
+    DIAS.forEach(function (d, i) {
+      tabs.appendChild(h('button', { class: 'vg-tab' + (i === dia ? ' on' : ''), type: 'button', role: 'tab', 'aria-selected': String(i === dia) }, [document.createTextNode(d.t + ' · ' + d.n + ' '), h('span', { text: '' })]));
+      tabs.lastChild.addEventListener('click', function () { dia = i; pintar(); });
+    });
+    var d = DIAS[dia];
+    var grid = h('div', { class: 'vg-grid' });
+    cont.appendChild(h('div', { class: 'vg-dia' }, [h('h3', { html: d.n + ' <small>' + d.t + '</small>' }), h('p', { text: d.d }), grid]));
+    V.forEach(function (v, i) {
+      if (v.d !== dia) return;
+      var c = h('button', { class: 'vg-card', type: 'button', 'aria-label': 'Ver video: ' + v.t }, [
+        h('div', { class: 'vg-thumb' }, [
+          h('img', { src: 'videos/' + v.id + '.jpg', alt: '', loading: 'lazy', width: '640', height: '400' }),
+          h('span', { class: 'vg-num', text: String(i + 1).padStart(2, '0') }),
+          h('span', { class: 'vg-visto', html: '<svg class="icon"><use href="#i-check"/></svg>Visto' }),
+          h('span', { class: 'vg-play', html: PLAY }),
+          h('span', { class: 'vg-dur', html: '<svg class="icon"><use href="#i-clock"/></svg>0:' + String(DUR[v.id]).padStart(2, '0') })
+        ]),
+        h('div', { class: 'vg-body' }, [h('b', { text: v.t }), h('p', { text: v.s })])
+      ]);
+      c.addEventListener('click', function () { abrir(i); });
+      tarjetas[v.id] = c;
+      grid.appendChild(c);
+    });
+    V.forEach(function (v) { if (!tarjetas[v.id] || !tarjetas[v.id].isConnected) tarjetas[v.id] = document.createElement('i'); });
+    avance();
+  }
+
+  var video = $('vg-video'), modal = $('vg-modal'), ultimoFoco = null;
+  function abrir(i) {
+    actual = i;
+    var v = V[i];
+    ultimoFoco = ultimoFoco || document.activeElement;
+    // MP4 (H.264) para Safari y la mayoría; WebM para navegadores sin H.264
+    video.innerHTML = '';
+    video.appendChild(h('source', { src: 'videos/' + v.id + '.mp4', type: 'video/mp4' }));
+    video.appendChild(h('source', { src: 'videos/' + v.id + '.webm', type: 'video/webm' }));
+    video.poster = 'videos/' + v.id + '.jpg';
+    video.load();
+    $('vg-m-k').textContent = 'Video ' + (i + 1) + ' de ' + V.length + ' · ' + DIAS[v.d].t + ' · ' + DIAS[v.d].n;
+    $('vg-m-t').textContent = v.t;
+    var ol = $('vg-m-p'); ol.innerHTML = '';
+    v.p.forEach(function (x) { ol.appendChild(h('li', { text: x })); });
+    $('vg-ant').hidden = i === 0;
+    $('vg-sig').querySelector('span').textContent = i === V.length - 1 ? 'Terminar' : 'Siguiente video';
+    marcarBoton();
+    modal.classList.add('on');
+    document.body.style.overflow = 'hidden';
+    $('vg-x').focus();
+    var p = video.play(); if (p && p.catch) p.catch(function () { /* el navegador pidió un toque para reproducir */ });
+  }
+  function cerrar() {
+    video.pause(); video.innerHTML = ''; video.load();
+    modal.classList.remove('on'); document.body.style.overflow = '';
+    if (ultimoFoco && ultimoFoco.focus) ultimoFoco.focus(); ultimoFoco = null;
+  }
+  function marcarBoton() {
+    var b = $('vg-visto'), v = V[actual];
+    b.classList.toggle('ok', !!vistos[v.id]);
+    b.querySelector('span').textContent = vistos[v.id] ? 'Visto' : 'Marcar como visto';
+  }
+  $('vg-visto').addEventListener('click', function () { var id = V[actual].id; vistos[id] = !vistos[id]; guardar(); marcarBoton(); avance(); });
+  $('vg-sig').addEventListener('click', function () {
+    vistos[V[actual].id] = true; guardar(); avance();
+    if (actual < V.length - 1) { if (V[actual + 1].d !== dia) { dia = V[actual + 1].d; pintar(); } abrir(actual + 1); } else cerrar();
+  });
+  $('vg-ant').addEventListener('click', function () { if (actual > 0) abrir(actual - 1); });
+  $('vg-x').addEventListener('click', cerrar);
+  modal.addEventListener('mousedown', function (e) { if (e.target === modal) cerrar(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('on')) cerrar(); });
+  video.addEventListener('ended', function () { vistos[V[actual].id] = true; guardar(); marcarBoton(); avance(); });
+  pintar();
+
+  // Buscador de la guía escrita
+  var q = $('g-buscar');
+  if (q) q.addEventListener('input', function () {
+    var t = q.value.trim().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    var hay = 0;
+    document.querySelectorAll('.g-item').forEach(function (d) {
+      var txt = d.textContent.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+      var ok = !t || txt.indexOf(t) !== -1;
+      d.hidden = !ok; if (ok) hay++;
+      if (t && ok) d.open = true;
+    });
+    $('g-nada').hidden = hay > 0;
+  });
+})();
+</script>
 <script src="../assets/js/main.js" defer></script>
 </body>
 </html>
