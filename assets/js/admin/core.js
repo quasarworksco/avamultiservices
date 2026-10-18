@@ -216,12 +216,13 @@
     ['sitio', 'Sitio web', 'Editar precios, anuncios y preguntas del sitio'],
     ['contenido', 'Contenido digital', 'Ver, aprobar y comentar posts y diseños'],
     ['mensajes', 'Mensajes', 'Bandeja de WhatsApp, Instagram y Messenger, y avisos automáticos'],
+    ['llamadas', 'Llamadas', 'Llamar desde el CRM, escuchar grabaciones y ver lo que extrae la IA'],
     ['campanas', 'Campañas', 'Crear y enviar campañas por etiqueta'],
     ['citas', 'Citas', 'Ver y gestionar la agenda'],
     ['taxes', 'Solo taxes asignados', 'Ve únicamente los casos de taxes que tú le asignes y esos clientes']
   ];
   var ROLES = {
-    completa: { n: 'Compañera (todo menos equipo)', p: ['solicitudes', 'clientes', 'casos', 'documentos', 'cobros', 'tareas', 'mensajes', 'campanas', 'citas', 'contenido'] },
+    completa: { n: 'Compañera (todo menos equipo)', p: ['solicitudes', 'clientes', 'casos', 'documentos', 'cobros', 'tareas', 'mensajes', 'llamadas', 'campanas', 'citas', 'contenido'] },
     redes: { n: 'Redes sociales', p: ['solicitudes', 'mensajes', 'campanas'] },
     taxes: { n: 'Ayudante de temporada de taxes', p: ['taxes', 'tareas'] },
     personal: { n: 'Personalizado', p: [] }
@@ -268,6 +269,7 @@
     AVA.contarContenido();
     if (AVA.contarBandeja) AVA.contarBandeja();
     if (AVA.escucharBandeja) AVA.escucharBandeja();
+    if (AVA.iniciarLinea) setTimeout(function () { AVA.iniciarLinea(); }, 2500);
     if (AVA.contarCitas) AVA.contarCitas();
     // Precarga en segundo plano lo que usan las ventanas emergentes
     if (puede('clientes|casos|cobros|tareas|documentos|mensajes|citas|taxes')) cargarClientes();
@@ -385,8 +387,9 @@
       if (!integCache) integCache = Promise.all([
         sb.functions.invoke('enviar-mensaje', { body: { estado: true } }).then(function (r) { return r.data || {}; }).catch(function () { return {}; }),
         sb.rpc('claves_configuradas').then(function (r) { return r.data || {}; }, function () { return {}; }),
-        sb.rpc('calendario_estado').then(function (r) { return r.data || {}; }, function () { return {}; })
-      ]).then(function (r) { r[0].ia = !!r[1].GROQ_API_KEY; r[0].calendario = !!r[2].conectado; r[0].calendarioInfo = r[2]; return r[0]; });
+        sb.rpc('calendario_estado').then(function (r) { return r.data || {}; }, function () { return {}; }),
+        sb.rpc('llamadas_estado').then(function (r) { return r.data || {}; }, function () { return {}; })
+      ]).then(function (r) { r[0].ia = !!r[1].GROQ_API_KEY; r[0].calendario = !!r[2].conectado; r[0].calendarioInfo = r[2]; r[0].llamadas = !!r[3].conectado; return r[0]; });
       return integCache;
     },
     limpiarIntegraciones: function () { integCache = null; },

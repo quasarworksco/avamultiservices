@@ -31,7 +31,7 @@
     if (opciones && opciones.cliente && t.clientes) meta.push(el('a', { href: '#/clientes/' + t.cliente_id, text: A.nombreDe(t.clientes) }));
     if (opciones && opciones.equipo && t.asignada_a && opciones.equipo[t.asignada_a]) meta.push(el('span', { text: opciones.equipo[t.asignada_a] }));
     // Tareas automáticas: enlace a donde se atiende y mensaje sugerido listo para copiar
-    if (t.enlace) meta.push(el('a', { class: 'task-link', href: '#/' + t.enlace, text: /^bandeja/.test(t.enlace) ? 'Abrir chat' : /^respuestas/.test(t.enlace) ? 'Ver respuestas' : 'Ver solicitud' }));
+    if (t.enlace) meta.push(el('a', { class: 'task-link', href: '#/' + t.enlace, text: /^bandeja/.test(t.enlace) ? 'Abrir chat' : /^respuestas/.test(t.enlace) ? 'Ver respuestas' : /^llamadas/.test(t.enlace) ? 'Ver llamada' : 'Ver solicitud' }));
     var sugerido = (t.detalle || '').split('Mensaje sugerido:\n')[1];
     if (sugerido && !t.hecha) meta.push(el('button', { type: 'button', class: 'task-link', text: 'Copiar mensaje', title: sugerido, onclick: function () { navigator.clipboard.writeText(sugerido.trim()).then(function () { A.toast('Mensaje copiado. Pégalo en el chat del cliente.'); }); } }));
     var fila = el('div', { class: 'task' + (t.hecha ? ' done' : '') }, [

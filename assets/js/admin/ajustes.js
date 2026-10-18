@@ -10,6 +10,7 @@
     ['Instagram y Messenger', 'Mensajes directos de Instagram y Facebook en la misma bandeja.', 'meta', 'i-message'],
     ['Meta Ads (formularios de anuncios)', 'Los leads de tus anuncios entran solos a Solicitudes con origen «Meta Ads».', 'meta', 'i-trending'],
     ['Pagos con tarjeta (Square)', 'Enlaces de pago por WhatsApp y botón de pago en el portal. Cada pago entra solo a Cobros con su recibo.', 'pagos', 'i-dollar'],
+    ['Llamadas desde el CRM (Twilio)', 'Marcador en el panel, llamadas entrantes, buzón de voz, grabación y resumen con IA de cada llamada.', 'llamadas', 'i-phone'],
     ['Asistente con IA (Groq)', 'Lee cada mensaje: qué servicio busca, qué tan interesado está y una respuesta sugerida que tú envías.', 'ia', 'i-sparkles'],
     ['QuickBooks', 'Sincronizar tus cobros y la contabilidad de tus clientes.', null, 'i-calculator'],
     ['Google Calendar', 'Tus citas del CRM aparecen en tu Google Calendar con aviso 30 minutos antes. Cada persona saca su enlace en Agenda → «Google Calendar».', 'calendario', 'i-calendar'],
@@ -116,7 +117,12 @@
         ['SQUARE_ACCESS_TOKEN', 'Access token de Square', 'developer.squareup.com → tu app → Credentials → Production → Access token'],
         ['SQUARE_WEBHOOK_SIGNATURE_KEY', 'Signature key del webhook de Square', 'developer.squareup.com → tu app → Webhooks → Subscriptions → Signature key'],
         ['SQUARE_LOCATION_ID', 'Location ID de Square (opcional)', 'Solo si tienes varias sucursales en Square; si no, se usa la principal'],
-        ['GROQ_API_KEY', 'Clave de Groq (IA gratuita)', 'console.groq.com → API Keys (gsk_…)']
+        ['GROQ_API_KEY', 'Clave de Groq (IA gratuita)', 'console.groq.com → API Keys (gsk_…)'],
+        ['TWILIO_ACCOUNT_SID', 'Account SID de Twilio (llamadas)', 'console.twilio.com → Account Info → Account SID (empieza con AC)'],
+        ['TWILIO_AUTH_TOKEN', 'Auth Token de Twilio', 'console.twilio.com → Account Info → Auth Token'],
+        ['TWILIO_API_KEY_SID', 'API Key SID de Twilio', 'console.twilio.com → Account → API keys & tokens → Create API key (Standard) → SID (empieza con SK)'],
+        ['TWILIO_API_KEY_SECRET', 'API Key Secret de Twilio', 'El «Secret» que aparece una sola vez al crear la API key'],
+        ['TWILIO_NUMERO', 'Número de Twilio de AVA', 'Phone Numbers → Active numbers (por ejemplo +12145550123). El CRM lo configura solo.']
       ];
       var claveCard = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Claves de integración' }),
         el('p', { class: 'muted', style: 'margin-bottom:12px', text: 'Pega aquí las claves de Meta, Square y Groq. Se guardan cifradas y nadie puede volver a verlas; para cambiar una, pega la nueva.' })]);

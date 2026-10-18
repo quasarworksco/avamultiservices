@@ -231,7 +231,7 @@
 
     cont.appendChild(el('div', { class: 'quick' }, [
       tel.length >= 7 ? el('a', { href: 'https://wa.me/' + wa, target: '_blank', rel: 'noopener' }, [A.icon('i-whatsapp'), 'WhatsApp']) : null,
-      tel.length >= 7 ? el('a', { href: 'tel:+' + wa }, [A.icon('i-phone'), 'Llamar']) : null,
+      tel.length >= 7 ? el('a', { href: A.puede('llamadas') ? '#/llamadas/marcar/' + c.id : 'tel:+' + wa }, [A.icon('i-phone'), 'Llamar']) : null,
       c.email ? el('a', { href: 'mailto:' + c.email }, [A.icon('i-mail'), 'Correo']) : null,
       c.solicitud_id && A.puede('solicitudes') ? el('a', { href: '#/solicitudes/' + c.solicitud_id }, [A.icon('i-inbox'), 'Ver solicitud original']) : null
     ]));

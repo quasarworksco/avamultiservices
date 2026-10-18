@@ -929,3 +929,84 @@ a.stat { display: block; color: inherit; animation: rise 0.5s var(--ease) both; 
 .seg-chip .icon { width: 12px; height: 12px; }
 .seg-dias { display: grid; gap: 6px; margin-top: 10px; font-size: 12.5px; color: var(--muted); }
 .task-link { border: 0; background: none; padding: 0; font: inherit; font-weight: 700; color: var(--accent); cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---------- Llamadas: marcador, historial, detalle y llamada en curso ---------- */
+.ll-grid { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 16px; margin-top: 16px; align-items: start; }
+.ll-marcador { min-width: 0; position: sticky; top: 18px; display: grid; gap: 12px; background: linear-gradient(170deg, #fff, var(--stone-50)); }
+.ll-linea { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+.ll-linea i { width: 8px; height: 8px; border-radius: 50%; }
+.ll-linea.on { background: #e3f3e7; color: #2f7a3e; }
+.ll-linea.on i { background: #34a853; box-shadow: 0 0 0 0 rgba(52, 168, 83, 0.6); animation: ll-latido 2s infinite; }
+.ll-linea.off { background: var(--stone-100); color: var(--muted); }
+.ll-linea.off i { background: var(--stone); }
+@keyframes ll-latido { 70% { box-shadow: 0 0 0 7px rgba(52, 168, 83, 0); } 100% { box-shadow: 0 0 0 0 rgba(52, 168, 83, 0); } }
+.ll-buscar { position: relative; }
+.ll-sugs { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 5; display: grid; padding: 6px; border-radius: 14px; background: #fff; border: 1px solid var(--line); box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.35); }
+.ll-sugs button { display: flex; justify-content: space-between; gap: 10px; padding: 9px 10px; border: 0; border-radius: 10px; background: none; font-size: 13.5px; text-align: left; cursor: pointer; }
+.ll-sugs button:hover { background: var(--stone-50); }
+.ll-sugs span { color: var(--muted); font-size: 12.5px; }
+.ll-cli { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: #e7effc; }
+.ll-cli .avatar { background: #fff; color: #1a5fd0; }
+.ll-cli div { flex: 1; min-width: 0; }
+.ll-cli b { display: block; font-size: 14px; }
+.ll-cli span { font-size: 12px; color: var(--muted); }
+.ll-pantalla { display: flex; align-items: center; gap: 6px; padding: 6px 6px 6px 16px; border-radius: 18px; background: #1b1b1a; }
+.ll-num { flex: 1; min-width: 0; width: 100%; height: 52px; border: 0; background: transparent; color: #fff; font: 500 28px var(--font-serif); letter-spacing: 0.02em; outline: none; }
+.ll-num::placeholder { color: rgba(255, 255, 255, 0.3); }
+.ll-borrar { display: grid; place-items: center; width: 44px; height: 44px; border: 0; border-radius: 14px; background: rgba(255, 255, 255, 0.08); color: #fff; cursor: pointer; }
+.ll-tec { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.ll-tec button { display: grid; justify-items: center; gap: 0; padding: 9px 0; border-radius: 16px; border: 1px solid var(--line); background: #fff; cursor: pointer; transition: transform 0.12s, background 0.15s, border-color 0.15s; }
+.ll-tec button:hover { border-color: var(--accent); background: var(--accent-50); }
+.ll-tec button:active { transform: scale(0.94); }
+.ll-tec b { font: 500 24px var(--font-serif); line-height: 1.1; }
+.ll-tec span { min-height: 12px; font-size: 9.5px; font-weight: 700; letter-spacing: 0.16em; color: var(--muted); }
+.ll-grabar { margin-top: 2px; }
+.ll-aviso { margin: -4px 0 0; font-size: 12.5px; color: var(--muted); }
+.ll-aviso.tx { color: #2f7a3e; }
+.ll-aviso.av { color: #92600a; }
+.ll-llamar { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 56px; border: 0; border-radius: 999px; background: linear-gradient(135deg, #34a853, #1e8e3e); color: #fff; font: 700 16px var(--font-sans); cursor: pointer; box-shadow: 0 16px 30px -14px #1e8e3e; transition: transform 0.2s var(--ease), box-shadow 0.2s; }
+.ll-llamar:hover { transform: translateY(-2px); box-shadow: 0 22px 34px -14px #1e8e3e; }
+.ll-llamar .icon { width: 20px; height: 20px; }
+.ll-hist .card-h { flex-wrap: wrap; }
+.ll-q { width: 220px; height: 38px; }
+.ll-lista { display: grid; margin-top: 10px; }
+.ll-fila { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; padding: 12px 6px; border: 0; border-top: 1px solid var(--line); background: none; text-align: left; cursor: pointer; animation: rise 0.4s var(--ease) both; transition: background 0.15s; }
+.ll-fila:hover { background: var(--stone-50); }
+.ll-ico { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; }
+.ll-ico.sal { background: #e7effc; color: #1a5fd0; }
+.ll-ico.ent { background: #e3f3e7; color: #2f7a3e; }
+.ll-ico.per { background: #fdebe4; color: #b4472f; }
+.ll-ico.gr { background: #f0e9f8; color: #6b3fa0; }
+.ll-t { min-width: 0; display: grid; gap: 1px; }
+.ll-t b { font-size: 14.5px; }
+.ll-t .muted { font-size: 12.5px; }
+.ll-res { font-size: 13px; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ll-chips { display: flex; align-items: center; gap: 8px; }
+.ll-ia { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px 2px 7px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.ll-ia .icon { width: 12px; height: 12px; }
+.ll-ia.ok { background: #f0e9f8; color: #6b3fa0; }
+.ll-ia.proc, .ll-ia.pend { background: #fff4d6; color: #92600a; }
+.ll-ia.proc .icon { animation: cb-brillo 1.2s ease-in-out infinite; }
+.ll-ia.err { background: #fdebe4; color: #b4472f; }
+.ll-rec i { display: block; width: 9px; height: 9px; border-radius: 50%; background: #d1492d; box-shadow: 0 0 0 3px #fdebe4; }
+.ll-audio { width: 100%; }
+.ll-resumen { font-size: 15px; line-height: 1.55; }
+.ll-h4 { margin: 16px 0 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.ll-ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; }
+.ll-tareas { display: grid; gap: 6px; }
+.ll-tarea { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--stone-50); font-size: 13.5px; }
+.ll-tr pre { max-height: 320px; overflow: auto; padding: 12px; border-radius: 12px; background: var(--stone-50); white-space: pre-wrap; font: 13px/1.55 var(--font-sans); }
+.ll-flot { position: fixed; right: 20px; bottom: 20px; z-index: 300; width: 320px; padding: 16px; border-radius: 22px; background: #1b1b1a; color: #fff; box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6); animation: rise 0.35s var(--ease); }
+.ll-flot-h { display: flex; align-items: center; gap: 12px; }
+.ll-flot-h b { display: block; font-size: 16px; }
+.ll-flot-h span { font-size: 12.5px; color: rgba(255, 255, 255, 0.65); }
+.ll-pulso { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: #34a853; color: #fff; animation: ll-latido 1.4s infinite; }
+.ll-flot-b { display: flex; gap: 8px; margin-top: 14px; }
+.ll-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 42px; border: 0; border-radius: 999px; background: rgba(255, 255, 255, 0.1); color: #fff; font: 600 12.5px var(--font-sans); cursor: pointer; }
+.ll-btn.verde { background: #34a853; }
+.ll-btn.rojo { background: #d93025; }
+.ll-btn.on { background: #fff; color: #1b1b1a; }
+.ll-mini-tec { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 12px; }
+.ll-mini-tec button { height: 38px; border: 0; border-radius: 12px; background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 16px; cursor: pointer; }
+@media (max-width: 1100px) { .ll-grid { grid-template-columns: 1fr; } .ll-marcador { position: static; } }
+@media (max-width: 640px) { .ll-q { width: 100%; } .ll-flot { left: 12px; right: 12px; bottom: calc(76px + env(safe-area-inset-bottom)); width: auto; } .ll-fila { grid-template-columns: 36px minmax(0, 1fr); } .ll-chips { grid-column: 2; } }
