@@ -1,5 +1,6 @@
 // Asistente con IA (Groq) para la Bandeja: lee la conversación y guarda el servicio que busca,
 // qué tan interesado está, sus datos de contacto y una respuesta sugerida. Nunca envía nada solo.
+// Antes de analizar, convierte a texto las notas de voz que llegaron (Whisper en Groq).
 // - Desde el webhook de Meta (cabecera x-cron-secret) cuando llega un mensaje.
 // - Desde el panel (permiso «mensajes»): { conversacion_id } para analizar de nuevo u otra sugerencia.
 import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2.49.8';
@@ -49,6 +50,36 @@ function ocultar(t: string) {
     .replace(/\b(?:\d[ -]?){12,19}\b/g, '[número oculto]');
 }
 
+// Notas de voz → texto. Se guarda en el adjunto (transcripcion) para mostrarla en el chat.
+const WHISPER = ['whisper-large-v3-turbo', 'whisper-large-v3'];
+async function transcribir(db: SupabaseClient, convId: string, clave: string) {
+  const { data: ms } = await db.from('mensajes_chat').select('id,adjuntos').eq('conversacion_id', convId).eq('direccion', 'entrante')
+    .order('created_at', { ascending: false }).limit(20);
+  for (const m of ms || []) {
+    const adj = (m.adjuntos || []) as Record<string, any>[];
+    let cambio = false;
+    for (const a of adj) {
+      if (!/^audio\//.test(a.tipo || '') || typeof a.transcripcion === 'string' || a.transcripcion_error) continue;
+      if ((a.tam || 0) > 24 * 1024 * 1024) { a.transcripcion_error = 'El audio es muy largo para transcribirlo.'; cambio = true; continue; }
+      const { data: blob, error } = await db.storage.from('chat').download(a.path);
+      if (error || !blob) { a.transcripcion_error = 'No se encontró el audio.'; cambio = true; continue; }
+      let hecho = false;
+      for (const modelo of WHISPER) {
+        const fd = new FormData();
+        fd.append('file', new File([blob], a.nombre || 'nota-de-voz.ogg', { type: a.tipo }));
+        fd.append('model', modelo); fd.append('response_format', 'json'); fd.append('temperature', '0');
+        const r = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', { method: 'POST', headers: { Authorization: 'Bearer ' + clave }, body: fd });
+        if (r.status === 429) { if (cambio) await db.from('mensajes_chat').update({ adjuntos: adj }).eq('id', m.id); return; } // límite gratuito: se reintenta en el próximo mensaje
+        if (r.ok) { const j = await r.json().catch(() => ({})); a.transcripcion = String(j.text || '').trim(); hecho = true; break; }
+        if (r.status !== 400 && r.status !== 404) break;
+      }
+      if (!hecho) a.transcripcion_error = 'No se pudo transcribir.';
+      cambio = true;
+    }
+    if (cambio) await db.from('mensajes_chat').update({ adjuntos: adj }).eq('id', m.id);
+  }
+}
+
 function texto(v: unknown, max: number) {
   return typeof v === 'string' && v.trim() && v.trim().toLowerCase() !== 'null' ? v.trim().slice(0, max) : null;
 }
@@ -56,11 +87,12 @@ function texto(v: unknown, max: number) {
 async function analizar(db: SupabaseClient, convId: string, clave: string) {
   const { data: c } = await db.from('conversaciones').select('id,canal,nombre,etapa,servicio,cliente_id').eq('id', convId).maybeSingle();
   if (!c) throw new Error('Conversación no encontrada');
-  const { data: ms } = await db.from('mensajes_chat').select('direccion,texto,created_at').eq('conversacion_id', convId).order('created_at', { ascending: false }).limit(20);
+  const { data: ms } = await db.from('mensajes_chat').select('direccion,texto,created_at,adjuntos').eq('conversacion_id', convId).order('created_at', { ascending: false }).limit(20);
   const lista = (ms || []).reverse();
   if (!lista.some((m) => m.direccion === 'entrante')) return null;
   const canal = ({ whatsapp: 'WhatsApp', messenger: 'Facebook Messenger', instagram: 'Instagram' } as Record<string, string>)[c.canal] || c.canal;
-  const charla = lista.map((m) => (m.direccion === 'entrante' ? 'Cliente: ' : 'AVA: ') + ocultar(String(m.texto || '')).slice(0, 1200)).join('\n');
+  const voz = (m: Record<string, any>) => ((m.adjuntos || []) as Record<string, any>[]).filter((a) => a.transcripcion).map((a) => ' (nota de voz: «' + a.transcripcion + '»)').join('');
+  const charla = lista.map((m) => (m.direccion === 'entrante' ? 'Cliente: ' : 'AVA: ') + ocultar(String(m.texto || '') + voz(m)).slice(0, 2400)).join('\n');
   const contexto = `Canal: ${canal}. Nombre en el chat: ${c.nombre || 'desconocido'}. ${c.cliente_id ? 'Ya es cliente de AVA.' : 'Todavía no es cliente.'}\n\nConversación (la más reciente al final):\n${charla}`;
 
   let j: Record<string, any> | null = null;
@@ -119,6 +151,7 @@ Deno.serve(async (req) => {
   const clave = Deno.env.get('GROQ_API_KEY') || (k || {}).GROQ_API_KEY || '';
   if (!clave) return json(req, 400, { error: 'El asistente con IA todavía no está conectado.', codigo: 'no_conectado' });
   try {
+    await transcribir(db, String(b.conversacion_id || ''), clave).catch(() => null);
     const ia = await analizar(db, String(b.conversacion_id || ''), clave);
     return json(req, 200, { ia });
   } catch (e) {

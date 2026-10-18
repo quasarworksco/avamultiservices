@@ -374,12 +374,34 @@
   /* ---------- Fotos y archivos del chat ---------- */
   function limpio(n) { return String(n || 'archivo').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w.\-]+/g, '_').slice(-80); }
   function tam(b) { return b > 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB'; }
+  // Texto de la nota de voz (lo escribe la IA al llegar el audio)
+  function transcripcion(c, m, a) {
+    if (a.transcripcion) return el('div', { class: 'adj-tr' }, [el('span', { class: 'adj-tr-k' }, [A.icon('i-sparkles', 'icon-sm'), 'Transcripción']), el('p', { text: a.transcripcion })]);
+    if (a.transcripcion === '') return el('div', { class: 'adj-tr vacia', text: 'La nota de voz no tiene palabras que transcribir.' });
+    var reciente = Date.now() - new Date(m.created_at).getTime() < 3 * 60000 && !a.transcripcion_error;
+    if (reciente) return el('div', { class: 'adj-tr pend' }, [el('span', { class: 'adj-tr-k' }, [A.icon('i-sparkles', 'icon-sm'), 'Transcribiendo…'])]);
+    var caja = el('div', { class: 'adj-tr pend' });
+    var b = el('button', { type: 'button', class: 'link-btn', text: a.transcripcion_error ? 'Intentar de nuevo' : 'Transcribir a texto', onclick: async function () {
+      b.disabled = true; b.textContent = 'Transcribiendo…';
+      if (a.transcripcion_error) {
+        await sb.from('mensajes_chat').update({ adjuntos: (m.adjuntos || []).map(function (x) { if (x.path !== a.path) return x; var y = Object.assign({}, x); delete y.transcripcion_error; return y; }) }).eq('id', m.id);
+      }
+      var r = await sb.functions.invoke('ia-mensajes', { body: { conversacion_id: c.id } });
+      if (r.error) { var e = {}; try { e = await r.error.context.json(); } catch (_) { /* */ } A.toast(e.codigo === 'no_conectado' ? 'Conecta el asistente con IA en Ajustes para transcribir.' : (e.error || 'No se pudo transcribir.'), 'error'); b.disabled = false; b.textContent = 'Transcribir a texto'; return; }
+      var n = await sb.from('mensajes_chat').select('adjuntos').eq('id', m.id).maybeSingle();
+      var x = ((n.data && n.data.adjuntos) || []).filter(function (y) { return y.path === a.path; })[0];
+      if (x) { m.adjuntos = n.data.adjuntos; caja.replaceWith(transcripcion(c, m, x)); }
+    } });
+    if (a.transcripcion_error) caja.appendChild(el('span', { class: 'muted', text: a.transcripcion_error + ' ' }));
+    caja.appendChild(b);
+    return caja;
+  }
   function verAdjunto(c, m, a, url) {
     var caja = el('div', { class: 'adj' });
     if (!url) { caja.appendChild(el('span', { class: 'adj-f' }, [A.icon('i-file', 'icon-sm'), el('b', { text: a.nombre }), el('span', { class: 'muted', text: 'No disponible' })])); return caja; }
     if (/^image\//.test(a.tipo)) caja.appendChild(el('a', { class: 'adj-img', href: url, target: '_blank', rel: 'noopener', title: 'Ver en grande' }, [el('img', { src: url, alt: a.nombre })]));
     else if (/^video\//.test(a.tipo)) caja.appendChild(el('video', { src: url, controls: true, preload: 'metadata', class: 'adj-vid' }));
-    else if (/^audio\//.test(a.tipo)) caja.appendChild(el('audio', { src: url, controls: true, preload: 'none' }));
+    else if (/^audio\//.test(a.tipo)) { caja.appendChild(el('audio', { src: url, controls: true, preload: 'none' })); caja.appendChild(transcripcion(c, m, a)); }
     else caja.appendChild(el('a', { class: 'adj-f', href: url, target: '_blank', rel: 'noopener' }, [A.icon('i-file', 'icon-sm'), el('b', { text: a.nombre }), a.tam ? el('span', { class: 'muted', text: tam(a.tam) }) : null]));
     var acc = el('div', { class: 'adj-acc' }, [
       el('button', { type: 'button', class: 'link-btn', text: 'Descargar', onclick: async function () {
