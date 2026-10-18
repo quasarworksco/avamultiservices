@@ -182,8 +182,8 @@
           card.appendChild(el('div', { class: 'muted', style: 'margin:12px 0 4px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase', text: 'Enlaces de pago con tarjeta' }));
           en.data.forEach(function (e) {
             var EST = { pendiente: ['pendiente', 'Esperando pago'], pagado: ['completado', 'Pagado'], cancelado: ['cancelado', 'Cancelado'] }[e.estado];
-            card.appendChild(el('div', { class: 'saldo', style: 'cursor:default' }, [
-              el('div', null, [el('b', { text: (e.concepto || 'Pago') + ' · ' + A.dinero(e.monto) }), el('div', { class: 'muted', text: 'Enviado ' + A.hace(e.created_at) + (e.pagado_at ? ' · pagado ' + A.fecha(e.pagado_at) : '') })]),
+            card.appendChild(el('div', { class: 'saldo', style: 'cursor:default;flex-wrap:wrap' }, [
+              el('div', { style: 'flex:1 1 180px' }, [el('b', { text: (e.concepto || 'Pago') + ' · ' + A.dinero(e.monto) }), el('div', { class: 'muted', text: 'Enviado ' + A.hace(e.created_at) + (e.pagado_at ? ' · pagado ' + A.fecha(e.pagado_at) : '') })]),
               el('div', { style: 'display:flex;gap:6px;align-items:center;flex:none' }, [
                 el('span', { class: 'pill ' + EST[0], text: EST[1] }),
                 e.estado === 'pendiente' ? el('button', { class: 'mini-btn', type: 'button', text: 'Copiar', onclick: function () { navigator.clipboard.writeText(e.url).then(function () { A.toast('Enlace copiado.'); }); } }) : null,
