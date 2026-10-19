@@ -1010,3 +1010,4 @@ a.stat { display: block; color: inherit; animation: rise 0.5s var(--ease) both; 
 .ll-mini-tec button { height: 38px; border: 0; border-radius: 12px; background: rgba(255, 255, 255, 0.1); color: #fff; font-size: 16px; cursor: pointer; }
 @media (max-width: 1100px) { .ll-grid { grid-template-columns: 1fr; } .ll-marcador { position: static; } }
 @media (max-width: 640px) { .ll-q { width: 100%; } .ll-flot { left: 12px; right: 12px; bottom: calc(76px + env(safe-area-inset-bottom)); width: auto; } .ll-fila { grid-template-columns: 36px minmax(0, 1fr); } .ll-chips { grid-column: 2; } }
+.bub.out.enviando { opacity: 0.65; }

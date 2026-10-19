@@ -259,7 +259,7 @@
     var dst = refresco ? document.createDocumentFragment() : panel;
     if (!refresco) panel.innerHTML = '';
     if (wrap) wrap.classList.add('con-chat');
-    if (c.no_leidos) { c.no_leidos = 0; await sb.from('conversaciones').update({ no_leidos: 0 }).eq('id', c.id); A.contarBandeja(); }
+    if (c.no_leidos) { c.no_leidos = 0; sb.from('conversaciones').update({ no_leidos: 0 }).eq('id', c.id).then(function () { A.contarBandeja(); }); }
     var nombre = nombreConv(c);
     var enlace = c.canal === 'messenger' ? 'https://business.facebook.com/latest/inbox/messenger' : c.canal === 'instagram' ? 'https://business.facebook.com/latest/inbox/instagram_direct' : null;
     panel.className = 'inbox-chat ch-' + c.canal;
@@ -276,7 +276,13 @@
     dst.appendChild(barraProspecto(c, panel, wrap));
     var msgs = el('div', { class: 'chat-msgs' });
     dst.appendChild(msgs);
-    var r = await sb.from('mensajes_chat').select('*').eq('conversacion_id', c.id).order('created_at').limit(500);
+    // Todo lo que necesita el chat se pide a la vez
+    var pr = await Promise.all([
+      sb.from('mensajes_chat').select('*').eq('conversacion_id', c.id).order('created_at').limit(500),
+      A.integraciones(),
+      A.recordar('respuestas_rapidas', function () { return sb.from('respuestas_rapidas').select('*').order('orden').then(function (x) { return x.data || []; }); })
+    ]);
+    var r = pr[0];
     var dia = '';
     // Enlaces temporales para ver las fotos y archivos del chat
     var rutas = [];
@@ -286,34 +292,38 @@
       var fr = await sb.storage.from('chat').createSignedUrls(rutas, 3600);
       (fr.data || []).forEach(function (x) { if (x.signedUrl) urlDe[x.path] = x.signedUrl; });
     }
-    (r.data || []).forEach(function (m) {
-      var d = A.fecha(m.created_at);
+    function ponerDia(fecha) {
+      var d = A.fecha(fecha);
       if (d !== dia) { dia = d; msgs.appendChild(el('div', { class: 'chat-dia' }, [el('span', { text: d })])); }
-      var hora = new Date(m.created_at).toLocaleTimeString('es-US', { hour: 'numeric', minute: '2-digit' });
-      var marca = m.direccion === 'saliente' ? ({ enviado: ' · ✓', entregado: ' · ✓✓', leido: ' · ✓✓ leído', error: ' · no se envió' })[m.estado] || '' : '';
-      var adj = m.adjuntos || [];
-      var texto = m.texto || '';
-      // «[Foto]», «[Archivo] nombre»…: con el archivo a la vista sobra la etiqueta
-      if (adj.length) { texto = texto.replace(/^\[[^\]]+\]\s*/, ''); if (adj[0] && texto === adj[0].nombre) texto = ''; }
-      msgs.appendChild(el('div', { class: 'bub ' + (m.direccion === 'entrante' ? 'in' : 'out') + (m.estado === 'error' ? ' err' : '') + (adj.length ? ' con-adj' : '') }, [
-        adj.length ? el('div', { class: 'adjs' }, adj.map(function (a) { return verAdjunto(c, m, a, urlDe[a.path]); })) : null,
-        texto ? el('p', { text: texto }) : null,
-        el('span', { text: hora + (m.automatico ? ' · automático' : '') + marca })
-      ]));
-    });
-    if (!(r.data || []).length) msgs.appendChild(el('div', { class: 'muted', style: 'text-align:center;padding:20px', text: 'Sin mensajes todavía.' }));
+    }
+    (r.data || []).forEach(function (m) { ponerDia(m.created_at); msgs.appendChild(burbuja(c, m, urlDe)); });
+    var vacio = (r.data || []).length ? null : el('div', { class: 'muted', style: 'text-align:center;padding:20px', text: 'Sin mensajes todavía.' });
+    if (vacio) msgs.appendChild(vacio);
+    // Muestra el mensaje enviado al instante, sin esperar al servidor
+    function alInstante(t, adjNombre) {
+      if (vacio) { vacio.remove(); vacio = null; }
+      var ahora = new Date().toISOString();
+      ponerDia(ahora);
+      var b = burbuja(c, { direccion: 'saliente', texto: t || (adjNombre ? '[Archivo] ' + adjNombre : ''), created_at: ahora, estado: 'enviando' }, {});
+      msgs.appendChild(b); msgs.scrollTop = msgs.scrollHeight;
+      return function (estado) {
+        b.classList.toggle('err', estado === 'error');
+        b.classList.remove('enviando');
+        b.lastChild.textContent = b.lastChild.textContent.replace(/ · .*$/, '') + (MARCA[estado] || '');
+      };
+    }
     setTimeout(function () { msgs.scrollTop = msgs.scrollHeight; }, 30);
     // Las fotos cambian el alto al cargar: se vuelve a bajar al final
     msgs.querySelectorAll('img').forEach(function (i) { i.addEventListener('load', function () { msgs.scrollTop = msgs.scrollHeight; }, { once: true }); });
 
-    var integ = await A.integraciones();
+    var integ = pr[1];
     var directo = conectado(integ, c.canal);
     // Meta solo deja responder con texto libre dentro de las 24 h siguientes al último mensaje del cliente
     var horas = c.ultimo_entrante_at ? (Date.now() - new Date(c.ultimo_entrante_at).getTime()) / 3600e3 : null;
     var cerrada = directo && c.canal !== 'whatsapp' && horas !== null && horas > 24;
     var txt = el('textarea', { class: 'input', placeholder: 'Escribe tu respuesta por ' + (CANAL[c.canal] || CANAL.sms).n + '…', maxlength: 4000, style: 'min-height:70px' });
     txt.value = borrador;
-    var rap = (await sb.from('respuestas_rapidas').select('*').order('orden')).data || [];
+    var rap = pr[2] || [];
     var primerNombre = (c.clientes && c.clientes.nombre) || (c.nombre && c.nombre.charAt(0) !== '@' ? c.nombre.split(' ')[0] : '');
     var chips = el('div', { class: 'chips', style: 'margin-bottom:8px' }, rap.map(function (q) {
       return el('button', { type: 'button', class: 'chip-s', title: q.texto, text: q.titulo, onclick: function () { txt.value = q.texto.replace(/\{nombre\}/g, primerNombre).replace(/ ,/g, ','); txt.focus(); } });
@@ -342,29 +352,36 @@
     var enviar = el('button', { class: 'btn btn-sm btn-ch ch-' + c.canal, type: 'button', onclick: async function () {
       var t = txt.value.trim(); if (!t && !pendiente) { txt.focus(); return; }
       if (cerrada) { window.open(enlace, '_blank', 'noopener'); return; }
-      var boton = this; boton.disabled = true;
       if (directo) {
         var cuerpo = { conversacion_id: c.id, texto: t };
-        if (pendiente) {
-          var ruta = c.id + '/' + Date.now() + '-' + limpio(pendiente.name);
-          A.toast('Subiendo ' + pendiente.name + '…');
-          var up = await sb.storage.from('chat').upload(ruta, pendiente, { contentType: pendiente.type || 'application/octet-stream' });
-          if (up.error) { boton.disabled = false; A.toast('No se pudo subir el archivo.', 'error'); return; }
-          cuerpo.adjunto = { path: ruta, nombre: pendiente.name, tipo: pendiente.type || 'application/octet-stream' };
+        var arch = pendiente;
+        // El mensaje aparece en el chat enseguida; el servidor confirma después
+        txt.value = ''; pendiente = null; archivo.value = ''; pintarPrevia();
+        var marcar = alInstante(t, arch && arch.name);
+        if (arch) {
+          var ruta = c.id + '/' + Date.now() + '-' + limpio(arch.name);
+          var up = await sb.storage.from('chat').upload(ruta, arch, { contentType: arch.type || 'application/octet-stream' });
+          if (up.error) { marcar('error'); A.toast('No se pudo subir el archivo.', 'error'); if (!txt.value) txt.value = t; pendiente = arch; pintarPrevia(); return; }
+          cuerpo.adjunto = { path: ruta, nombre: arch.name, tipo: arch.type || 'application/octet-stream' };
         }
         var env = await sb.functions.invoke('enviar-mensaje', { body: cuerpo });
-        boton.disabled = false;
-        if (!env.error) { txt.value = ''; pendiente = null; c.ultimo_texto = t || '[Archivo]'; abrir(c, panel, wrap); return; }
+        if (!env.error) { marcar('enviado'); c.ultimo_texto = t || '[Archivo]'; if (arch) abrir(c, panel, wrap, true); return; }
+        marcar('error');
+        if (!txt.value) txt.value = t;
         var info = await leerError(env.error);
         if (!(info.codigo === 'fuera_ventana' && c.canal === 'whatsapp')) { A.toast(info.error || 'No se pudo enviar.', 'error'); return; }
         if (!confirm('Pasaron más de 24 horas desde su último mensaje, así que WhatsApp no deja escribirle desde el CRM con texto libre. ¿Abrir tu WhatsApp con el mensaje listo?')) return;
+        txt.value = '';
+      } else {
+        txt.value = '';
+        alInstante(t)('');
       }
-      boton.disabled = false;
       if (c.canal === 'whatsapp' || c.canal === 'sms') window.open(A.wa(c.contacto, t), '_blank', 'noopener');
-      await sb.from('mensajes_chat').insert({ conversacion_id: c.id, direccion: 'saliente', texto: t });
-      await sb.from('conversaciones').update({ ultimo_texto: t.slice(0, 200), ultimo_at: new Date().toISOString() }).eq('id', c.id);
-      txt.value = '';
-      abrir(c, panel, wrap);
+      // Se guarda en segundo plano (las dos cosas a la vez)
+      Promise.all([
+        sb.from('mensajes_chat').insert({ conversacion_id: c.id, direccion: 'saliente', texto: t }),
+        sb.from('conversaciones').update({ ultimo_texto: t.slice(0, 200), ultimo_at: new Date().toISOString() }).eq('id', c.id)
+      ]).then(function (x) { if (x[0].error) A.toast('No se pudo guardar el mensaje en el CRM.', 'error'); });
     } }, [logo(c.canal, 'icon-sm'), el('span', { text: cerrada ? 'Responder en Meta Business Suite' : directo ? 'Enviar por ' + (CANAL[c.canal] || CANAL.sms).n : c.canal === 'whatsapp' ? 'Enviar por WhatsApp' : 'Registrar respuesta' })]);
     txt.addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); enviar.click(); } });
     dst.appendChild(el('div', { class: 'chat-f' }, [
@@ -374,6 +391,21 @@
     ]));
     if (refresco) { panel.replaceChildren(dst); msgs.scrollTop = msgs.scrollHeight; }
     else txt.focus({ preventScroll: true });
+  }
+
+  var MARCA = { enviando: ' · enviando…', enviado: ' · ✓', entregado: ' · ✓✓', leido: ' · ✓✓ leído', error: ' · no se envió' };
+  function burbuja(c, m, urlDe) {
+    var hora = new Date(m.created_at).toLocaleTimeString('es-US', { hour: 'numeric', minute: '2-digit' });
+    var marca = m.direccion === 'saliente' ? MARCA[m.estado] || '' : '';
+    var adj = m.adjuntos || [];
+    var texto = m.texto || '';
+    // «[Foto]», «[Archivo] nombre»…: con el archivo a la vista sobra la etiqueta
+    if (adj.length) { texto = texto.replace(/^\[[^\]]+\]\s*/, ''); if (adj[0] && texto === adj[0].nombre) texto = ''; }
+    return el('div', { class: 'bub ' + (m.direccion === 'entrante' ? 'in' : 'out') + (m.estado === 'error' ? ' err' : '') + (m.estado === 'enviando' ? ' enviando' : '') + (adj.length ? ' con-adj' : '') }, [
+      adj.length ? el('div', { class: 'adjs' }, adj.map(function (a) { return verAdjunto(c, m, a, urlDe[a.path]); })) : null,
+      texto ? el('p', { text: texto }) : null,
+      el('span', { text: hora + (m.automatico ? ' · automático' : '') + marca })
+    ]);
   }
 
   /* ---------- Fotos y archivos del chat ---------- */
@@ -621,9 +653,9 @@
       guardar: async function (d, aviso) {
         var r = nuevo ? await sb.from('respuestas_rapidas').insert(d) : await sb.from('respuestas_rapidas').update(d).eq('id', q.id);
         if (r.error) { A.msg(aviso, 'No se pudo guardar.'); return false; }
-        pintarTabs();
+        A.olvidar('respuestas_rapidas'); pintarTabs();
       },
-      borrar: nuevo ? null : async function () { await sb.from('respuestas_rapidas').delete().eq('id', q.id); pintarTabs(); }
+      borrar: nuevo ? null : async function () { await sb.from('respuestas_rapidas').delete().eq('id', q.id); A.olvidar('respuestas_rapidas'); pintarTabs(); }
     });
   }
 
