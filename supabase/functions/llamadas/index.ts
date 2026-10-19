@@ -163,6 +163,7 @@ async function procesar(db: SupabaseClient, id: string) {
 }
 
 /* ---------- Webhooks de Twilio ---------- */
+const MIN_SEG = 5; // por debajo de esto la llamada se considera cortada
 async function twilioEvento(req: Request, db: SupabaseClient, evento: string) {
   const p = new URLSearchParams(await req.text());
   if (!listo() || !(await firmaValida(req, p))) return new Response('Firma no válida', { status: 403 });
@@ -207,7 +208,9 @@ async function twilioEvento(req: Request, db: SupabaseClient, evento: string) {
     const st = p.get('DialCallStatus') || '';
     const estado = ({ completed: 'completada', answered: 'completada', 'no-answer': 'sin_respuesta', busy: 'ocupado', failed: 'fallida', canceled: 'cancelada' } as Record<string, string>)[st] || 'completada';
     const dur = parseInt(p.get('DialCallDuration') || '0', 10) || null;
-    const { data: l } = id ? await db.from('llamadas').update({ estado, duracion_seg: dur }).eq('id', id).select('direccion').maybeSingle() : { data: null };
+    const cambios: Record<string, unknown> = { estado, duracion_seg: dur };
+    if (estado !== 'completada' || (dur || 0) < MIN_SEG) cambios.ia_estado = 'sin_grabacion';
+    const { data: l } = id ? await db.from('llamadas').update(cambios).eq('id', id).select('direccion').maybeSingle() : { data: null };
     // Nadie contestó una llamada entrante: buzón de voz (también se transcribe)
     if (l?.direccion === 'entrante' && estado !== 'completada') {
       return xml(decir('Gracias por llamar a AVA Multiservices. En este momento no podemos atenderte. Deja tu nombre, tu número y tu mensaje después del tono, y te llamamos pronto.') +
@@ -221,6 +224,13 @@ async function twilioEvento(req: Request, db: SupabaseClient, evento: string) {
     const rsid = p.get('RecordingSid') || '';
     const rurl = p.get('RecordingUrl') || '';
     if (!id || !rsid || !/^https:\/\/api\.twilio\.com\//.test(rurl)) return xml('');
+    // Llamadas que se cortaron (menos de 5 s) o buzón vacío: no se guarda la grabación ni la procesa la IA
+    const segs = parseInt(p.get('RecordingDuration') || '0', 10) || 0;
+    if (segs < MIN_SEG) {
+      await db.from('llamadas').update(q.get('buzon') ? { ia_estado: 'sin_grabacion', notas: 'Colgó sin dejar mensaje' } : { ia_estado: 'sin_grabacion' }).eq('id', id);
+      twilio(`Recordings/${rsid}.json`, 'DELETE').catch(() => null);
+      return xml('');
+    }
     const r = await fetch(rurl + '.mp3', { headers: { Authorization: 'Basic ' + btoa(K.TWILIO_ACCOUNT_SID + ':' + K.TWILIO_AUTH_TOKEN) } });
     if (!r.ok) return xml('');
     const path = id + '/' + rsid + '.mp3';
