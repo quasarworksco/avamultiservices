@@ -7,13 +7,20 @@
   var COLS = 'id,created_at,direccion,canal,numero,cliente_id,conversacion_id,usuario,estado,inicio,duracion_seg,grabacion_path,con_aviso,ia,ia_estado,ia_error,notas, clientes(id,nombre,apellidos,telefono,region)';
   var ESTADOS = { iniciando: 'Iniciando', sonando: 'Sonando', en_curso: 'En curso', completada: 'Completada', sin_respuesta: 'Sin respuesta', ocupado: 'Ocupado', fallida: 'Falló', cancelada: 'Cancelada' };
   var IA_EST = { pendiente: ['Por procesar', 'pend'], procesando: ['Procesando…', 'proc'], listo: ['Información lista', 'ok'], error: ['No se pudo procesar', 'err'] };
-  var st = { filtro: 'todas', q: '', cliente: null };
+  var st = { filtro: 'todas', q: '', cliente: null, cortas: false };
   var linea = { estado: null, device: null, llamada: null, fila: null, inicio: 0, reloj: null, numero: '' };
 
   function dur(s) { if (!s) return '0:00'; s = Math.round(s); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
   function e164(t) { var d = String(t || '').replace(/\D/g, ''); if (d.length === 10) return '+1' + d; if (d.length === 11 && d[0] === '1') return '+' + d; return null; }
   function bonito(n) { var d = String(n || '').replace(/\D/g, '').slice(-10); return d.length === 10 ? '(' + d.slice(0, 3) + ') ' + d.slice(3, 6) + '-' + d.slice(6) : (n || 'Número privado'); }
   function deTexas(region) { return /^(tx|texas)$/i.test(String(region || '').trim()); }
+  // Llamadas que no llegaron a nada: salientes que no se conectaron y cualquiera que se cortó en menos de 5 s.
+  // Las entrantes sin contestar no cuentan aquí: son llamadas perdidas y se muestran siempre.
+  function cortada(l) {
+    if (l.canal === 'grabacion' || ['iniciando', 'sonando', 'en_curso'].indexOf(l.estado) !== -1) return false;
+    if (l.direccion === 'saliente' && l.estado !== 'completada') return true;
+    return l.estado === 'completada' && (l.duracion_seg || 0) < 5 && !l.grabacion_path;
+  }
   function quien(l) { return l.clientes ? A.nombreDe(l.clientes) : (l.ia && l.ia.nombre_cliente) || bonito(l.numero); }
 
   /* ---------- Línea telefónica (Twilio Voice en el navegador) ---------- */
@@ -248,7 +255,7 @@
     if (st.cliente) q = q.eq('cliente_id', st.cliente.id);
     var r = await q;
     var filas = r.data || [];
-    pintarKpis(filas);
+    pintarKpis(filas.filter(function (l) { return !cortada(l); }));
     pintarHist(filas, r.error);
     clearTimeout(ui.tSondeo);
     if (filas.some(function (l) { return l.ia_estado === 'procesando' || l.ia_estado === 'pendiente' && l.grabacion_path; }) && document.querySelector('.ll-hist')) ui.tSondeo = setTimeout(cargar, 6000);
@@ -272,13 +279,17 @@
       el('input', { class: 'input sm ll-q', type: 'search', placeholder: 'Buscar', value: st.q, oninput: function () { st.q = this.value.toLowerCase(); pintarHist(filas); var i = ui.hist.querySelector('.ll-q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); } })]));
     h.appendChild(el('div', { class: 'cb-filtros' }, filtros.map(function (f) { return el('button', { type: 'button', class: 'cb-f' + (st.filtro === f[0] ? ' on' : ''), onclick: function () { st.filtro = f[0]; pintarHist(filas); } }, [f[1]]); })));
     if (error) { h.appendChild(el('div', { class: 'empty', text: 'No se pudieron cargar las llamadas.' })); return; }
+    var nCortas = filas.filter(cortada).length;
     var v = filas.filter(function (l) {
+      if (!st.cortas && cortada(l)) return false;
       if (st.filtro === 'salientes' && l.direccion !== 'saliente') return false;
       if (st.filtro === 'entrantes' && l.direccion !== 'entrante') return false;
       if (st.filtro === 'perdidas' && !(l.direccion === 'entrante' && l.estado !== 'completada')) return false;
       if (st.filtro === 'ia' && l.ia_estado !== 'listo') return false;
       return !st.q || [quien(l), l.numero, l.ia && l.ia.resumen].join(' ').toLowerCase().indexOf(st.q) !== -1;
     });
+    if (nCortas) h.appendChild(el('button', { type: 'button', class: 'link-btn ll-cortas', onclick: function () { st.cortas = !st.cortas; pintarHist(filas); } },
+      [st.cortas ? 'Ocultar intentos cortados (' + nCortas + ')' : nCortas + (nCortas === 1 ? ' intento cortado oculto' : ' intentos cortados ocultos') + ' (menos de 5 s o no conectaron) · Ver']));
     if (!v.length) { h.appendChild(el('div', { class: 'empty' }, filas.length ? ['No hay llamadas con ese filtro.'] : [el('b', { text: 'Todavía no hay llamadas' }), 'Haz tu primera llamada con el marcador o sube una grabación.'])); return; }
     var lista = el('div', { class: 'll-lista' });
     v.forEach(function (l, i) {
