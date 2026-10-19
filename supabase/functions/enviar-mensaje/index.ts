@@ -102,8 +102,10 @@ async function enviarAdjunto(db: SupabaseClient, c: Record<string, any>, a: Adju
 }
 
 async function registrar(db: SupabaseClient, convId: string, texto: string, autor: string | null, automatico: boolean, id: string, adjuntos: Adjunto[] = []) {
-  await db.from('mensajes_chat').insert({ conversacion_id: convId, direccion: 'saliente', texto: texto.slice(0, 4000), autor, automatico, estado: 'enviado', externo_id: id || null, adjuntos });
-  await db.from('conversaciones').update({ ultimo_texto: texto.slice(0, 200), ultimo_at: new Date().toISOString() }).eq('id', convId);
+  await Promise.all([
+    db.from('mensajes_chat').insert({ conversacion_id: convId, direccion: 'saliente', texto: texto.slice(0, 4000), autor, automatico, estado: 'enviado', externo_id: id || null, adjuntos }),
+    db.from('conversaciones').update({ ultimo_texto: texto.slice(0, 200), ultimo_at: new Date().toISOString() }).eq('id', convId)
+  ]);
 }
 
 async function enviarConversacion(db: SupabaseClient, convId: string, texto: string, autor: string | null, adjunto: Adjunto | null = null): Promise<Envio> {
@@ -185,10 +187,10 @@ Deno.serve(async (req) => {
 
   // Panel: usuario con sesión
   const comoUsuario = createClient(url, Deno.env.get('SUPABASE_ANON_KEY')!, { global: { headers: { Authorization: req.headers.get('Authorization') || '' } }, auth: { persistSession: false } });
-  const { data: u } = await comoUsuario.auth.getUser();
+  // Sesión y permiso se revisan a la vez
+  const [{ data: u }, { data: ok }] = await Promise.all([comoUsuario.auth.getUser(), comoUsuario.rpc('puede', { modulo: 'mensajes' })]);
   if (!u?.user) return json(req, 401, { error: 'Inicia sesión' });
   if (body.estado) return json(req, 200, estado());
-  const { data: ok } = await comoUsuario.rpc('puede', { modulo: 'mensajes' });
   if (!ok) return json(req, 403, { error: 'Sin permiso' });
 
   let r: Envio;
