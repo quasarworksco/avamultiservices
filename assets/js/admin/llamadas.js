@@ -30,6 +30,48 @@
     if (r.error) { var e = {}; try { e = await r.error.context.json(); } catch (_) { /* */ } throw new Error(e.error || 'No se pudo conectar la línea.'); }
     return r.data;
   }
+  /* ---------- Timbre y aviso de Windows para las llamadas que entran ---------- */
+  var timbre = { ctx: null, int: null, aviso: null, titulo: '', parpadeo: null };
+  // El navegador solo deja sonar audio después de un clic o una tecla: se prepara en el primero
+  function prepararTimbre() {
+    if (!timbre.ctx && (window.AudioContext || window.webkitAudioContext)) timbre.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (window.Notification && Notification.permission === 'default' && A.puede('llamadas')) { try { Notification.requestPermission(); } catch (_) { /* */ } }
+  }
+  ['pointerdown', 'keydown'].forEach(function (ev) { document.addEventListener(ev, prepararTimbre, { once: true, capture: true }); });
+  // Timbre clásico de teléfono (440 + 480 Hz), doble timbrazo cada 3 segundos
+  function timbrazo() {
+    var c = timbre.ctx; if (!c) return;
+    if (c.state === 'suspended') c.resume();
+    var t = c.currentTime;
+    [0, 0.55].forEach(function (ini) {
+      var g = c.createGain();
+      g.gain.setValueAtTime(0.0001, t + ini);
+      g.gain.exponentialRampToValueAtTime(0.5, t + ini + 0.03);
+      g.gain.setValueAtTime(0.5, t + ini + 0.42);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + ini + 0.47);
+      g.connect(c.destination);
+      [440, 480].forEach(function (f) { var o = c.createOscillator(); o.frequency.value = f; o.connect(g); o.start(t + ini); o.stop(t + ini + 0.5); });
+    });
+  }
+  function empezarTimbre(nombre) {
+    pararTimbre();
+    timbrazo(); timbre.int = setInterval(timbrazo, 3000);
+    timbre.titulo = document.title;
+    var on = false;
+    timbre.parpadeo = setInterval(function () { on = !on; document.title = on ? '📞 Llamada de ' + nombre : timbre.titulo; }, 1000);
+    if (window.Notification && Notification.permission === 'granted') {
+      try {
+        timbre.aviso = new Notification('📞 Llamada entrante', { body: nombre + ' está llamando a AVA', tag: 'ava-llamada', requireInteraction: true, icon: '/assets/img/favicon.svg' });
+        timbre.aviso.onclick = function () { window.focus(); this.close(); };
+      } catch (_) { /* */ }
+    }
+  }
+  function pararTimbre() {
+    clearInterval(timbre.int); timbre.int = null;
+    if (timbre.parpadeo) { clearInterval(timbre.parpadeo); timbre.parpadeo = null; document.title = timbre.titulo; }
+    if (timbre.aviso) { try { timbre.aviso.close(); } catch (_) { /* */ } timbre.aviso = null; }
+  }
+
   // Se prepara al entrar al panel para que suenen las llamadas que entran
   A.iniciarLinea = async function () {
     if (!A.puede('llamadas') || linea.device) return linea.device;
@@ -40,6 +82,8 @@
       var t = await token();
       var d = new window.Twilio.Device(t.token, { codecPreferences: ['opus', 'pcmu'], closeProtection: 'Hay una llamada en curso. ¿Seguro que quieres salir?' });
       d.on('tokenWillExpire', async function () { try { d.updateToken((await token()).token); } catch (_) { /* */ } });
+      // El timbre del SDK es muy suave: se usa el propio
+      try { d.audio.incoming(false); } catch (_) { /* */ }
       d.on('incoming', entrante);
       d.on('error', function (e) { A.toast('Línea: ' + (e.message || 'error'), 'error'); });
       await d.register();
@@ -63,10 +107,15 @@
     var f = flotante(); f.innerHTML = '';
     f.appendChild(el('div', { class: 'll-flot-h' }, [el('span', { class: 'll-pulso' }, [A.icon('i-phone', 'icon-sm')]), el('div', null, [el('b', { text: nombre }), el('span', { text: 'Llamada entrante' })])]));
     f.appendChild(el('div', { class: 'll-flot-b' }, [
-      el('button', { class: 'll-btn rojo', type: 'button', onclick: function () { call.reject(); cerrarFlotante(); } }, [A.icon('i-x', 'icon-sm'), 'Rechazar']),
-      el('button', { class: 'll-btn verde', type: 'button', onclick: function () { call.accept(); enLlamada(call, nombre); } }, [A.icon('i-phone', 'icon-sm'), 'Contestar'])
+      el('button', { class: 'll-btn rojo', type: 'button', onclick: function () { pararTimbre(); call.reject(); cerrarFlotante(); } }, [A.icon('i-x', 'icon-sm'), 'Rechazar']),
+      el('button', { class: 'll-btn verde', type: 'button', onclick: function () { pararTimbre(); call.accept(); enLlamada(call, nombre); } }, [A.icon('i-phone', 'icon-sm'), 'Contestar'])
     ]));
-    call.on('cancel', cerrarFlotante); call.on('disconnect', terminada);
+    empezarTimbre(nombre);
+    // Otra persona del equipo contestó o el cliente colgó
+    call.on('cancel', function () { pararTimbre(); cerrarFlotante(); });
+    call.on('reject', pararTimbre);
+    call.on('accept', pararTimbre);
+    call.on('disconnect', function () { pararTimbre(); terminada(); });
     A.toast('Llamada de ' + nombre);
   }
 
