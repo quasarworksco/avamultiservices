@@ -20,6 +20,7 @@
     ]);
     var n = (r[0].count || 0) + (r[1].count || 0) + (r[2].count || 0);
     document.getElementById('count-sol').textContent = n ? n : '';
+    if (A.contarCuestionarios) A.contarCuestionarios().then(function (c) { var x = document.getElementById('count-cq'); if (x) x.textContent = c ? c : ''; });
     A.nuevas = { solicitudes: r[0].count || 0, mensajes: r[1].count || 0, respuestas: r[2].count || 0 };
     document.querySelectorAll('[data-tab-count]').forEach(function (x) { var c = A.nuevas[x.dataset.tabCount]; x.textContent = c ? c : ''; });
   };

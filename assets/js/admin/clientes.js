@@ -225,6 +225,7 @@
       ]),
       el('div', { class: 'acts' }, [
         el('button', { class: 'btn btn-ghost btn-sm', onclick: function () { editarCliente(c, function (n) { Object.assign(c, n); pintarFicha(cont, c); }); } }, [A.icon('i-edit'), el('span', { text: 'Editar' })]),
+        A.puede('solicitudes') && A.nuevoCuestionario ? el('button', { class: 'btn btn-ghost btn-sm', title: 'Cuestionario de petición por matrimonio', onclick: function () { A.nuevoCuestionario({ cliente: c }); } }, [A.icon('i-passport'), el('span', { text: 'Cuestionario I-130' })]) : null,
         A.puede('casos') ? el('button', { class: 'btn btn-dark btn-sm', onclick: function () { A.editarCaso(null, { cliente_id: c.id }, recargar); } }, [A.icon('i-plus'), el('span', { text: 'Nuevo caso' })]) : null
       ])
     ]));

@@ -12,8 +12,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700&display=swap">
-  <link rel="stylesheet" href="../assets/css/styles.css?v=20261019c">
-  <link rel="stylesheet" href="../assets/css/admin.css?v=20261019c">
+  <link rel="stylesheet" href="../assets/css/styles.css?v=20261021a">
+  <link rel="stylesheet" href="../assets/css/admin.css?v=20261021a">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -136,6 +136,7 @@
     <a class="nav-item" href="#/inicio" data-route="inicio"><svg class="icon"><use href="#i-home"/></svg><span>Inicio</span></a>
     <a class="nav-item" href="#/solicitudes" data-route="solicitudes" data-alias="mensajes respuestas" data-perm="solicitudes"><svg class="icon"><use href="#i-inbox"/></svg><span>Solicitudes</span><span class="count" id="count-sol"></span></a>
     <a class="nav-item" href="#/formularios" data-route="formularios" data-perm="solicitudes"><svg class="icon"><use href="#i-clipboard"/></svg><span>Formularios</span></a>
+    <a class="nav-item" href="#/cuestionarios" data-route="cuestionarios" data-perm="solicitudes"><svg class="icon"><use href="#i-passport"/></svg><span>Cuestionarios I-130</span><span class="count" id="count-cq"></span></a>
     <a class="nav-item" href="#/clientes" data-route="clientes" data-perm="clientes|taxes"><svg class="icon"><use href="#i-users"/></svg><span>Clientes</span></a>
     <a class="nav-item" href="#/casos" data-route="casos" data-perm="casos|taxes"><svg class="icon"><use href="#i-kanban"/></svg><span>Casos</span></a>
     <a class="nav-item" href="#/bandeja" data-route="bandeja" data-perm="mensajes"><svg class="icon"><use href="#i-message"/></svg><span>Mensajes</span><span class="count" id="count-ban"></span></a>
@@ -182,26 +183,28 @@
 </aside>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.8/dist/umd/supabase.js"></script>
-<script src="../assets/js/admin/core.js?v=20261019c"></script>
-<script src="../assets/js/admin/buscar.js?v=20261019c"></script>
-<script src="../assets/js/admin/inicio.js?v=20261019c"></script>
-<script src="../assets/js/admin/solicitudes.js?v=20261019c"></script>
-<script src="../assets/js/admin/formularios.js?v=20261019c"></script>
-<script src="../assets/js/admin/clientes.js?v=20261019c"></script>
-<script src="../assets/js/admin/casos.js?v=20261019c"></script>
-<script src="../assets/js/admin/caso-detalle.js?v=20261019c"></script>
-<script src="../assets/js/admin/tareas.js?v=20261019c"></script>
-<script src="../assets/js/admin/cobros.js?v=20261019c"></script>
-<script src="../assets/js/admin/documentos.js?v=20261019c"></script>
-<script src="../assets/js/admin/sitio.js?v=20261019c"></script>
-<script src="../assets/js/admin/contenido.js?v=20261019c"></script>
-<script src="../assets/js/admin/clientes-extra.js?v=20261019c"></script>
-<script src="../assets/js/admin/bandeja.js?v=20261019c"></script>
-<script src="../assets/js/admin/llamadas.js?v=20261019c"></script>
-<script src="../assets/js/admin/campanas.js?v=20261019c"></script>
-<script src="../assets/js/admin/agenda.js?v=20261019c"></script>
-<script src="../assets/js/admin/ajustes.js?v=20261019c"></script>
-<script src="../assets/js/admin/equipo.js?v=20261019c"></script>
+<script src="../assets/js/admin/core.js?v=20261021a"></script>
+<script src="../assets/js/admin/buscar.js?v=20261021a"></script>
+<script src="../assets/js/admin/inicio.js?v=20261021a"></script>
+<script src="../assets/js/admin/solicitudes.js?v=20261021a"></script>
+<script src="../assets/js/admin/formularios.js?v=20261021a"></script>
+<script src="../assets/js/cuestionarios/i130.js?v=20261021a"></script>
+<script src="../assets/js/admin/cuestionarios.js?v=20261021a"></script>
+<script src="../assets/js/admin/clientes.js?v=20261021a"></script>
+<script src="../assets/js/admin/casos.js?v=20261021a"></script>
+<script src="../assets/js/admin/caso-detalle.js?v=20261021a"></script>
+<script src="../assets/js/admin/tareas.js?v=20261021a"></script>
+<script src="../assets/js/admin/cobros.js?v=20261021a"></script>
+<script src="../assets/js/admin/documentos.js?v=20261021a"></script>
+<script src="../assets/js/admin/sitio.js?v=20261021a"></script>
+<script src="../assets/js/admin/contenido.js?v=20261021a"></script>
+<script src="../assets/js/admin/clientes-extra.js?v=20261021a"></script>
+<script src="../assets/js/admin/bandeja.js?v=20261021a"></script>
+<script src="../assets/js/admin/llamadas.js?v=20261021a"></script>
+<script src="../assets/js/admin/campanas.js?v=20261021a"></script>
+<script src="../assets/js/admin/agenda.js?v=20261021a"></script>
+<script src="../assets/js/admin/ajustes.js?v=20261021a"></script>
+<script src="../assets/js/admin/equipo.js?v=20261021a"></script>
 <script>AVA.start();</script>
 </body>
 </html>
