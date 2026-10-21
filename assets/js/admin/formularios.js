@@ -103,15 +103,17 @@
     var r = await Promise.all([
       sb.from('formularios').select('id,slug,titulo,descripcion,servicio,activo,campos,updated_at').order('created_at', { ascending: false }),
       sb.from('formulario_respuestas').select('formulario_id,estado').limit(10000),
-      sb.from('cuestionarios').select('estado,nuevo').neq('estado', 'archivado').limit(10000)
+      sb.from('cuestionarios').select('estado,nuevo').neq('estado', 'archivado').limit(10000),
+      sb.from('solicitudes').select('estado').limit(10000)
     ]);
     box.innerHTML = '';
     if (r[0].error) { box.appendChild(el('div', { class: 'empty', text: 'No se pudieron cargar los formularios.' })); return; }
+    box.appendChild(tarjetaInicio(r[3].data || []));
     box.appendChild(tarjetaI130(r[2].data || []));
     var cuenta = {};
     (r[1].data || []).forEach(function (x) { var c = cuenta[x.formulario_id] = cuenta[x.formulario_id] || { t: 0, n: 0 }; c.t++; if (x.estado === 'nuevo') c.n++; });
     if (!r[0].data.length) {
-      box.appendChild(el('div', { class: 'empty fm-vacio' }, [el('b', { text: 'Tu primer formulario' }), 'Empieza con una plantilla, por ejemplo la de Taxes 2026, y ajústala a tu gusto.',
+      box.appendChild(el('div', { class: 'empty fm-vacio' }, [el('b', { text: 'Crea tus propios formularios' }), 'Empieza con una plantilla, por ejemplo la de Taxes 2026, y ajústala a tu gusto.',
         el('button', { class: 'btn btn-dark btn-sm', type: 'button', style: 'margin-top:14px', onclick: elegirPlantilla }, [A.icon('i-plus'), el('span', { text: 'Crear formulario' })])]));
       return;
     }
@@ -141,10 +143,30 @@
     });
   }
 
+  // Formulario de Inicio de reparación de crédito: página propia del sitio; sus respuestas llegan a Solicitudes
+  function tarjetaInicio(sol) {
+    var url = SITIO + '/formularios/inicio/';
+    var n = sol.filter(function (x) { return x.estado === 'nuevo'; }).length;
+    return el('div', { class: 'fm-card fm-fijo', 'data-svc': 'credito' }, [
+      el('div', { class: 'fm-top' }, [el('span', { class: 'fm-ico' }, [A.icon('i-gauge', 'icon-sm')]), el('div', { class: 'fm-tt' }, [el('b', { text: 'Formulario de Inicio · Reparación de crédito' }), el('span', { class: 'muted', text: 'Datos, objetivos, monitor de crédito y documentos' })]),
+        el('span', { class: 'fm-tag', text: 'Del sitio' })]),
+      el('div', { class: 'fm-link' }, [el('code', { text: 'avamultiservices.com/formularios/inicio' }), el('button', { class: 'mini-btn', type: 'button', text: 'Copiar', onclick: function () { copiar(url); } })]),
+      el('div', { class: 'fm-num' }, [
+        el('a', { href: '#/solicitudes' }, [el('b', { text: sol.length }), el('span', { text: sol.length === 1 ? 'respuesta' : 'respuestas' })]),
+        n ? el('a', { class: 'nuevas', href: '#/solicitudes' }, [el('b', { text: n }), el('span', { text: n === 1 ? 'nueva' : 'nuevas' })]) : null
+      ]),
+      el('div', { class: 'fm-acc' }, [
+        el('a', { class: 'btn btn-dark btn-sm', href: '#/solicitudes' }, [A.icon('i-list', 'icon-sm'), el('span', { text: 'Ver respuestas' })]),
+        el('button', { class: 'btn btn-ghost btn-sm', type: 'button', onclick: function () { window.open('https://wa.me/?text=' + encodeURIComponent('Hola, para empezar tu proceso de reparación de crédito con AVA Multiservices, por favor llena este formulario: ' + url), '_blank', 'noopener'); } }, [A.icon('i-whatsapp', 'icon-sm'), el('span', { text: 'Compartir' })]),
+        el('a', { class: 'btn btn-ghost btn-sm', href: location.hostname === '192.0.2.2' ? location.origin + '/formularios/inicio/' : url, target: '_blank', rel: 'noopener', title: 'Abrir el formulario' }, [A.icon('i-external', 'icon-sm')])
+      ])
+    ]);
+  }
+
   // Cuestionario I-130: no tiene un enlace público único, cada pareja recibe el suyo
   function tarjetaI130(qs) {
     var nuevos = qs.filter(function (x) { return x.nuevo; }).length, llenando = qs.filter(function (x) { return x.estado === 'borrador'; }).length;
-    return el('div', { class: 'fm-card fm-i130', 'data-svc': 'inmigracion' }, [
+    return el('div', { class: 'fm-card fm-fijo', 'data-svc': 'inmigracion' }, [
       el('div', { class: 'fm-top' }, [el('span', { class: 'fm-ico' }, [A.icon('i-passport', 'icon-sm')]), el('div', { class: 'fm-tt' }, [el('b', { text: 'Petición por matrimonio (I-130)' }), el('span', { class: 'muted', text: 'Por pasos · guardar y volver · documentos ahora o después' })]),
         el('span', { class: 'fm-tag', text: 'Por pareja' })]),
       el('p', { class: 'muted', style: 'font-size:13px', text: 'Cada pareja recibe su propio enlace. Créalo aquí o desde la ficha del cliente.' }),
