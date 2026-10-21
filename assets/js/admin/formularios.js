@@ -95,7 +95,6 @@
   async function lista(cont) {
     cont.appendChild(A.cabecera('Captura', 'Formularios', 'con tu marca', [
       el('a', { class: 'btn btn-ghost btn-sm', href: '#/respuestas' }, [A.icon('i-inbox'), el('span', { text: 'Respuestas' })]),
-      el('a', { class: 'btn btn-ghost btn-sm', href: '#/cuestionarios' }, [A.icon('i-passport'), el('span', { text: 'Cuestionarios I-130' })]),
       el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: elegirPlantilla }, [A.icon('i-plus'), el('span', { text: 'Nuevo formulario' })])
     ]));
     cont.appendChild(el('div', { class: 'alert ok', style: 'margin-top:14px' }, [A.icon('i-sparkles', 'icon-sm'), 'Crea un formulario, comparte su enlace por WhatsApp o en tu bio, y cada respuesta llega a Solicitudes → Formularios con sus documentos.']));
@@ -103,10 +102,12 @@
     cont.appendChild(box);
     var r = await Promise.all([
       sb.from('formularios').select('id,slug,titulo,descripcion,servicio,activo,campos,updated_at').order('created_at', { ascending: false }),
-      sb.from('formulario_respuestas').select('formulario_id,estado').limit(10000)
+      sb.from('formulario_respuestas').select('formulario_id,estado').limit(10000),
+      sb.from('cuestionarios').select('estado,nuevo').neq('estado', 'archivado').limit(10000)
     ]);
     box.innerHTML = '';
     if (r[0].error) { box.appendChild(el('div', { class: 'empty', text: 'No se pudieron cargar los formularios.' })); return; }
+    box.appendChild(tarjetaI130(r[2].data || []));
     var cuenta = {};
     (r[1].data || []).forEach(function (x) { var c = cuenta[x.formulario_id] = cuenta[x.formulario_id] || { t: 0, n: 0 }; c.t++; if (x.estado === 'nuevo') c.n++; });
     if (!r[0].data.length) {
@@ -138,6 +139,25 @@
       ]);
       box.appendChild(tarjeta);
     });
+  }
+
+  // Cuestionario I-130: no tiene un enlace público único, cada pareja recibe el suyo
+  function tarjetaI130(qs) {
+    var nuevos = qs.filter(function (x) { return x.nuevo; }).length, llenando = qs.filter(function (x) { return x.estado === 'borrador'; }).length;
+    return el('div', { class: 'fm-card fm-i130', 'data-svc': 'inmigracion' }, [
+      el('div', { class: 'fm-top' }, [el('span', { class: 'fm-ico' }, [A.icon('i-passport', 'icon-sm')]), el('div', { class: 'fm-tt' }, [el('b', { text: 'Petición por matrimonio (I-130)' }), el('span', { class: 'muted', text: 'Por pasos · guardar y volver · documentos ahora o después' })]),
+        el('span', { class: 'fm-tag', text: 'Por pareja' })]),
+      el('p', { class: 'muted', style: 'font-size:13px', text: 'Cada pareja recibe su propio enlace. Créalo aquí o desde la ficha del cliente.' }),
+      el('div', { class: 'fm-num' }, [
+        el('a', { href: '#/cuestionarios' }, [el('b', { text: qs.length }), el('span', { text: qs.length === 1 ? 'activo' : 'activos' })]),
+        llenando ? el('a', { href: '#/cuestionarios' }, [el('b', { text: llenando }), el('span', { text: 'llenando' })]) : null,
+        nuevos ? el('a', { class: 'nuevas', href: '#/cuestionarios' }, [el('b', { text: nuevos }), el('span', { text: nuevos === 1 ? 'nuevo' : 'nuevos' })]) : null
+      ]),
+      el('div', { class: 'fm-acc' }, [
+        el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: function () { A.nuevoCuestionario({ alCrear: function () { } }); } }, [A.icon('i-plus', 'icon-sm'), el('span', { text: 'Nuevo enlace' })]),
+        el('a', { class: 'btn btn-ghost btn-sm', href: '#/cuestionarios' }, [A.icon('i-list', 'icon-sm'), el('span', { text: 'Ver respuestas' })])
+      ])
+    ]);
   }
 
   function elegirPlantilla() {
