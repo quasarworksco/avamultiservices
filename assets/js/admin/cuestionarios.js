@@ -98,7 +98,7 @@
       function pintar() {
         stats.innerHTML = '';
         var activos = filas.filter(function (x) { return x.estado !== 'archivado'; });
-        [['', activos.length, 'Activos'], ['borrador', filas.filter(function (x) { return x.estado === 'borrador'; }).length, 'Llenando'], ['enviado', filas.filter(function (x) { return x.estado === 'enviado'; }).length, 'Por revisar'], ['revisado', filas.filter(function (x) { return x.estado === 'revisado'; }).length, 'Revisados']].forEach(function (s) {
+        [['', activos.length, 'Activos'], ['borrador', filas.filter(function (x) { return x.estado === 'borrador'; }).length, 'Llenando'], ['enviado', filas.filter(function (x) { return x.estado === 'enviado'; }).length, 'Por revisar'], ['revisado', filas.filter(function (x) { return x.estado === 'revisado'; }).length, 'Revisados'], ['archivado', filas.filter(function (x) { return x.estado === 'archivado'; }).length, 'Archivados']].forEach(function (s) {
           stats.appendChild(el('button', { class: 'stat' + (st.estado === s[0] ? ' on' : ''), type: 'button', onclick: function () { st.estado = s[0]; pintar(); } }, [el('div', { class: 'k', text: s[1] }), el('div', { class: 'l', text: s[2] })]));
         });
         list.innerHTML = '';
