@@ -77,8 +77,8 @@
     permiso: 'solicitudes',
     render: async function (cont, partes) {
       var st = { estado: '', q: '' };
-      cont.appendChild(A.cabecera('Inmigración', 'Cuestionarios', 'I-130', [
-        el('a', { class: 'btn btn-ghost btn-sm', href: '#/formularios' }, [A.icon('i-clipboard'), el('span', { text: 'Formularios' })]),
+      cont.appendChild(el('a', { class: 'back', href: '#/formularios' }, [A.icon('i-chevron-left', 'icon-sm'), 'Formularios']));
+      cont.appendChild(A.cabecera('Formularios', 'Petición por matrimonio', 'I-130', [
         el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: function () { A.nuevoCuestionario({ alCrear: cargar }); } }, [A.icon('i-plus'), el('span', { text: 'Nuevo cuestionario' })])
       ]));
       cont.appendChild(el('div', { class: 'alert ok', style: 'margin-top:14px' }, [A.icon('i-passport', 'icon-sm'),
@@ -97,9 +97,8 @@
       }
       function pintar() {
         stats.innerHTML = '';
-        var activos = filas.filter(function (x) { return x.estado !== 'archivado'; });
-        [['', activos.length, 'Activos'], ['borrador', filas.filter(function (x) { return x.estado === 'borrador'; }).length, 'Llenando'], ['enviado', filas.filter(function (x) { return x.estado === 'enviado'; }).length, 'Por revisar'], ['revisado', filas.filter(function (x) { return x.estado === 'revisado'; }).length, 'Revisados'], ['archivado', filas.filter(function (x) { return x.estado === 'archivado'; }).length, 'Archivados']].forEach(function (s) {
-          stats.appendChild(el('button', { class: 'stat' + (st.estado === s[0] ? ' on' : ''), type: 'button', onclick: function () { st.estado = s[0]; pintar(); } }, [el('div', { class: 'k', text: s[1] }), el('div', { class: 'l', text: s[2] })]));
+        [['borrador', filas.filter(function (x) { return x.estado === 'borrador'; }).length, 'Llenando'], ['enviado', filas.filter(function (x) { return x.estado === 'enviado'; }).length, 'Por revisar'], ['revisado', filas.filter(function (x) { return x.estado === 'revisado'; }).length, 'Revisados'], ['archivado', filas.filter(function (x) { return x.estado === 'archivado'; }).length, 'Archivados']].forEach(function (s) {
+          stats.appendChild(el('button', { class: 'stat' + (st.estado === s[0] ? ' on' : ''), type: 'button', onclick: function () { st.estado = st.estado === s[0] ? '' : s[0]; pintar(); } }, [el('div', { class: 'k', text: s[1] }), el('div', { class: 'l', text: s[2] })]));
         });
         list.innerHTML = '';
         list.appendChild(el('div', { class: 'row cq head' }, [el('span', { text: 'Pareja' }), el('span', { class: 'hide-m', text: 'Avance' }), el('span', { class: 'hide-m', text: 'Documentos' }), el('span', { class: 'hide-m', text: 'Último cambio' }), el('span', { text: 'Estado' })]));

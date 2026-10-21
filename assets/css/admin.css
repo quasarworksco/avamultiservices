@@ -1023,3 +1023,5 @@ a.stat { display: block; color: inherit; animation: rise 0.5s var(--ease) both; 
 .cq-items { display: grid; gap: 8px; }
 .cq-item { padding: 8px 10px; border-radius: 10px; background: var(--stone-50, #faf8f5); font-size: 13px; font-weight: 400; }
 .cq-item b { display: block; margin-bottom: 2px; font-size: 12px; }
+.fm-i130 { border-color: rgba(115, 98, 81, 0.35); background: linear-gradient(180deg, var(--stone-50, #faf8f5), #fff); }
+.fm-tag { margin-left: auto; flex: none; padding: 4px 10px; border-radius: 999px; background: var(--accent-50, #f3ede6); color: var(--accent); font-size: 11.5px; font-weight: 700; }
