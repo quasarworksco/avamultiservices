@@ -1012,3 +1012,14 @@ a.stat { display: block; color: inherit; animation: rise 0.5s var(--ease) both; 
 @media (max-width: 640px) { .ll-q { width: 100%; } .ll-flot { left: 12px; right: 12px; bottom: calc(76px + env(safe-area-inset-bottom)); width: auto; } .ll-fila { grid-template-columns: 36px minmax(0, 1fr); } .ll-chips { grid-column: 2; } }
 .bub.out.enviando { opacity: 0.65; }
 .ll-cortas { display: block; margin: 8px 0 2px; font-size: 12.5px; color: var(--muted, #777); }
+/* Cuestionarios I-130 */
+.row.cq { grid-template-columns: 1.6fr 1fr 1.1fr 0.9fr 0.7fr; }
+.cq-av { display: flex; align-items: center; gap: 8px; font-size: 12.5px; }
+.cq-bar { position: relative; flex: 1; max-width: 120px; height: 6px; border-radius: 3px; background: var(--stone-100, #eee9e1); overflow: hidden; }
+.cq-bar i { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 3px; }
+.cq-bar.grande { max-width: none; height: 8px; }
+.cq-top { display: flex; align-items: center; gap: 12px; }
+.cq-sub { margin-top: 14px; padding-bottom: 4px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); }
+.cq-items { display: grid; gap: 8px; }
+.cq-item { padding: 8px 10px; border-radius: 10px; background: var(--stone-50, #faf8f5); font-size: 13px; font-weight: 400; }
+.cq-item b { display: block; margin-bottom: 2px; font-size: 12px; }

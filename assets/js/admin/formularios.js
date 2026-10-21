@@ -95,6 +95,7 @@
   async function lista(cont) {
     cont.appendChild(A.cabecera('Captura', 'Formularios', 'con tu marca', [
       el('a', { class: 'btn btn-ghost btn-sm', href: '#/respuestas' }, [A.icon('i-inbox'), el('span', { text: 'Respuestas' })]),
+      el('a', { class: 'btn btn-ghost btn-sm', href: '#/cuestionarios' }, [A.icon('i-passport'), el('span', { text: 'Cuestionarios I-130' })]),
       el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: elegirPlantilla }, [A.icon('i-plus'), el('span', { text: 'Nuevo formulario' })])
     ]));
     cont.appendChild(el('div', { class: 'alert ok', style: 'margin-top:14px' }, [A.icon('i-sparkles', 'icon-sm'), 'Crea un formulario, comparte su enlace por WhatsApp o en tu bio, y cada respuesta llega a Solicitudes → Formularios con sus documentos.']));
