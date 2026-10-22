@@ -53,7 +53,7 @@
     'proc.3.t': 'We prepare everything', 'proc.3.d': 'We draft and review every document with care and precision.',
     'proc.4.t': 'Delivery and follow-up', 'proc.4.d': 'We hand you your completed paperwork and keep following up.',
     'faq.kicker': 'We answer your questions', 'faq.title1': 'Frequently asked', 'faq.title2': 'questions',
-    'faq.lead': 'If you do not find your answer here, message us and we will gladly help.', 'faq.help': 'Have another question?',
+    'faq.lead': 'If you do not find your answer here, message us and we will gladly help.', 'faq.help': 'Have another question?', 'faq.foto': 'One-on-one, personalized attention',
     'faq.q1': 'Does AVA Multiservices provide legal advice?', 'faq.a1': 'No. We prepare documents with the information you provide, but we are not attorneys and do not give legal advice. If your case requires it, we will recommend that you consult a licensed immigration attorney.',
     'faq.q2': 'What do I need to prepare my taxes?', 'faq.a2': 'A photo ID, your SSN or ITIN (and your dependents’), W-2 or 1099 forms, records of other income and deductible expenses, and last year’s return if you have it.',
     'faq.q3': 'Can you help me open an LLC in Texas?', 'faq.a3': 'Yes. We prepare and file the Certificate of Formation with the Texas Secretary of State and guide you through the EIN, the Operating Agreement and your first business steps.',
