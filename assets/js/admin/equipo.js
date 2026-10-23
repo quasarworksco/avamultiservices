@@ -90,8 +90,31 @@
         esAdmin ? null : activo
       ]),
       esAdmin ? el('div', { class: 'muted', style: 'margin-top:12px', text: 'Acceso total: ve y gestiona todo el panel, el equipo y la actividad.' }) : extras(m),
-      esAdmin ? null : perms
+      esAdmin ? null : perms,
+      claves(m, yo)
     ]);
+  }
+
+  /* Contraseña: nadie puede verla (se guarda cifrada), pero sí cambiarla o mandar un enlace para que la persona cree una nueva */
+  function claves(m, yo) {
+    var nombre = m.nombre || m.email;
+    if (yo) return el('div', { class: 'member-clave' }, [A.icon('i-lock', 'icon-sm'), el('span', { class: 'muted', text: 'Tu contraseña' }),
+      el('button', { class: 'mini-btn', type: 'button', text: 'Cambiar mi contraseña', onclick: function () { document.querySelector('[data-mi-clave]').click(); } })]);
+    return el('div', { class: 'member-clave' }, [A.icon('i-lock', 'icon-sm'), el('span', { class: 'muted', text: 'Contraseña' }),
+      el('button', { class: 'mini-btn', type: 'button', text: 'Enviar enlace para cambiarla', onclick: async function () {
+        if (!confirm('¿Enviar a ' + m.email + ' un correo para que cree una contraseña nueva?')) return;
+        this.disabled = true;
+        var r = await sb.auth.resetPasswordForEmail(m.email, { redirectTo: 'https://avamultiservices.com/admin/' });
+        this.disabled = false;
+        A.toast(r.error ? 'No se pudo enviar. Intenta en unos minutos.' : 'Listo: le llegó un correo a ' + m.email + ' para crear su contraseña nueva.', r.error ? 'error' : '');
+      } }),
+      el('button', { class: 'mini-btn', type: 'button', text: 'Ponerle una contraseña nueva', onclick: function () {
+        A.ventanaClave('Contraseña nueva para ' + nombre, 'Escribe la contraseña nueva y pásasela a ' + nombre + ' en persona o por WhatsApp. Su contraseña anterior deja de funcionar. Queda registrado en la actividad.', async function (v, aviso) {
+          var r = await sb.functions.invoke('invitar', { body: { accion: 'clave', user_id: m.user_id, clave: v } });
+          if (r.error) { var e = {}; try { e = await r.error.context.json(); } catch (_) { /* */ } A.msg(aviso, e.error || 'No se pudo cambiar la contraseña.'); return false; }
+          A.toast('Contraseña cambiada. Ya puede entrar con la nueva.');
+        }, true);
+      } })]);
   }
 
   /* Rol rápido y fecha de fin del acceso */

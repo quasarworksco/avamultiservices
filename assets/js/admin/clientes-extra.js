@@ -33,14 +33,6 @@
   };
 
   /* ---------- Contratos ---------- */
-  var PLANTILLAS = {
-    credito: { t: 'Contrato de servicios de reparación de crédito', x:
-'CONTRATO DE SERVICIOS DE REPARACIÓN DE CRÉDITO\n\nEntre AVA Multiservices ("la Empresa") y {nombre} ("el Cliente"), con fecha {fecha}.\n\n1. SERVICIOS. La Empresa revisará los reportes de crédito del Cliente de Equifax, Experian y TransUnion, preparará y enviará disputas de información inexacta, incompleta o no verificable, y dará seguimiento a las respuestas de los burós.\n\n2. PAGO. {pago}\n\n3. SIN GARANTÍAS. La Empresa no garantiza la eliminación de información ni un aumento específico del puntaje. La información correcta y verificable no puede eliminarse legalmente.\n\n4. DERECHO A CANCELAR. Usted puede cancelar este contrato sin penalidad ni obligación en cualquier momento antes de la medianoche del tercer día hábil después de la fecha en que lo firmó. Para cancelar, avise por escrito a AVA Multiservices.\n\n5. SUS DERECHOS. Usted tiene derecho a disputar directamente y sin costo la información inexacta de su reporte de crédito ante los burós. Ninguna persona puede eliminar información correcta, reciente y verificable de su reporte.\n\n6. DURACIÓN. Este contrato estará vigente hasta completar las rondas de disputa acordadas o hasta que alguna de las partes lo cancele por escrito.\n\nAl firmar, el Cliente confirma que leyó y entiende este contrato y que recibió una copia.' },
-    contabilidad: { t: 'Acuerdo de contabilidad mensual', x:
-'ACUERDO DE SERVICIOS DE CONTABILIDAD MENSUAL\n\nEntre AVA Multiservices ("la Empresa") y {nombre} ("el Cliente"), con fecha {fecha}.\n\n1. SERVICIOS. Cada mes la Empresa solicitará los estados de cuenta del negocio del Cliente, conciliará sus ingresos y gastos y le entregará un reporte mensual.\n\n2. RESPONSABILIDADES DEL CLIENTE. Enviar sus estados de cuenta y comprobantes dentro de los primeros 5 días de cada mes.\n\n3. PAGO. {pago}\n\n4. DURACIÓN Y CANCELACIÓN. El servicio se renueva cada mes. Cualquiera de las partes puede cancelarlo avisando por escrito con 15 días de anticipación.\n\nAl firmar, el Cliente confirma que leyó y acepta este acuerdo.' },
-    general: { t: 'Acuerdo de servicios', x:
-'ACUERDO DE SERVICIOS\n\nEntre AVA Multiservices ("la Empresa") y {nombre} ("el Cliente"), con fecha {fecha}.\n\n1. SERVICIO. {servicio}\n\n2. PAGO. {pago}\n\n3. ACLARACIÓN. AVA Multiservices prepara documentos con la información que el Cliente proporciona; no somos abogados ni ofrecemos asesoría legal.\n\nAl firmar, el Cliente confirma que leyó y acepta este acuerdo.' }
-  };
   var EST = { borrador: 'Borrador', enviado: 'Enviado para firma', firmado: 'Firmado', anulado: 'Anulado' };
 
   A.tarjetaContratos = function (c) {
@@ -79,28 +71,45 @@
   }
 
   async function nuevoContrato(c, alGuardar) {
-    var casos = (await sb.from('casos').select('id,servicio,titulo,precio').eq('cliente_id', c.id).neq('estado', 'cancelado')).data || [];
-    var planes = (await sb.from('planes').select('*').eq('cliente_id', c.id).eq('activo', true)).data || [];
+    var r = await Promise.all([
+      sb.from('casos').select('id,servicio,titulo,precio').eq('cliente_id', c.id).neq('estado', 'cancelado'),
+      sb.from('planes').select('*').eq('cliente_id', c.id).eq('activo', true),
+      A.plantillasContrato()
+    ]);
+    var casos = r[0].data || [], planes = r[1].data || [], plantillas = r[2].filter(function (p) { return p.activo; });
+    if (!plantillas.length) { A.toast('No hay plantillas de contrato. Créalas en Formularios › Contratos.', 'error'); return; }
+    var porServicio = function (sv) { return plantillas.filter(function (p) { return p.servicio === sv; })[0]; };
+    var sugerida = (casos.map(function (k) { return porServicio(k.servicio); }).filter(Boolean)[0] || plantillas[0]).id;
+    var pago = planes[0] ? 'El Cliente pagará ' + A.dinero(planes[0].monto) + ' mensuales, los días ' + planes[0].dia_cobro + ' de cada mes.' : (casos[0] && casos[0].precio ? 'El Cliente pagará ' + A.dinero(casos[0].precio) + ' por el servicio.' : '');
     var m = A.modal({
       titulo: 'Nuevo contrato', ok: 'Crear borrador',
       campos: [
-        { k: 'plantilla', label: 'Plantilla', type: 'select', value: casos.some(function (k) { return k.servicio === 'credito'; }) ? 'credito' : 'general', options: [['credito', 'Reparación de crédito'], ['contabilidad', 'Contabilidad mensual'], ['general', 'Servicio general']] },
-        { k: 'caso_id', label: 'Caso relacionado', type: 'select', options: [['', 'Ninguno']].concat(casos.map(function (k) { return [k.id, k.titulo || A.SERVICIOS[k.servicio].label]; })) },
-        { k: 'pago', label: 'Condiciones de pago', full: true, max: 500, value: planes[0] ? 'El Cliente pagará ' + A.dinero(planes[0].monto) + ' mensuales, los días ' + planes[0].dia_cobro + ' de cada mes.' : (casos[0] && casos[0].precio ? 'El Cliente pagará ' + A.dinero(casos[0].precio) + ' por el servicio.' : '') }
+        { k: 'plantilla', label: 'Plantilla', type: 'select', full: true, value: sugerida, options: plantillas.map(function (p) { return [p.id, p.titulo]; }) },
+        { k: 'caso_id', label: 'Caso relacionado', type: 'select', full: true, options: [['', 'Ninguno']].concat(casos.map(function (k) { return [k.id, k.titulo || A.SERVICIOS[k.servicio].label]; })) },
+        { k: 'pago', label: A.PREGUNTAR_CONTRATO.pago, full: true, max: 500, value: pago },
+        { k: 'servicio', label: A.PREGUNTAR_CONTRATO.servicio, full: true, max: 300 },
+        { k: 'monto_consulta', label: A.PREGUNTAR_CONTRATO.monto_consulta, full: true, max: 200, placeholder: 'Por ejemplo: $99' },
+        { k: 'esquema_pago', label: A.PREGUNTAR_CONTRATO.esquema_pago, full: true, max: 500, placeholder: 'Por ejemplo: $150 por cada ronda de disputas, al terminar cada ronda' }
       ],
-      extra: el('p', { class: 'muted', style: 'margin-top:12px;font-size:12.5px', text: 'Las plantillas son un punto de partida: revísalas con un abogado antes de usarlas, sobre todo la de reparación de crédito (leyes federales y de Texas).' }),
+      extra: el('p', { class: 'muted', style: 'margin-top:12px;font-size:12.5px', text: 'Los datos del cliente (nombre, dirección, fecha de nacimiento, teléfono y correo) se llenan solos desde su ficha. Lo que falte queda en blanco para completarlo. Revisa las plantillas con un abogado, sobre todo la de reparación de crédito.' }),
       guardar: async function (d, aviso) {
-        var p = PLANTILLAS[d.plantilla];
+        var p = plantillas.filter(function (x) { return x.id === d.plantilla; })[0];
         var caso = casos.filter(function (k) { return k.id === d.caso_id; })[0];
-        var texto = p.x.replace(/\{nombre\}/g, A.nombreDe(c)).replace(/\{fecha\}/g, A.fecha(A.hoyISO()))
-          .replace(/\{pago\}/g, d.pago || 'Según lo acordado entre las partes.')
-          .replace(/\{servicio\}/g, caso ? (caso.titulo || A.SERVICIOS[caso.servicio].label) : 'Servicio acordado entre las partes.');
-        var r = await sb.from('contratos').insert({ cliente_id: c.id, caso_id: d.caso_id || null, titulo: p.t, contenido: texto }).select('id').single();
-        if (r.error) { A.msg(aviso, 'No se pudo crear.'); return false; }
+        var texto = A.llenarContrato(p.contenido, c, { pago: d.pago, servicio: d.servicio || (caso ? (caso.titulo || A.SERVICIOS[caso.servicio].label) : ''), monto_consulta: d.monto_consulta, esquema_pago: d.esquema_pago });
+        var ins = await sb.from('contratos').insert({ cliente_id: c.id, caso_id: d.caso_id || null, titulo: p.titulo, contenido: texto }).select('id').single();
+        if (ins.error) { A.msg(aviso, 'No se pudo crear.'); return false; }
         alGuardar();
-        setTimeout(function () { editarContrato(r.data.id, alGuardar); }, 50);
+        setTimeout(function () { editarContrato(ins.data.id, alGuardar); }, 50);
       }
     });
+    // Solo se preguntan los datos que usa la plantilla elegida
+    function mostrar() {
+      var p = plantillas.filter(function (x) { return x.id === m.inputs.plantilla.value; })[0];
+      var usa = A.variablesContrato(p && p.contenido);
+      ['pago', 'servicio', 'monto_consulta', 'esquema_pago'].forEach(function (k) { m.inputs[k].closest('.field').hidden = usa.indexOf(k) === -1; });
+    }
+    m.inputs.plantilla.addEventListener('change', mostrar);
+    mostrar();
     return m;
   }
 
@@ -119,7 +128,12 @@
       borrarTexto: 'Eliminar borrador'
     });
     var ta = document.getElementById('m-contenido');
-    if (ta) ta.style.minHeight = '320px';
+    if (ta) {
+      ta.style.minHeight = '320px';
+      ta.closest('.field').appendChild(el('button', { type: 'button', class: 'link-btn', style: 'margin-top:6px', text: 'Ver cómo lo verá el cliente', onclick: function () {
+        A.modal({ titulo: 'Vista previa', ok: 'Cerrar', campos: [], guardar: function () { }, extra: el('div', { class: 'fx-doc fx-modal', html: window.AVA_FORMATO(ta.value) }) });
+      } }));
+    }
   }
 
   /* ---------- Planes mensuales (cobro recurrente) ---------- */
