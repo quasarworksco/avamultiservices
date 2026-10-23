@@ -16,7 +16,8 @@
     if (!k) { noEncontrado(); return; }
     $('titulo').textContent = k.titulo;
     $('para').textContent = 'Para ' + k.cliente;
-    $('texto').textContent = k.contenido;
+    if (window.AVA_FORMATO && window.AVA_FORMATO.usa(k.contenido)) { $('texto').classList.add('fx-doc'); $('texto').innerHTML = window.AVA_FORMATO(k.contenido); }
+    else $('texto').textContent = k.contenido;
     if (k.estado === 'firmado') return mostrarFirmado(k.firmado_nombre, k.firmado_at);
     $('firmar').hidden = false;
     iniciarLienzo();

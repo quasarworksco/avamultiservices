@@ -10,6 +10,7 @@
   // Tipos de pregunta: [nombre, icono, descripción]
   var TIPOS = {
     seccion: ['Sección', 'i-layout', 'Título que separa el formulario en partes'],
+    texto_largo: ['Texto largo / contrato', 'i-file', 'Contrato, términos o instrucciones completas para leer'],
     texto: ['Texto corto', 'i-edit', 'Nombre, ciudad, empleador…'],
     parrafo: ['Párrafo', 'i-list', 'Respuesta larga'],
     telefono: ['Teléfono', 'i-phone', 'Con validación de 10 dígitos'],
@@ -97,6 +98,7 @@
       el('a', { class: 'btn btn-ghost btn-sm', href: '#/respuestas' }, [A.icon('i-inbox'), el('span', { text: 'Respuestas' })]),
       el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: elegirPlantilla }, [A.icon('i-plus'), el('span', { text: 'Nuevo formulario' })])
     ]));
+    if (A.pestanasFormularios) cont.appendChild(A.pestanasFormularios('formularios'));
     cont.appendChild(el('div', { class: 'alert ok', style: 'margin-top:14px' }, [A.icon('i-sparkles', 'icon-sm'), 'Crea un formulario, comparte su enlace por WhatsApp o en tu bio, y cada respuesta llega a Solicitudes → Formularios con sus documentos.']));
     var box = el('div', { class: 'fm-grid' }, [el('div', { class: 'empty', text: 'Cargando…' })]);
     cont.appendChild(box);
@@ -285,7 +287,8 @@
         var T = TIPOS[c.tipo] || TIPOS.texto, abiertoYa = abierto === c.id;
         var et = el('input', { class: 'fm-et', value: c.etiqueta || '', maxlength: 300, placeholder: c.tipo === 'seccion' ? 'Título de la sección' : 'Escribe la pregunta', 'aria-label': 'Pregunta', oninput: function () { c.etiqueta = this.value; cambio(); }, onfocus: function () { if (abierto !== c.id) { abierto = c.id; marcar(); } } });
         var cuerpo = el('div', { class: 'fm-cuerpo' });
-        if (c.tipo !== 'acepto') cuerpo.appendChild(el('div', { class: 'field' }, [el('label', { text: c.tipo === 'seccion' ? 'Texto debajo del título' : 'Ayuda (opcional)' }), el('input', { class: 'input sm', maxlength: 300, value: c.ayuda || '', placeholder: c.tipo === 'seccion' ? 'Por ejemplo: para poder contactarte' : 'Texto pequeño debajo de la pregunta', oninput: function () { c.ayuda = this.value || undefined; cambio(); } })]));
+        if (c.tipo === 'texto_largo') cuerpo.appendChild(textoLargo(c));
+        else if (c.tipo !== 'acepto') cuerpo.appendChild(el('div', { class: 'field' }, [el('label', { text: c.tipo === 'seccion' ? 'Texto debajo del título' : 'Ayuda (opcional)' }), el('input', { class: 'input sm', maxlength: 300, value: c.ayuda || '', placeholder: c.tipo === 'seccion' ? 'Por ejemplo: para poder contactarte' : 'Texto pequeño debajo de la pregunta', oninput: function () { c.ayuda = this.value || undefined; cambio(); } })]));
         if (CON_OPCIONES[c.tipo]) {
           var op = el('textarea', { class: 'input', rows: 4, oninput: function () { c.opciones = this.value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 40); cambio(); } });
           op.value = (c.opciones || []).join('\n');
@@ -322,11 +325,33 @@
     function marcar() { listaCampos.querySelectorAll('.fm-campo').forEach(function (n) { n.classList.toggle('on', n.dataset.id === abierto); }); }
     pintar();
 
+    // Bloque de texto largo: contrato, términos o instrucciones (con formato y hasta 30.000 caracteres)
+    function textoLargo(c) {
+      var ta = el('textarea', { class: 'input fm-largo', maxlength: 30000, rows: 10, placeholder: '# 1. Servicios\nEscribe o pega aquí el contrato completo…', oninput: function () { c.texto = this.value; n.textContent = this.value.length.toLocaleString('es-US') + ' / 30,000'; cambio(); } });
+      ta.value = c.texto || '';
+      var n = el('span', { class: 'muted', style: 'font-size:12px', text: (c.texto || '').length.toLocaleString('es-US') + ' / 30,000' });
+      var usar = el('select', { class: 'input sm', 'aria-label': 'Usar una plantilla de contrato' }, [el('option', { value: '', text: 'Usar una plantilla de contrato…' })]);
+      if (A.plantillasContrato) A.plantillasContrato().then(function (l) { l.forEach(function (p) { usar.appendChild(el('option', { value: p.id, text: p.titulo })); }); usar._l = l; });
+      usar.addEventListener('change', function () {
+        var p = (usar._l || []).filter(function (x) { return x.id === usar.value; })[0]; usar.value = '';
+        if (!p || (ta.value.trim() && !confirm('¿Reemplazar el texto por «' + p.titulo + '»?'))) return;
+        // En un formulario los datos los escribe el cliente: las variables quedan como espacio en blanco
+        ta.value = p.contenido.replace(/\{[a-z_]+\}/g, '__________'); c.texto = ta.value;
+        if (!c.etiqueta) { c.etiqueta = p.titulo; pintar(); return; }
+        n.textContent = ta.value.length.toLocaleString('es-US') + ' / 30,000'; cambio();
+      });
+      return el('div', { class: 'field' }, [el('label', { text: 'Texto completo' }), ta,
+        el('div', { style: 'display:flex;gap:10px;align-items:center;justify-content:space-between;margin-top:6px;flex-wrap:wrap' }, [usar, n]),
+        el('span', { class: 'muted', style: 'font-size:12px', text: 'Formato: # título · ## subtítulo · - viñeta · **negrita** · > recuadro. Debajo agrega una «Casilla de acepto» y una «Firma».' })]);
+    }
+
     async function guardar() {
       var d = { titulo: inp.titulo.value.trim(), slug: inp.slug.value.replace(/^-+|-+$/g, ''), descripcion: inp.descripcion.value.trim() || null, servicio: inp.servicio.value || null, mensaje_final: inp.mensaje_final.value.trim() || null, activo: inp.activo.checked, campos: campos };
       if (d.titulo.length < 2) { A.toast('Escribe un título.', 'error'); inp.titulo.focus(); return; }
       if (!/^[a-z0-9][a-z0-9-]{1,58}[a-z0-9]$/.test(d.slug)) { A.toast('El enlace solo puede tener letras sin acentos, números y guiones (mínimo 3).', 'error'); inp.slug.focus(); return; }
       var sinTexto = campos.filter(function (c) { return !String(c.etiqueta || '').trim(); })[0];
+      var largoVacio = campos.filter(function (c) { return c.tipo === 'texto_largo' && !String(c.texto || '').trim(); })[0];
+      if (largoVacio) { A.toast('«' + (largoVacio.etiqueta || 'Texto largo') + '» está vacío.', 'error'); abierto = largoVacio.id; pintar(); return; }
       if (sinTexto) { A.toast('Hay una pregunta sin texto.', 'error'); abierto = sinTexto.id; pintar(); return; }
       var sinOp = campos.filter(function (c) { return CON_OPCIONES[c.tipo] && !(c.opciones || []).length; })[0];
       if (sinOp) { A.toast('«' + sinOp.etiqueta + '» necesita al menos una opción.', 'error'); abierto = sinOp.id; pintar(); return; }
@@ -405,7 +430,7 @@
         var v = vis();
         var f = st.form && forms[st.form];
         var cols = [['Recibida', function (x) { return A.fecha(x.created_at); }], ['Formulario', function (x) { return (forms[x.formulario_id] || {}).titulo; }], ['Nombre', function (x) { return A.nombreDe(x); }], ['Teléfono', 'telefono'], ['Correo', 'email'], ['Estado', function (x) { return ESTADOS[x.estado]; }]];
-        if (f) (f.campos || []).forEach(function (c) { if (c.tipo === 'seccion' || c.tipo === 'archivo' || c.tipo === 'firma' || c.tipo === 'sensible' || c.mapa) return; cols.push([c.etiqueta, function (x) { return texto(x.datos[c.id]); }]); });
+        if (f) (f.campos || []).forEach(function (c) { if (c.tipo === 'seccion' || c.tipo === 'texto_largo' || c.tipo === 'archivo' || c.tipo === 'firma' || c.tipo === 'sensible' || c.mapa) return; cols.push([c.etiqueta, function (x) { return texto(x.datos[c.id]); }]); });
         A.csv('respuestas' + (f ? '-' + f.slug : ''), cols, v);
       }
       cargar();
@@ -423,6 +448,7 @@
     (x.archivos || []).forEach(function (a) { (porCampo[a.campo] = porCampo[a.campo] || []).push(a); });
     (f.campos || []).forEach(function (c) {
       if (c.tipo === 'seccion') { dl.appendChild(el('div', { class: 'fm-r-sec', text: c.etiqueta })); return; }
+      if (c.tipo === 'texto_largo') return;
       var valor;
       if (c.tipo === 'archivo' || c.tipo === 'firma') {
         var l = porCampo[c.id] || [];
@@ -521,7 +547,7 @@
   function resumen(x, f) {
     var l = ['Respuestas de «' + (f.titulo || 'Formulario') + '» (' + A.fecha(x.created_at) + '):'];
     (f.campos || []).forEach(function (c) {
-      if (c.tipo === 'seccion' || c.tipo === 'archivo' || c.tipo === 'firma' || c.tipo === 'sensible' || c.mapa) return;
+      if (c.tipo === 'seccion' || c.tipo === 'texto_largo' || c.tipo === 'archivo' || c.tipo === 'firma' || c.tipo === 'sensible' || c.mapa) return;
       var v = texto(x.datos[c.id]); if (v) l.push('• ' + c.etiqueta + ': ' + v);
     });
     return l.join('\n').slice(0, 4000);

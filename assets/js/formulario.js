@@ -122,6 +122,10 @@
     var err = h('span', { class: 'err', text: 'Este dato es obligatorio.' });
     var opciones = (c.opciones || []).filter(Boolean);
     switch (c.tipo) {
+      case 'texto_largo':
+        f.className = 'field full f-largo-w';
+        f.append(h('div', { class: 'field-legend', text: c.etiqueta || '' }), ayuda || '', h('div', { class: 'fx-doc f-largo', tabindex: '0', html: window.AVA_FORMATO ? window.AVA_FORMATO(c.texto || '') : '' }));
+        return f;
       case 'parrafo':
         f.append(etiqueta(id), ayuda || '', h('textarea', { class: 'input', id: id, name: c.id, maxlength: '4000', rows: '4' }), err); break;
       case 'lista':
@@ -237,7 +241,7 @@
   function leer() {
     var datos = {}, primero = null;
     (def.campos || []).forEach(function (c) {
-      if (c.tipo === 'seccion') return;
+      if (c.tipo === 'seccion' || c.tipo === 'texto_largo') return;
       var f = form.querySelector('[data-id="' + c.id + '"]');
       var v = null, ok = true;
       if (c.tipo === 'multiple') v = Array.prototype.map.call(form.querySelectorAll('[name="' + c.id + '"]:checked'), function (i) { return i.value; });

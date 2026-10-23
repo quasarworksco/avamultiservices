@@ -308,6 +308,39 @@
     history.replaceState(null, '', location.pathname);
     entrar();
   });
+  /* ---------- Contraseñas ---------- */
+  // Campo de contraseña con botón para verla
+  function campoClave(id, etiqueta) {
+    var inp = el('input', { class: 'input sm', id: id, type: 'password', autocomplete: 'new-password', minlength: 10, maxlength: 72 });
+    var ver = el('button', { type: 'button', class: 'mini-btn', text: 'Ver', onclick: function () { inp.type = inp.type === 'password' ? 'text' : 'password'; ver.textContent = inp.type === 'password' ? 'Ver' : 'Ocultar'; } });
+    return { inp: inp, nodo: el('div', { class: 'field full' }, [el('label', { for: id, text: etiqueta }), el('div', { style: 'display:flex;gap:8px;align-items:center' }, [inp, ver])]) };
+  }
+  // Abre una ventana para escribir una contraseña nueva dos veces; alGuardar(clave, aviso) hace el cambio
+  function ventanaClave(titulo, texto, alGuardar, conGenerar) {
+    var a = campoClave('m-clave1', 'Contraseña nueva (mínimo 10 caracteres)'), b = campoClave('m-clave2', 'Escríbela otra vez');
+    var extra = el('div', null, [texto ? el('p', { class: 'muted', style: 'margin-bottom:12px;font-size:13px', text: texto }) : null, el('div', { class: 'grid2' }, [a.nodo, b.nodo]),
+      conGenerar ? el('button', { type: 'button', class: 'link-btn', style: 'margin-top:10px', text: 'Generar una contraseña segura', onclick: function () {
+        var abc = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789', arr = new Uint32Array(14), v = '';
+        crypto.getRandomValues(arr); arr.forEach(function (n) { v += abc[n % abc.length]; });
+        a.inp.value = b.inp.value = v; a.inp.type = b.inp.type = 'text';
+      } }) : null]);
+    modal({ titulo: titulo, ok: 'Guardar contraseña', campos: [], extra: extra, guardar: async function (_, aviso) {
+      var v = a.inp.value;
+      if (v.length < 10) { msg(aviso, 'La contraseña debe tener al menos 10 caracteres.'); return false; }
+      if (v !== b.inp.value) { msg(aviso, 'Las dos contraseñas no coinciden.'); return false; }
+      return alGuardar(v, aviso);
+    } });
+  }
+  document.querySelectorAll('[data-mi-clave]').forEach(function (b) {
+    b.addEventListener('click', function () {
+      ventanaClave('Cambiar mi contraseña', 'La próxima vez que entres usa la contraseña nueva.', async function (v, aviso) {
+        var r = await sb.auth.updateUser({ password: v });
+        if (r.error) { msg(aviso, /different|same/i.test(r.error.message) ? 'Usa una contraseña distinta a la actual.' : 'No se pudo cambiar. Cierra sesión, entra de nuevo e inténtalo otra vez.'); return false; }
+        toast('Listo, tu contraseña cambió.');
+      });
+    });
+  });
+
   document.querySelectorAll('[data-logout]').forEach(function (b) {
     b.addEventListener('click', async function () { await sb.auth.signOut(); show('view-login'); });
   });
@@ -377,7 +410,7 @@
   window.AVA = {
     sb: sb, el: el, icon: icon, fecha: fecha, hace: hace, dinero: dinero, iniciales: iniciales, nombreDe: nombreDe,
     hoyISO: hoyISO, soloDigitos: soloDigitos, msg: msg, toast: toast, modal: modal, drawer: drawer, cerrarDrawer: cerrarDrawer,
-    seccion: seccion, cabecera: cabecera, SERVICIOS: SERVICIOS, ORIGENES: ORIGENES, PERMISOS: PERMISOS, ROLES: ROLES, esFinal: esFinal,
+    ventanaClave: ventanaClave, seccion: seccion, cabecera: cabecera, SERVICIOS: SERVICIOS, ORIGENES: ORIGENES, PERMISOS: PERMISOS, ROLES: ROLES, esFinal: esFinal,
     serviciosVisibles: function () { return Object.keys(SERVICIOS).filter(function (k) { return !SERVICIOS[k].oculto; }); },
     puede: puede, yo: function () { return me; }, equipo: equipo, limpiarEquipo: function () { equipoCache = null; },
     clientesBasicos: clientesBasicos,
