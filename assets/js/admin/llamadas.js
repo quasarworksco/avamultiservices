@@ -111,6 +111,8 @@
     var d = String(num || '').replace(/\D/g, '').slice(-10);
     var c = d.length === 10 ? (await sb.from('clientes').select('id,nombre,apellidos').like('tel_digitos', '%' + d).limit(1)).data : null;
     var nombre = c && c[0] ? A.nombreDe(c[0]) : bonito(num);
+    // Si no es cliente, puede estar en la agenda de contactos
+    if (!(c && c[0]) && A.contactoPorTelefono) { var k = await A.contactoPorTelefono(num).catch(function () { return null; }); if (k) nombre = k.nombre + ' · contacto'; }
     var f = flotante(); f.innerHTML = '';
     f.appendChild(el('div', { class: 'll-flot-h' }, [el('span', { class: 'll-pulso' }, [A.icon('i-phone', 'icon-sm')]), el('div', null, [el('b', { text: nombre }), el('span', { text: 'Llamada entrante' })])]));
     f.appendChild(el('div', { class: 'll-flot-b' }, [
@@ -186,6 +188,7 @@
         var c = await sb.from('clientes').select('id,nombre,apellidos,telefono,region').eq('id', partes[1]).maybeSingle();
         if (c.data) elegir(c.data);
       }
+      if (partes[0] === 'numero' && partes[1]) { ui.num.value = bonito(partes[1]); ui.num.dispatchEvent(new Event('input')); ui.marcador.scrollIntoView({ block: 'center' }); }
       if (partes[0] === 'ver' && partes[1]) { var l = await sb.from('llamadas').select(COLS).eq('id', partes[1]).maybeSingle(); if (l.data) detalle(l.data); }
       cargar();
     }

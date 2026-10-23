@@ -62,6 +62,19 @@
       consultas.push(Promise.resolve(clientes.slice(0, 6).map(function (c) {
         return { g: 'Clientes', t: A.nombreDe(c), s: [c.telefono, c.email].filter(Boolean).join(' · '), av: A.iniciales(A.nombreDe(c)), ir: function () { A.ir('clientes/' + c.id); } };
       })));
+      // Contactos de la agenda (todavía no son clientes)
+      if (A.puede('clientes')) {
+        var fc = ['nombre.ilike.' + p1];
+        if (dig.length >= 3) fc.push('tel_digitos.like.*' + dig + '*');
+        consultas.push(sb.from('contactos').select('id,nombre,telefono,cliente_id').is('cliente_id', null).or(fc.join(',')).limit(20).then(function (r) {
+          return (r.data || []).filter(function (c) {
+            var t = limpiar([c.nombre, c.telefono].join(' '));
+            return (dig.length >= 3 && (c.telefono || '').replace(/\D/g, '').indexOf(dig) >= 0) || palabras.every(function (w) { return t.indexOf(w) >= 0; });
+          }).slice(0, 5).map(function (c) {
+            return { g: 'Contactos', t: c.nombre, s: c.telefono || '', av: A.iniciales(c.nombre), ir: function () { A.ir('contactos'); } };
+          });
+        }));
+      }
       // Casos: por título o de los clientes encontrados
       if (A.puede('casos|taxes')) {
         var ids = clientes.slice(0, 20).map(function (c) { return c.id; });
