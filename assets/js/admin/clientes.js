@@ -109,6 +109,7 @@
         el('button', { class: 'btn btn-ghost btn-sm', onclick: exportar }, [A.icon('i-download'), el('span', { text: 'Exportar' })]),
         A.puede('clientes') ? el('button', { class: 'btn btn-dark btn-sm', onclick: function () { A.nuevoCliente(); } }, [A.icon('i-plus'), el('span', { text: 'Nuevo cliente' })]) : null
       ]));
+      if (A.puede('clientes') && A.pestanasClientes) cont.appendChild(A.pestanasClientes('clientes'));
       cont.appendChild(ui.stats);
       cont.appendChild(el('div', { class: 'tools' }, [
         el('input', { class: 'input search', type: 'search', placeholder: 'Buscar por nombre, correo, teléfono o etiqueta', value: filtro.q, oninput: function () { filtro.q = this.value; pintar(); } }),
