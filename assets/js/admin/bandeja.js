@@ -87,6 +87,7 @@
       b.appendChild(A.icon(sonidoActivo() ? 'i-bell' : 'i-bell-off', 'icon-sm' + (sonidoActivo() ? ' ico-bell' : '')));
       b.appendChild(el('span', { text: sonidoActivo() ? 'Sonido activado' : 'Sonido apagado' }));
       b.title = sonidoActivo() ? 'Suena cuando llega un mensaje nuevo. Toca para silenciar.' : 'Toca para que suene cuando llegue un mensaje.';
+      b.setAttribute('aria-label', sonidoActivo() ? 'Sonido activado' : 'Sonido apagado');
     }
     b.addEventListener('click', function () {
       var on = !sonidoActivo();
@@ -105,17 +106,25 @@
       if (params[0]) st.tab = params[0];
       if (params[0] === 'chats' && params[1]) { st.conv = params[1]; st.canal = 'todos'; st.etapa = 'todas'; }
       ui.body = el('div');
-      cont.appendChild(A.cabecera('Comunicación', 'Mensajes', 'con tus clientes', []));
+      // Cabecera compacta: título, pestañas y acciones en una sola franja (deja el alto para el chat)
+      ui.tabs = el('div', { class: 'tabs' });
+      ui.acts = el('div', { class: 'bj-acts' });
+      cont.appendChild(el('div', { class: 'bj-top' }, [el('h1', null, ['Mensajes ', el('span', { class: 'serif', text: 'con tus clientes' })]), ui.tabs, ui.acts]));
       var aviso = el('div');
       cont.appendChild(aviso);
       A.integraciones().then(function (integ) {
         if (integ.whatsapp && integ.meta) return;
         var faltan = !integ.whatsapp && !integ.meta ? 'WhatsApp Business, Instagram y Messenger aún no están conectados.' : !integ.whatsapp ? 'WhatsApp Business aún no está conectado.' : 'Instagram y Messenger aún no están conectados.';
-        aviso.appendChild(el('div', { class: 'alert warn', style: 'margin-top:14px' }, [A.icon('i-alert', 'icon-sm'),
-          faltan + (integ.whatsapp ? '' : ' Mientras tanto, cada mensaje de WhatsApp se abre en tu WhatsApp con el texto listo y queda registrado aquí.') + ' Tú respondes personalmente: lo automático solo prepara avisos y recordatorios.']));
+        var clave = 'ava-aviso-integ:' + faltan;
+        try { if (localStorage.getItem(clave)) return; } catch (_) { /* */ }
+        var detalle = (integ.whatsapp ? '' : 'Mientras tanto, cada mensaje de WhatsApp se abre en tu WhatsApp con el texto listo y queda registrado aquí. ') + 'Tú respondes personalmente: lo automático solo prepara avisos y recordatorios.';
+        aviso.appendChild(el('div', { class: 'alert warn bj-aviso', title: detalle }, [A.icon('i-alert', 'icon-sm'), el('span', { text: faltan + ' ' + detalle }),
+          el('button', { type: 'button', class: 'icon-btn sm', 'aria-label': 'Ocultar aviso', title: 'Ocultar aviso', onclick: function () {
+            try { localStorage.setItem(clave, '1'); } catch (_) { /* */ }
+            aviso.innerHTML = ''; window.dispatchEvent(new Event('resize'));
+          } }, [A.icon('i-x', 'icon-sm')])]));
+        window.dispatchEvent(new Event('resize'));
       });
-      ui.tabs = el('div', { class: 'tabs' });
-      cont.appendChild(ui.tabs);
       cont.appendChild(ui.body);
       pintarTabs();
     }
@@ -127,7 +136,7 @@
       if (t[0] === 'auto' && !A.puede('equipo')) return;
       ui.tabs.appendChild(el('button', { type: 'button', class: 'tab' + (st.tab === t[0] ? ' on' : ''), onclick: function () { st.tab = t[0]; history.replaceState(null, '', '#/bandeja/' + t[0]); pintarTabs(); } }, [t[1]]));
     });
-    ui.body.innerHTML = '';
+    ui.body.innerHTML = ''; ui.acts.innerHTML = '';
     ({ chats: chats, cola: cola, rapidas: rapidas, auto: auto })[st.tab](ui.body);
     A.contarBandeja();
   }
@@ -190,8 +199,18 @@
     selEtapa.addEventListener('change', function () { st.etapa = selEtapa.value; pintarFiltros(); pintarLista(); });
     lista.appendChild(el('div', { class: 'inbox-fil' }, [filtros, el('div', { class: 'et-fil' }, [selEtapa])])); lista.appendChild(items);
     wrap.appendChild(lista); wrap.appendChild(panel);
-    box.appendChild(el('div', { class: 'tools' }, [el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: nuevaConv }, [A.icon('i-plus'), el('span', { text: 'Nueva conversación' })]), botonSonido()]));
+    ui.acts.appendChild(botonSonido());
+    ui.acts.appendChild(el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: nuevaConv }, [A.icon('i-plus'), el('span', { text: 'Nueva conversación' })]));
     box.appendChild(wrap);
+    // En computadora la bandeja ocupa justo el alto que queda en pantalla
+    function ajustar() {
+      if (!document.body.contains(wrap)) { window.removeEventListener('resize', ajustar); return; }
+      // En celular se descuenta la barra de abajo
+      var movil = window.innerWidth <= 960;
+      wrap.style.height = Math.max(movil ? 420 : 520, window.innerHeight - wrap.getBoundingClientRect().top - window.scrollY - (movil ? 92 : 18)) + 'px';
+    }
+    window.addEventListener('resize', ajustar);
+    requestAnimationFrame(ajustar);
     var convs = [], firma = '';
 
     function pintarFiltros() {
@@ -219,7 +238,7 @@
         } }, [
           avatarConv(c),
           el('span', { class: 'conv-b' }, [el('b', { text: nombreConv(c) }), el('span', { class: 'conv-t' }, [el('span', { class: 'ch-txt ch-' + c.canal, text: CANAL[c.canal] ? CANAL[c.canal].n : 'SMS' }), el('span', { class: 'muted', text: ' · ' + (c.ultimo_texto || '') })]),
-            el('span', { class: 'conv-e' }, [chipEtapa(c.etapa), chipTemp(c), chipSeg(c), c.servicio && A.SERVICIOS[c.servicio] ? el('span', { class: 'muted', text: A.SERVICIOS[c.servicio].corto }) : null, sinResponder(c) && c.etapa !== 'no_interesado' ? el('span', { class: 'sr', text: 'Sin responder' }) : null])]),
+            el('span', { class: 'conv-e' }, [chipEtapa(c.etapa), chipTemp(c), chipSeg(c), sinResponder(c) && c.etapa !== 'no_interesado' ? el('span', { class: 'sr', text: 'Sin responder' }) : null, c.servicio && A.SERVICIOS[c.servicio] ? el('span', { class: 'muted', text: A.SERVICIOS[c.servicio].corto }) : null])]),
           el('span', { class: 'conv-m' }, [el('span', { class: 'muted', text: A.hace(c.ultimo_at) }), c.no_leidos ? el('span', { class: 'count', text: c.no_leidos }) : null])
         ]);
         items.appendChild(item);
@@ -321,13 +340,16 @@
     // Meta solo deja responder con texto libre dentro de las 24 h siguientes al último mensaje del cliente
     var horas = c.ultimo_entrante_at ? (Date.now() - new Date(c.ultimo_entrante_at).getTime()) / 3600e3 : null;
     var cerrada = directo && c.canal !== 'whatsapp' && horas !== null && horas > 24;
-    var txt = el('textarea', { class: 'input', placeholder: 'Escribe tu respuesta por ' + (CANAL[c.canal] || CANAL.sms).n + '…', maxlength: 4000, style: 'min-height:70px' });
+    var txt = el('textarea', { class: 'input', rows: 1, placeholder: 'Escribe por ' + (CANAL[c.canal] || CANAL.sms).n + '…  (Ctrl + Enter envía)', maxlength: 4000 });
     txt.value = borrador;
+    // Crece con el texto (hasta unas 7 líneas) sin quitarle espacio al chat
+    function crecer() { txt.style.height = 'auto'; txt.style.height = Math.min(txt.scrollHeight + 2, 170) + 'px'; }
+    txt.addEventListener('input', crecer);
     var rap = pr[2] || [];
     var primerNombre = (c.clientes && c.clientes.nombre) || (c.nombre && c.nombre.charAt(0) !== '@' ? c.nombre.split(' ')[0] : '');
-    var chips = el('div', { class: 'chips', style: 'margin-bottom:8px' }, rap.map(function (q) {
-      return el('button', { type: 'button', class: 'chip-s', title: q.texto, text: q.titulo, onclick: function () { txt.value = q.texto.replace(/\{nombre\}/g, primerNombre).replace(/ ,/g, ','); txt.focus(); } });
-    }));
+    var chips = rap.length ? el('div', { class: 'chips chat-rap' }, rap.map(function (q) {
+      return el('button', { type: 'button', class: 'chip-s', title: q.texto, text: q.titulo, onclick: function () { txt.value = q.texto.replace(/\{nombre\}/g, primerNombre).replace(/ ,/g, ','); crecer(); txt.focus(); } });
+    })) : null;
     // Adjuntar foto o archivo (solo con el canal conectado: Meta lo envía desde el CRM)
     var pendiente = null;
     var previa = el('div', { class: 'adj-prev', hidden: true });
@@ -382,15 +404,16 @@
         sb.from('mensajes_chat').insert({ conversacion_id: c.id, direccion: 'saliente', texto: t }),
         sb.from('conversaciones').update({ ultimo_texto: t.slice(0, 200), ultimo_at: new Date().toISOString() }).eq('id', c.id)
       ]).then(function (x) { if (x[0].error) A.toast('No se pudo guardar el mensaje en el CRM.', 'error'); });
-    } }, [logo(c.canal, 'icon-sm'), el('span', { text: cerrada ? 'Responder en Meta Business Suite' : directo ? 'Enviar por ' + (CANAL[c.canal] || CANAL.sms).n : c.canal === 'whatsapp' ? 'Enviar por WhatsApp' : 'Registrar respuesta' })]);
+    }, title: cerrada ? 'Responder en Meta Business Suite' : directo ? 'Enviar por ' + (CANAL[c.canal] || CANAL.sms).n + ' (Ctrl + Enter)' : c.canal === 'whatsapp' ? 'Abrir tu WhatsApp con el mensaje listo' : 'Registrar la respuesta en el CRM' }, [logo(c.canal, 'icon-sm'), el('span', { text: cerrada ? 'Abrir Meta' : directo || c.canal === 'whatsapp' ? 'Enviar' : 'Registrar' })]);
     txt.addEventListener('keydown', function (e) { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); enviar.click(); } });
     dst.appendChild(el('div', { class: 'chat-f' }, [
-      cerrada ? el('div', { class: 'alert warn', style: 'margin-bottom:8px' }, [A.icon('i-alert', 'icon-sm'), 'Pasaron más de 24 horas desde su último mensaje, así que Meta no deja responderle desde el CRM. Contéstale desde Meta Business Suite (el botón la abre) o espera a que vuelva a escribir.']) : null,
-      cajaIA(c, txt, integ), chips, previa, txt, archivo,
-      el('div', { style: 'display:flex;gap:8px;align-items:center;justify-content:space-between;margin-top:8px' }, [el('span', { style: 'display:flex;align-items:center;gap:10px' }, [clip, el('span', { class: 'muted', style: 'font-size:11.5px', text: 'Ctrl + Enter para enviar' })]), enviar])
+      cerrada ? el('div', { class: 'alert warn chat-aviso', title: 'Contéstale desde Meta Business Suite (el botón la abre) o espera a que vuelva a escribir.' }, [A.icon('i-alert', 'icon-sm'), 'Pasaron más de 24 h desde su último mensaje: Meta no deja responder desde el CRM. Contesta en Meta Business Suite.']) : null,
+      cajaIA(c, txt, integ, crecer), chips, previa, archivo,
+      el('div', { class: 'chat-esc' }, [clip, txt, enviar])
     ]));
     if (refresco) { panel.replaceChildren(dst); msgs.scrollTop = msgs.scrollHeight; }
     else txt.focus({ preventScroll: true });
+    if (borrador) crecer();
   }
 
   var MARCA = { enviando: ' · enviando…', enviado: ' · ✓', entregado: ' · ✓✓', leido: ' · ✓✓ leído', error: ' · no se envió' };
@@ -470,7 +493,7 @@
   }
 
   /* ---------- Asistente con IA: resumen, interés y respuesta sugerida (nunca envía solo) ---------- */
-  function cajaIA(c, txt, integ) {
+  function cajaIA(c, txt, integ, crecer) {
     var caja = el('div', { class: 'ia-box' });
     if (!integ.ia && !c.ia) return caja;
     function pintar(cargando) {
@@ -485,16 +508,18 @@
       } });
       if (!ia) { caja.appendChild(el('div', { class: 'ia-h' }, [el('span', { class: 'ia-t' }, [A.icon('i-sparkles', 'icon-sm'), 'Asistente con IA']), analizar])); return; }
       var datos = [ia.telefono ? 'Tel. ' + ia.telefono : null, ia.email ? ia.email : null].filter(Boolean).join(' · ');
+      var resumen = (ia.resumen || '') + (datos ? ' · ' + datos : '');
+      // Compacta: una línea con lo esencial; la sugerencia se abre solo si se pide
+      var ver = ia.sugerencia ? el('button', { type: 'button', class: 'link-btn', 'aria-expanded': String(!!st.iaAbierta), text: st.iaAbierta ? 'Ocultar sugerencia' : 'Ver sugerencia', onclick: function () { st.iaAbierta = !st.iaAbierta; pintar(); } }) : null;
       caja.appendChild(el('div', { class: 'ia-h' }, [
         el('span', { class: 'ia-t' }, [A.icon('i-sparkles', 'icon-sm'), 'IA']), pastillaTemp(ia.temperatura),
-        ia.servicio && A.SERVICIOS[ia.servicio] ? el('span', { class: 'muted', text: 'Busca: ' + A.SERVICIOS[ia.servicio].corto }) : null,
+        ia.servicio && A.SERVICIOS[ia.servicio] ? el('span', { class: 'muted ia-busca', text: 'Busca: ' + A.SERVICIOS[ia.servicio].corto }) : null,
         ia.idioma === 'en' ? el('span', { class: 'muted', text: 'Escribe en inglés' }) : null,
-        el('span', { style: 'flex:1' }), analizar
+        el('span', { class: 'ia-r', title: resumen, text: resumen }), ver, analizar
       ]));
-      if (ia.resumen) caja.appendChild(el('p', { class: 'ia-r', text: ia.resumen + (datos ? ' · ' + datos : '') }));
-      if (ia.sugerencia) {
+      if (ia.sugerencia && st.iaAbierta) {
         caja.appendChild(el('div', { class: 'ia-s' }, [el('p', { text: ia.sugerencia }),
-          el('button', { type: 'button', class: 'mini-btn', text: 'Usar esta respuesta', onclick: function () { txt.value = ia.sugerencia; txt.focus(); } })]));
+          el('button', { type: 'button', class: 'mini-btn', text: 'Usar esta respuesta', onclick: function () { txt.value = ia.sugerencia; if (crecer) crecer(); txt.focus(); } })]));
       }
     }
     pintar();
@@ -511,18 +536,15 @@
   }
   function barraProspecto(c, panel, wrap) {
     var barra = el('div', { class: 'chat-p' });
-    var etapas = el('div', { class: 'et-seg', role: 'radiogroup', 'aria-label': 'Etapa' });
-    function pintarEtapas() {
-      etapas.innerHTML = '';
-      Object.keys(ETAPAS).forEach(function (k) {
-        etapas.appendChild(el('button', { type: 'button', role: 'radio', 'aria-checked': String(c.etapa === k), class: 'et-b et-' + k + (c.etapa === k ? ' on' : ''), text: ETAPAS[k], onclick: async function () {
-          if (c.etapa === k) return;
-          if (k === 'cliente' && !c.cliente_id) { convertir(c, panel, wrap); return; }
-          var antes = c.etapa; c.etapa = k; pintarEtapas();
-          if (!(await guardarConv(c, { etapa: k }))) { c.etapa = antes; pintarEtapas(); }
-        } }));
-      });
-    }
+    // La etapa es un solo selector de color: ocupa una fila en vez de cinco botones
+    var etapas = el('select', { class: 'input sm et-sel', 'aria-label': 'Etapa' }, Object.keys(ETAPAS).map(function (k) { return el('option', { value: k, text: ETAPAS[k] }); }));
+    function pintarEtapas() { etapas.value = c.etapa || 'nuevo'; etapas.className = 'input sm et-sel et-' + etapas.value; }
+    etapas.addEventListener('change', async function () {
+      var k = etapas.value;
+      if (k === 'cliente' && !c.cliente_id) { pintarEtapas(); convertir(c, panel, wrap); return; }
+      var antes = c.etapa; c.etapa = k; pintarEtapas();
+      if (!(await guardarConv(c, { etapa: k }))) { c.etapa = antes; pintarEtapas(); }
+    });
     pintarEtapas();
     var serv = el('select', { class: 'input sm', 'aria-label': 'Servicio de interés' }, [el('option', { value: '', text: 'Servicio de interés…' })].concat(Object.keys(A.SERVICIOS).filter(function (k) { return k !== 'otro'; }).map(function (k) {
       return el('option', { value: k, text: A.SERVICIOS[k].corto === 'Otro' ? A.SERVICIOS[k].label : A.SERVICIOS[k].corto });
@@ -537,7 +559,7 @@
     asig.addEventListener('change', function () { guardarConv(c, { asignado_a: asig.value || null }); });
     barra.appendChild(etapas);
     barra.appendChild(el('div', { class: 'chat-p-r' }, [serv, asig,
-      c.cliente_id ? null : el('button', { type: 'button', class: 'btn btn-dark btn-sm', onclick: function () { convertir(c, panel, wrap); } }, [A.icon('i-user-plus', 'icon-sm'), el('span', { text: 'Convertir en cliente' })])
+      c.cliente_id ? null : el('button', { type: 'button', class: 'btn btn-dark btn-sm', title: 'Convertir en cliente', onclick: function () { convertir(c, panel, wrap); } }, [A.icon('i-user-plus', 'icon-sm'), el('span', { text: 'Hacer cliente' })])
     ]));
     return barra;
   }
