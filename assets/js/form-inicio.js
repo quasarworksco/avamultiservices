@@ -11,7 +11,7 @@
     carpeta: 'inicio',
     maxBytes: 10 * 1024 * 1024,
     // Aviso por correo sin datos sensibles (FormSubmit)
-    avisoEmail: 'anavargas@avamultiservices.com',
+    avisoEmail: 'info@avamultiservices.com',
     panelUrl: 'https://avamultiservices.com/admin/'
   };
 

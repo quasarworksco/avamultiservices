@@ -18,7 +18,7 @@ Supabase → **Authentication → Emails → SMTP Settings → Enable custom SMT
 
 | Campo | Valor |
 |---|---|
-| Sender email | `anavargas@avamultiservices.com` (o `no-reply@` si se crea) |
+| Sender email | `info@avamultiservices.com` (o `no-reply@` si se crea) |
 | Sender name | `AVA Multiservices` |
 | Host | `smtp.gmail.com` |
 | Port | `465` |
