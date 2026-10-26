@@ -165,8 +165,28 @@
   async function enviar(email) {
     var r = await sb.functions.invoke('invitar', { body: { email: email } });
     if (r.error) { A.toast('No se pudo enviar la invitación. Inténtalo de nuevo.', 'error'); return false; }
+    if (r.data && r.data.estado === 'enlace') { enlaceInvitacion(email, r.data.enlace); return true; }
     A.toast(r.data && r.data.estado === 'existente' ? 'Esa cuenta ya existía: ya tiene acceso con su contraseña.' : 'Invitación enviada a ' + email + '.');
     return true;
+  }
+
+  // El correo no salió: se muestra el enlace de invitación para enviarlo a mano
+  function enlaceInvitacion(email, enlace) {
+    var texto = 'Hola, te invito al panel de AVA Multiservices. Entra con este enlace para crear tu contraseña: ' + enlace;
+    var caja = el('textarea', { class: 'input', readonly: true, rows: 3, style: 'font-size:12px', text: enlace });
+    var m = A.modal({
+      titulo: 'Envíale este enlace', ok: 'Listo', campos: [],
+      extra: el('div', null, [
+        el('div', { class: 'alert warn', style: 'margin-bottom:12px' }, [A.icon('i-alert', 'icon-sm'), 'El correo de invitación no se pudo enviar, pero la invitación quedó lista. Envíale este enlace a ' + email + ' para que cree su contraseña. Sirve una sola vez; si vence, toca «Reenviar» para sacar uno nuevo.']),
+        caja,
+        el('div', { style: 'display:flex;gap:8px;flex-wrap:wrap;margin-top:10px' }, [
+          el('a', { class: 'btn btn-dark btn-sm', href: 'https://wa.me/?text=' + encodeURIComponent(texto), target: '_blank', rel: 'noopener' }, [A.icon('i-whatsapp', 'icon-sm'), el('span', { text: 'Enviar por WhatsApp' })]),
+          el('button', { class: 'btn btn-ghost btn-sm', type: 'button', text: 'Copiar enlace', onclick: function () { navigator.clipboard.writeText(enlace).then(function () { A.toast('Enlace copiado.'); }, function () { caja.select(); }); } })
+        ])
+      ]),
+      guardar: function () { return true; }
+    });
+    return m;
   }
 
   function invitar() {

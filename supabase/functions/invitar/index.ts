@@ -64,5 +64,10 @@ Deno.serve(async (req) => {
   // Si la cuenta ya existe, se le da acceso directamente con su contraseña actual
   const { data: alta, error: e2 } = await admin.rpc('alta_miembro_existente', { p_email: email });
   if (!e2 && alta) return json(req, 200, { ok: true, estado: 'existente' });
+
+  // Si el correo no salió (p. ej. falla el servidor de correo), se crea la invitación igual
+  // y se devuelve el enlace para que la administradora lo envíe por WhatsApp
+  const { data: link, error: e4 } = await admin.auth.admin.generateLink({ type: 'invite', email, options: { redirectTo: REDIRECT } });
+  if (!e4 && link?.properties?.action_link) return json(req, 200, { ok: true, estado: 'enlace', enlace: link.properties.action_link, motivo: error.message });
   return json(req, 500, { error: 'No se pudo enviar la invitación' });
 });
