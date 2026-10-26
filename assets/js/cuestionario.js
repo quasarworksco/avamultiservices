@@ -10,7 +10,7 @@
     supabaseKey: 'sb_publishable_Ri5Pcd0a9dphA8W5qJ2YvQ_veqm7I26',
     bucket: 'documentos',
     maxBytes: 15 * 1024 * 1024,
-    avisoEmail: 'info@avamultiservices.com',
+    avisoEmail: 'c4c439435576226a465fb1f7b87b6b02', // código de FormSubmit para info@avamultiservices.com (oculta el correo)
     panelUrl: 'https://avamultiservices.com/admin/#/cuestionarios',
     whatsapp: '17868162430'
   };

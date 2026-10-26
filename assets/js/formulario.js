@@ -11,7 +11,7 @@
     bucket: 'documentos',
     maxBytes: 10 * 1024 * 1024,
     maxArchivos: 5,
-    avisoEmail: 'info@avamultiservices.com',
+    avisoEmail: 'c4c439435576226a465fb1f7b87b6b02', // código de FormSubmit para info@avamultiservices.com (oculta el correo)
     panelUrl: 'https://avamultiservices.com/admin/#/respuestas'
   };
 
