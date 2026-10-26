@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Factura · AVA Multiservices</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#2a2a2a">
+  <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../assets/css/styles.css">
+  <link rel="stylesheet" href="../assets/css/publico.css">
+  <style>
+    .fc { max-width: 600px; margin: 26px auto 0; }
+    .fc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+    .fc-top img { height: 40px; width: auto; }
+    .fc-n { text-align: right; font-size: 13px; color: var(--muted); }
+    .fc-n b { display: block; font-family: var(--font-serif); font-size: 26px; font-weight: 500; color: var(--ink); }
+    .fc-para { padding: 16px 0 12px; font-size: 14px; }
+    .fc-k { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+    .fc-para b { font-size: 16px; }
+    .fc-tabla { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+    .fc-fila { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 12px 16px; border-top: 1px solid var(--line); font-size: 14.5px; }
+    .fc-fila:first-child { border-top: 0; }
+    .fc-fila small { display: block; margin-top: 3px; font-size: 12.5px; color: var(--muted); white-space: pre-wrap; }
+    .fc-fila > b { white-space: nowrap; }
+    .fc-cab { background: var(--stone-50); font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); padding-top: 9px; padding-bottom: 9px; }
+    .fc-total { background: var(--stone-50); align-items: center; font-weight: 700; }
+    .fc-total b { font-family: var(--font-serif); font-size: 30px; font-weight: 600; }
+    .fc-est { display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; padding: 5px 12px; border-radius: 999px; font-size: 12.5px; font-weight: 700; }
+    .fc-est.pen { background: #fdf1e1; color: #a2622a; }
+    .fc-est.ven { background: #fbe4df; color: #b4472f; }
+    .fc-est.ok { background: #e3f4e8; color: #15803d; }
+    .fc-pagar { margin-top: 18px; }
+    .fc-pagar h2 { font-size: 22px; font-weight: 500; margin-bottom: 4px; }
+    .fc-pagar > p { font-size: 13.5px; color: var(--muted); margin-bottom: 12px; }
+    .fc-op { padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; margin-top: 10px; background: #fff; }
+    .fc-op b { display: block; font-size: 15px; }
+    .fc-op p { margin-top: 4px; font-size: 13.5px; color: var(--ink-2, var(--ink)); }
+    .fc-dato { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: var(--stone-50); font-weight: 600; overflow-wrap: anywhere; }
+    .fc-dato button { flex: none; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+    .fc-op .btn { margin-top: 10px; }
+    .fc-pie { margin-top: 18px; font-size: 12.5px; color: var(--muted); text-align: center; }
+    @media print { body { background: #fff; } .p-card { padding: 0; box-shadow: none; } .p-top, .p-foot, .p-actions, .fc-dato button, .fc-op .btn { display: none !important; } }
+  </style>
+</head>
+<body>
+<header class="p-top"><div class="container">
+  <a href="../" class="brand" aria-label="AVA Multiservices"><img class="brand-logo" src="../assets/img/logo.svg" alt="AVA" width="72" height="34"><span class="brand-divider"></span><span class="brand-sub">Factura</span></a>
+</div></header>
+<main class="p-main"><div class="container">
+  <div class="p-card fc" id="card">
+    <div id="cargando" class="muted" style="text-align:center">Cargando factura…</div>
+    <div id="factura" hidden>
+      <div class="fc-top">
+        <img src="../assets/img/logo.svg" alt="AVA Multiservices" width="85" height="40">
+        <div class="fc-n">Factura<b id="num"></b><span id="fecha"></span><br><span id="vence"></span></div>
+      </div>
+      <div class="fc-para"><span class="fc-k">Facturado a</span><b id="cliente"></b></div>
+      <div class="fc-tabla">
+        <div class="fc-fila fc-cab"><span>Concepto</span><span>Monto</span></div>
+        <div class="fc-fila"><span><b id="concepto"></b><small id="servicio" hidden></small><small id="detalle" hidden></small></span><b id="monto"></b></div>
+        <div class="fc-fila fc-total"><span id="total-t">Total a pagar</span><b id="total"></b></div>
+      </div>
+      <div id="estado" class="fc-est"></div>
+      <div class="fc-pagar" id="pagar" hidden>
+        <h2>Cómo pagar</h2>
+        <p>Elige la forma que prefieras. En la nota del pago escribe <b id="ref"></b> para que lo identifiquemos rápido.</p>
+        <div id="opciones"></div>
+      </div>
+      <p class="fc-pie">AVA Multiservices · Dallas, Texas<span id="tel"></span><br>Gracias por tu confianza.</p>
+    </div>
+  </div>
+  <div class="p-actions" id="acciones" hidden style="max-width:600px;margin-inline:auto;justify-content:center">
+    <a class="btn btn-primary" id="aviso" href="#" target="_blank" rel="noopener" hidden><span class="btn-label">Ya pagué · avisar por WhatsApp</span></a>
+    <a class="btn btn-primary" id="recibo" href="#" hidden><span class="btn-label">Ver comprobante de pago</span></a>
+    <button class="btn btn-ghost" type="button" onclick="window.print()"><span>Imprimir o guardar PDF</span></button>
+  </div>
+</div></main>
+<footer class="p-foot">AVA Multiservices · Dallas, Texas</footer>
+<script src="../assets/js/factura.js?v=1"></script>
+</body>
+</html>

@@ -127,6 +127,7 @@
       ui.stats = el('div', { class: 'cb-kpis' });
       ui.graf = el('div', { class: 'cb-grid' });
       ui.enlaces = el('div');
+      ui.facturas = el('div');
       ui.filtros = el('div', { class: 'cb-filtros' });
       ui.list = el('div', { class: 'list cb-list' });
       ui.saldos = el('div', { class: 'card cb-saldos', style: 'margin-top:20px' });
@@ -134,10 +135,12 @@
       cont.appendChild(A.cabecera('Finanzas', 'Cobros', 'e ingresos', [
         mes,
         el('button', { class: 'btn btn-ghost btn-sm', onclick: exportar }, [A.icon('i-download'), el('span', { text: 'Exportar' })]),
-        el('button', { class: 'btn btn-dark btn-sm', onclick: function () { A.registrarPago(null, cargar); } }, [A.icon('i-plus'), el('span', { text: 'Registrar pago' })])
+        el('button', { class: 'btn btn-ghost btn-sm', title: 'Registrar un pago que ya recibiste', onclick: function () { A.registrarPago(null, cargar); } }, [A.icon('i-plus'), el('span', { text: 'Registrar pago' })]),
+        el('button', { class: 'btn btn-dark btn-sm', title: 'Crear una factura y enviársela al cliente para que pague', onclick: function () { A.nuevoCobro(null, cargar); } }, [A.icon('i-receipt'), el('span', { text: 'Nuevo cobro' })])
       ]));
       cont.appendChild(ui.stats);
       cont.appendChild(ui.graf);
+      cont.appendChild(ui.facturas);
       cont.appendChild(ui.enlaces);
       cont.appendChild(el('h3', { class: 'cb-h', text: 'Pagos del mes' }));
       cont.appendChild(ui.filtros);
@@ -164,6 +167,7 @@
     ]);
     if (res[0].error) { ui.list.innerHTML = ''; ui.list.appendChild(el('div', { class: 'empty', text: 'No se pudieron cargar los pagos.' })); return; }
     pagosMes = res[0].data || [];
+    A.pintarCobrosPendientes(ui.facturas, cargar);
     var enlaces = res[3].data || [];
     // Si hay enlaces de tarjeta esperando pago, se le pregunta a Square una vez (por si su aviso no llegó)
     if (!verificado && enlaces.length) {

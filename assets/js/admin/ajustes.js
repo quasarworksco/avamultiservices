@@ -30,7 +30,7 @@
       var neg = cfg.negocio || {}, cit = cfg.citas || {};
 
       // Negocio
-      var campos = [['link_resena', 'Enlace para dejar reseña en Google', 'https://g.page/r/…'], ['descuento_referido', 'Descuento por cliente referido', '$25'], ['zelle', 'Datos de Zelle para el portal', 'pagos@avamultiservices.com'], ['telefono', 'Teléfono del negocio', ''], ['link_portal', 'Enlace del portal', '']];
+      var campos = [['link_resena', 'Enlace para dejar reseña en Google', 'https://g.page/r/…'], ['descuento_referido', 'Descuento por cliente referido', '$25'], ['zelle', 'Zelle del negocio (correo o teléfono)', 'pagos@avamultiservices.com'], ['cashapp', 'Cash App del negocio ($cashtag)', '$AVAMultiservices'], ['telefono', 'Teléfono del negocio', ''], ['link_portal', 'Enlace del portal', '']];
       var inp = {};
       var negCard = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Datos del negocio' })]);
       var g = el('div', { class: 'grid2' });
@@ -39,6 +39,7 @@
       negCard.appendChild(el('button', { class: 'btn btn-dark btn-sm', type: 'button', style: 'margin-top:14px', text: 'Guardar', onclick: async function () {
         var n = Object.assign({}, neg); Object.keys(inp).forEach(function (k) { n[k] = inp[k].value.trim(); });
         var u = await sb.from('ajustes').update({ valor: n }).eq('clave', 'negocio');
+        A.olvidar('ajustes_negocio');
         A.toast(u.error ? 'No se pudo guardar.' : 'Datos guardados.', u.error ? 'error' : '');
       } }));
 

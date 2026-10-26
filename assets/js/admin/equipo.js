@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   var A = window.AVA, el = A.el, sb = A.sb;
-  var ENTIDAD = { clientes: 'la ficha de', casos: 'el caso', solicitudes: 'la solicitud de', admins: 'al usuario', admin_emails: '' };
+  var ENTIDAD = { clientes: 'la ficha de', casos: 'el caso', solicitudes: 'la solicitud de', admins: 'al usuario', admin_emails: '', facturas: 'la factura', pagos: 'el pago' };
   var POR_DEFECTO = A.ROLES.completa.p;
 
   var ui = {};
