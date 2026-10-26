@@ -1124,3 +1124,23 @@ a.stat { display: block; color: inherit; animation: rise 0.5s var(--ease) both; 
 .fac-acc .btn { display: inline-flex; align-items: center; gap: 6px; }
 .fac-editar { margin-left: auto; }
 @media (max-width: 600px) { .fac { padding: 14px; } .fac-acc .btn { flex: 1 1 100%; justify-content: center; } .fac-editar { margin: 4px auto 0; } }
+
+/* ---------- Facturas por cobrar ---------- */
+.cb-facturas { border-color: #ecd9bf; background: linear-gradient(150deg, #fdf5ea, #fff 60%); }
+.cb-facturas .cb-en { border-top-color: #f0e3d0; }
+.cb-facturas .cb-en .avatar { background: #fbe9d2; color: #a2622a; }
+.cb-facturas .cb-en strong { color: #8a5420; }
+.cb-en.vencida .muted { color: #b4472f; }
+.link-fila { display: block; width: 100%; padding: 0; border: 0; background: none; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.link-fila:hover b { text-decoration: underline; }
+.check.off { opacity: 0.55; cursor: not-allowed; }
+.btn-ok { background: #15803d; border-color: #15803d; color: #fff; }
+.btn-ok:hover { background: #116a32; }
+.fac-pen { padding: 3px 10px; border-radius: 999px; background: #fdf1e1; color: #a2622a; font-weight: 700; }
+.fac-ven { padding: 3px 10px; border-radius: 999px; background: #fbe4df; color: #b4472f; font-weight: 700; }
+.fac-can { padding: 3px 10px; border-radius: 999px; background: #f0f1f3; color: #6b7280; font-weight: 700; }
+.fac-det { white-space: pre-wrap; }
+.fac-formas { margin-top: 12px; padding: 10px 14px; border-radius: 12px; background: var(--stone-50); }
+.fac-formas-t { font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.fac-forma { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; font-size: 13px; }
+.fac-forma .muted { text-align: right; overflow-wrap: anywhere; }
