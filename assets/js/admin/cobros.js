@@ -9,15 +9,70 @@
   var SITIO = /avamultiservices\.com$/.test(location.hostname) ? location.origin : 'https://avamultiservices.com';
   A.urlRecibo = function (p) { return (location.hostname === '192.0.2.2' ? location.origin : SITIO) + '/recibo/?t=' + p.token; };
   A.enviarRecibo = function (p, cliente) {
-    var texto = 'Hola ' + ((cliente && cliente.nombre) || '') + ', gracias por tu pago de ' + A.dinero(p.monto) + '. Aquí está tu recibo #' + p.numero + ': ' + A.urlRecibo(p);
+    var texto = 'Hola ' + ((cliente && cliente.nombre) || '') + ', gracias por tu pago de ' + A.dinero(p.monto) + '. Aquí está tu factura #' + p.numero + ': ' + A.urlRecibo(p);
     if (cliente && cliente.telefono) window.open(A.wa(cliente.telefono, texto), '_blank', 'noopener');
     else { try { navigator.clipboard.writeText(A.urlRecibo(p)); } catch (_) { /* */ } A.toast('Enlace del recibo copiado.'); }
   };
   A.botonesRecibo = function (p, cliente) {
     return el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap' }, [
-      el('a', { class: 'mini-btn', href: A.urlRecibo(p), target: '_blank', rel: 'noopener', text: 'Recibo #' + p.numero }),
-      el('button', { class: 'mini-btn', type: 'button', text: 'Enviar', title: 'Enviar el recibo por WhatsApp', onclick: function (e) { e.stopPropagation(); A.enviarRecibo(p, cliente); } })
+      el('button', { class: 'mini-btn', type: 'button', text: 'Factura #' + p.numero, title: 'Ver la factura de este pago', onclick: function (e) { e.stopPropagation(); A.verFactura(p); } }),
+      el('button', { class: 'mini-btn', type: 'button', text: 'Enviar', title: 'Enviar la factura por WhatsApp', onclick: function (e) { e.stopPropagation(); A.enviarRecibo(p, cliente); } })
     ]);
+  };
+
+  /* Factura de un pago: se ve en el panel y se envía al cliente (WhatsApp, correo o enlace) */
+  A.verFactura = async function (p, o) {
+    o = o || {};
+    var hoja = el('div', { class: 'fac' }, [el('div', { class: 'muted', style: 'padding:40px 0;text-align:center', text: 'Cargando factura…' })]);
+    var acciones = el('div', { class: 'fac-acc' });
+    var bg = el('div', { class: 'modal', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Factura #' + p.numero }, [
+      el('div', { class: 'modal-card fac-card' }, [
+        el('div', { class: 'modal-head' }, [el('h2', { text: 'Factura #' + p.numero }), el('button', { class: 'x', type: 'button', 'aria-label': 'Cerrar', onclick: cerrar }, [A.icon('i-x', 'icon-sm')])]),
+        el('div', { class: 'modal-body' }, [hoja]), acciones
+      ])
+    ]);
+    function cerrar() { bg.remove(); document.removeEventListener('keydown', esc); }
+    function esc(e) { if (e.key === 'Escape') cerrar(); }
+    document.addEventListener('keydown', esc);
+    bg.addEventListener('mousedown', function (e) { if (e.target === bg) cerrar(); });
+    document.body.appendChild(bg);
+
+    var res = await Promise.all([
+      sb.from('pagos').select('*, clientes(id,nombre,apellidos,telefono,email), casos(id,servicio,titulo,precio)').eq('id', p.id).maybeSingle(),
+      p.token ? sb.rpc('ver_recibo', { p_token: p.token }) : Promise.resolve({ data: null })
+    ]);
+    if (res[0].error || !res[0].data) { hoja.innerHTML = ''; hoja.appendChild(el('div', { class: 'alert warn', text: 'No se pudo cargar este pago.' })); return; }
+    var x = res[0].data, r = res[1].data || {}, c = x.clientes || {};
+    var servicio = x.casos ? (x.casos.titulo || A.SERVICIOS[x.casos.servicio].label) : '';
+    var concepto = x.nota || servicio || 'Servicios profesionales';
+    var saldo = r.precio != null ? Math.max(0, Number(r.precio) - Number(r.pagado || 0)) : null;
+    hoja.innerHTML = '';
+    hoja.appendChild(el('div', { class: 'fac-top' }, [
+      el('div', null, [el('img', { src: '../assets/img/logo.svg', alt: 'AVA Multiservices', width: 85, height: 40 }), el('div', { class: 'fac-de', text: 'AVA Multiservices · Dallas, Texas' + (r.telefono ? ' · ' + r.telefono : '') })]),
+      el('div', { class: 'fac-n' }, [el('span', { text: 'Factura' }), el('b', { text: '#' + x.numero }), el('span', { text: A.fecha(x.fecha) })])
+    ]));
+    hoja.appendChild(el('div', { class: 'fac-para' }, [el('span', { text: 'Facturado a' }), el('b', { text: A.nombreDe(c) }),
+      c.telefono || c.email ? el('div', { class: 'muted', text: [c.telefono ? String(c.telefono).replace(/^\+?1?(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3') : null, c.email].filter(Boolean).join(' · ') }) : null]));
+    hoja.appendChild(el('div', { class: 'fac-tabla' }, [
+      el('div', { class: 'fac-fila fac-cab' }, [el('span', { text: 'Concepto' }), el('span', { text: 'Monto' })]),
+      el('div', { class: 'fac-fila' }, [el('span', null, [el('b', { text: concepto }), servicio && servicio !== concepto ? el('small', { text: servicio }) : null]), el('b', { text: A.dinero(x.monto) })]),
+      el('div', { class: 'fac-fila fac-total' }, [el('span', { text: 'Total pagado' }), el('b', { text: A.dinero(x.monto) })])
+    ]));
+    hoja.appendChild(el('div', { class: 'fac-info' }, [
+      el('span', { class: 'fac-ok', text: '✓ Pagado' }),
+      el('span', { text: 'Método: ' + (A.METODOS[x.metodo] || x.metodo) + (x.pasarela_id ? ' (Square)' : '') }),
+      saldo != null ? el('span', { text: 'Saldo pendiente de este servicio: ' + A.dinero(saldo) }) : null
+    ]));
+    hoja.appendChild(el('p', { class: 'fac-pie', text: 'Gracias por tu confianza.' }));
+
+    var url = A.urlRecibo(x);
+    var asunto = 'Factura #' + x.numero + ' · AVA Multiservices';
+    var cuerpo = 'Hola ' + (c.nombre || '') + ',\n\nGracias por tu pago de ' + A.dinero(x.monto) + ' (' + concepto + ').\nAquí puedes ver y descargar tu factura #' + x.numero + ':\n' + url + '\n\nAVA Multiservices';
+    acciones.appendChild(el('button', { class: 'btn btn-dark btn-sm', type: 'button', title: c.telefono ? 'Abre WhatsApp con el mensaje listo' : 'El cliente no tiene teléfono: se copia el enlace', onclick: function () { A.enviarRecibo(x, c); } }, [A.icon('i-whatsapp', 'icon-sm'), el('span', { text: 'Enviar por WhatsApp' })]));
+    if (c.email) acciones.appendChild(el('a', { class: 'btn btn-ghost btn-sm', href: 'mailto:' + encodeURIComponent(c.email) + '?subject=' + encodeURIComponent(asunto) + '&body=' + encodeURIComponent(cuerpo) }, [A.icon('i-mail', 'icon-sm'), el('span', { text: 'Enviar por correo' })]));
+    acciones.appendChild(el('button', { class: 'btn btn-ghost btn-sm', type: 'button', onclick: function () { navigator.clipboard.writeText(url).then(function () { A.toast('Enlace de la factura copiado.'); }, function () { A.toast('No se pudo copiar.', 'error'); }); } }, [el('span', { text: 'Copiar enlace' })]));
+    acciones.appendChild(el('a', { class: 'btn btn-ghost btn-sm', href: url, target: '_blank', rel: 'noopener', title: 'Abre la factura para descargarla en PDF o imprimirla' }, [el('span', { text: 'PDF / Imprimir' })]));
+    if (o.editar) acciones.appendChild(el('button', { class: 'link-btn fac-editar', type: 'button', text: 'Editar pago', onclick: function () { cerrar(); o.editar(p); } }));
   };
   var ui = {};
 
@@ -32,7 +87,7 @@
       { k: 'monto', label: 'Monto (USD)', type: 'number', required: true, min: '0.01', step: '0.01', value: base.monto != null ? base.monto.toFixed ? base.monto.toFixed(2) : base.monto : null },
       { k: 'fecha', label: 'Fecha', type: 'date', value: A.hoyISO() },
       { k: 'metodo', label: 'Método', type: 'select', value: 'zelle', options: Object.keys(A.METODOS).map(function (k) { return [k, A.METODOS[k]]; }) },
-      { k: 'nota', label: 'Nota', max: 500, placeholder: 'Cuota 2 de 5' }
+      { k: 'nota', label: 'Concepto (sale en la factura)', full: true, max: 500, placeholder: 'Ej.: Declaración de taxes 2025 · cuota 2 de 5' }
     ];
     var m = A.modal({
       titulo: 'Registrar pago', ok: 'Registrar', campos: campos,
@@ -40,9 +95,9 @@
         if (!(d.monto > 0)) { A.msg(aviso, 'Escribe un monto mayor que cero.'); return false; }
         var r = await sb.from('pagos').insert(d).select('id,numero,token,monto,cliente_id').single();
         if (r.error) { A.msg(aviso, 'No se pudo registrar el pago.'); return false; }
-        A.toast('Pago de ' + A.dinero(d.monto) + ' registrado · recibo #' + r.data.numero + '.');
+        A.toast('Pago de ' + A.dinero(d.monto) + ' registrado · factura #' + r.data.numero + '.');
         var cl = clientes.filter(function (x) { return x.id === d.cliente_id; })[0];
-        if (cl && cl.telefono && confirm('Pago registrado. ¿Enviar el recibo #' + r.data.numero + ' a ' + cl.nombre + ' por WhatsApp?')) A.enviarRecibo(r.data, cl);
+        if (cl && cl.telefono && confirm('Pago registrado. ¿Enviar la factura #' + r.data.numero + ' a ' + cl.nombre + ' por WhatsApp?')) A.enviarRecibo(r.data, cl);
         if (alGuardar) alGuardar();
       }
     });
@@ -242,11 +297,11 @@
       });
     }
     ui.list.innerHTML = '';
-    ui.list.appendChild(el('div', { class: 'row pay-row head' }, [el('span', { text: 'Cliente' }), el('span', { class: 'hide-m', text: 'Servicio' }), el('span', { class: 'hide-m', text: 'Método' }), el('span', { class: 'hide-m', text: 'Recibo' }), el('span', { text: 'Monto' })]));
+    ui.list.appendChild(el('div', { class: 'row pay-row head' }, [el('span', { text: 'Cliente' }), el('span', { class: 'hide-m', text: 'Servicio' }), el('span', { class: 'hide-m', text: 'Método' }), el('span', { class: 'hide-m', text: 'Factura' }), el('span', { text: 'Monto' })]));
     if (!pagosMes.length) ui.list.appendChild(el('div', { class: 'empty' }, [el('b', { text: 'Sin pagos este mes' }), 'Registra cada pago para saber cuánto has cobrado y quién te debe.']));
     lista.forEach(function (p) {
       var d = new Date(p.fecha + 'T12:00:00');
-      ui.list.appendChild(el('button', { class: 'row pay-row', type: 'button', onclick: function () { editarPago(p); } }, [
+      ui.list.appendChild(el('button', { class: 'row pay-row', type: 'button', title: 'Ver la factura', onclick: function () { A.verFactura(p, { editar: editarPago }); } }, [
         el('span', { class: 'who-cell' }, [
           el('span', { class: 'cb-fecha', title: A.fecha(p.fecha) }, [el('b', { text: d.getDate() }), el('span', { text: d.toLocaleDateString('es-US', { month: 'short' }).replace('.', '') })]),
           el('div', { style: 'min-width:0' }, [el('div', { class: 'name', text: A.nombreDe(p.clientes || {}) }),
@@ -264,12 +319,12 @@
   function editarPago(p) {
     A.modal({
       titulo: 'Pago de ' + A.nombreDe(p.clientes || {}) + ' · #' + p.numero,
-      extra: el('div', { style: 'margin-top:14px' }, [el('label', { class: 'muted', style: 'display:block;font-size:12px;margin-bottom:6px', text: 'Recibo para el cliente' }), A.botonesRecibo(p, p.clientes)]),
+      extra: el('div', { style: 'margin-top:14px' }, [el('label', { class: 'muted', style: 'display:block;font-size:12px;margin-bottom:6px', text: 'Factura para el cliente' }), A.botonesRecibo(p, p.clientes)]),
       campos: [
         { k: 'monto', label: 'Monto (USD)', type: 'number', required: true, min: '0.01', step: '0.01', value: p.monto },
         { k: 'fecha', label: 'Fecha', type: 'date', value: p.fecha },
         { k: 'metodo', label: 'Método', type: 'select', value: p.metodo, options: Object.keys(A.METODOS).map(function (k) { return [k, A.METODOS[k]]; }) },
-        { k: 'nota', label: 'Nota', value: p.nota, max: 500 }
+        { k: 'nota', label: 'Concepto (sale en la factura)', full: true, value: p.nota, max: 500 }
       ],
       guardar: async function (d, aviso) {
         var r = await sb.from('pagos').update(d).eq('id', p.id);
@@ -287,9 +342,9 @@
 
   function exportar() {
     A.csv('pagos-' + st.mes, [
-      ['Recibo', 'numero'], ['Fecha', 'fecha'], ['Cliente', function (p) { return A.nombreDe(p.clientes || {}); }],
+      ['Factura', 'numero'], ['Fecha', 'fecha'], ['Cliente', function (p) { return A.nombreDe(p.clientes || {}); }],
       ['Servicio', function (p) { return p.casos ? (p.casos.titulo || A.SERVICIOS[p.casos.servicio].label) : ''; }],
-      ['Método', function (p) { return A.METODOS[p.metodo] + (p.pasarela_id ? ' (Square)' : ''); }], ['Monto', 'monto'], ['Nota', 'nota']
+      ['Método', function (p) { return A.METODOS[p.metodo] + (p.pasarela_id ? ' (Square)' : ''); }], ['Monto', 'monto'], ['Concepto', 'nota']
     ], pagosMes);
   }
 })();

@@ -9,7 +9,7 @@
   var dinero = function (n) { return Number(n || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' }); };
   var fecha = function (v) { return new Date(v + 'T12:00:00').toLocaleDateString('es-US', { day: 'numeric', month: 'long', year: 'numeric' }); };
 
-  function noValido() { $('cargando').textContent = 'Este recibo no existe o el enlace está incompleto. Pide uno nuevo a AVA Multiservices.'; }
+  function noValido() { $('cargando').textContent = 'Esta factura no existe o el enlace está incompleto. Pide una nueva a AVA Multiservices.'; }
   if (!/^[0-9a-f-]{36}$/i.test(token)) { noValido(); return; }
 
   fetch(API + 'ver_recibo', { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_token: token }) })
@@ -17,16 +17,16 @@
     .then(function (d) {
       if (!d || !d.numero) { noValido(); return; }
       var saldo = d.precio != null ? Math.max(0, Number(d.precio) - Number(d.pagado || 0)) : null;
-      document.title = 'Recibo #' + d.numero + ' · AVA Multiservices';
+      d.concepto = d.nota || d.servicio || 'Servicios profesionales';
+      document.title = 'Factura #' + d.numero + ' · AVA Multiservices';
       $('num').textContent = '#' + d.numero;
       $('fecha').textContent = fecha(d.fecha);
       $('monto').textContent = dinero(d.monto);
       $('cliente').textContent = d.cliente;
       $('servicio').textContent = d.servicio || '';
-      $('r-serv').hidden = !d.servicio;
+      $('r-serv').hidden = !d.servicio || d.servicio === d.concepto;
       $('metodo').textContent = METODOS[d.metodo] || d.metodo;
-      $('nota').textContent = d.nota || '';
-      $('r-nota').hidden = !d.nota;
+      $('nota').textContent = d.concepto;
       $('saldo').textContent = saldo != null ? dinero(saldo) : '';
       $('r-saldo').hidden = saldo == null;
       $('tel').textContent = d.telefono ? ' · ' + d.telefono : '';
@@ -58,7 +58,7 @@
     if (logo) doc.addImage(logo, 'PNG', x, y - 20, 102, 48);
     else { doc.setFont('times', 'bold'); doc.setFontSize(26); doc.setTextColor.apply(doc, tinta); doc.text('AVA', x, y + 14); }
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor.apply(doc, gris);
-    doc.text('RECIBO DE PAGO', der, y - 6, { align: 'right' });
+    doc.text('FACTURA', der, y - 6, { align: 'right' });
     doc.setFont('times', 'normal'); doc.setFontSize(24); doc.setTextColor.apply(doc, tinta);
     doc.text('#' + d.numero, der, y + 18, { align: 'right' });
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor.apply(doc, gris);
@@ -72,7 +72,7 @@
     y += 22;
     doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor.apply(doc, acento); doc.text('PAGADO', W / 2, y, { align: 'center' });
     y += 34;
-    var filas = [['Cliente', d.cliente], ['Servicio', d.servicio], ['Método de pago', METODOS[d.metodo] || d.metodo], ['Concepto', d.nota]].filter(function (f) { return f[1]; });
+    var filas = [['Facturado a', d.cliente], ['Concepto', d.concepto], ['Servicio', d.servicio !== d.concepto ? d.servicio : null], ['Método de pago', METODOS[d.metodo] || d.metodo]].filter(function (f) { return f[1]; });
     if (saldo != null) filas.push(['Saldo pendiente de este servicio', dinero(saldo)]);
     filas.forEach(function (f) {
       doc.setDrawColor.apply(doc, linea); doc.line(x, y, der, y);
@@ -88,6 +88,6 @@
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor.apply(doc, gris);
     doc.text('AVA Multiservices · Dallas, Texas' + (d.telefono ? ' · ' + d.telefono : ''), W / 2, y, { align: 'center' });
     doc.text('Gracias por tu confianza.', W / 2, y + 15, { align: 'center' });
-    doc.save('Recibo-AVA-' + d.numero + '.pdf');
+    doc.save('Factura-AVA-' + d.numero + '.pdf');
   }
 })();
