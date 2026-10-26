@@ -9,6 +9,11 @@
   // Se lee antes de que Supabase procese el enlace del correo
   var hashInicial = location.hash;
   var esInvitacion = /type=invite/.test(hashInicial);
+  // Enlace de invitación enviado por WhatsApp: el código solo se usa cuando la persona guarda su contraseña
+  // (así la vista previa de WhatsApp no lo gasta antes de tiempo)
+  var codigoInv = (hashInicial.match(/[#&]invitacion=([^&]+)/) || [])[1] || null;
+  var enlaceVencido = /error_code=otp_expired|error=access_denied/.test(hashInicial);
+  if (codigoInv) { esInvitacion = true; history.replaceState(null, '', location.pathname); }
 
   var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
@@ -283,7 +288,11 @@
     if (modoClave) { pantallaClave(modoClave); return; }
     var res = await sb.auth.getSession();
     var session = res.data.session;
-    if (!session) { show('view-login'); return; }
+    if (!session) {
+      show('view-login');
+      if (enlaceVencido) { enlaceVencido = false; history.replaceState(null, '', location.pathname); msg($('login-msg'), 'Ese enlace ya se usó o venció. Pide uno nuevo a quien te invitó.'); }
+      return;
+    }
     var r = await sb.from('admins').select('user_id,email,nombre,rol,permisos,activo').eq('user_id', session.user.id).maybeSingle();
     if (r.error || !r.data || !r.data.activo) { show('view-denied'); return; }
     me = r.data;
@@ -331,6 +340,11 @@
     e.preventDefault();
     var pass = $('r-pass').value;
     if (pass.length < 10) { msg($('reset-msg'), 'Usa al menos 10 caracteres.'); return; }
+    if (codigoInv) {
+      var v = await sb.auth.verifyOtp({ token_hash: codigoInv, type: 'invite' });
+      if (v.error) { msg($('reset-msg'), 'Este enlace ya se usó o venció. Pide uno nuevo a quien te invitó.'); return; }
+      codigoInv = null;
+    }
     var res = await sb.auth.updateUser({ password: pass });
     if (res.error) { msg($('reset-msg'), 'No se pudo guardar. Pide un nuevo enlace e inténtalo otra vez.'); return; }
     modoClave = null;
