@@ -10,7 +10,7 @@
     supabaseKey: 'sb_publishable_Ri5Pcd0a9dphA8W5qJ2YvQ_veqm7I26',
     bucket: 'documentos',
     maxBytes: 15 * 1024 * 1024,
-    avisoEmail: 'anavargas@avamultiservices.com',
+    avisoEmail: 'info@avamultiservices.com',
     panelUrl: 'https://avamultiservices.com/admin/#/cuestionarios',
     whatsapp: '17868162430'
   };

@@ -11,7 +11,7 @@
     bucket: 'documentos',
     maxBytes: 10 * 1024 * 1024,
     maxArchivos: 5,
-    avisoEmail: 'anavargas@avamultiservices.com',
+    avisoEmail: 'info@avamultiservices.com',
     panelUrl: 'https://avamultiservices.com/admin/#/respuestas'
   };
 
