@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Recibo de pago · AVA Multiservices</title>
+  <title>Factura · AVA Multiservices</title>
   <meta name="robots" content="noindex, nofollow">
   <meta name="theme-color" content="#2a2a2a">
   <link rel="icon" href="../assets/img/favicon.svg" type="image/svg+xml">
@@ -34,21 +34,21 @@
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol></svg>
 <header class="p-top"><div class="container">
-  <a href="../" class="brand" aria-label="AVA Multiservices"><img class="brand-logo" src="../assets/img/logo.svg" alt="AVA" width="72" height="34"><span class="brand-divider"></span><span class="brand-sub">Recibo<br>de pago</span></a>
+  <a href="../" class="brand" aria-label="AVA Multiservices"><img class="brand-logo" src="../assets/img/logo.svg" alt="AVA" width="72" height="34"><span class="brand-divider"></span><span class="brand-sub">Factura<br>de pago</span></a>
 </div></header>
 <main class="p-main"><div class="container">
   <div class="p-card rc" id="card">
-    <div id="cargando" class="muted" style="text-align:center">Cargando recibo…</div>
+    <div id="cargando" class="muted" style="text-align:center">Cargando factura…</div>
     <div id="recibo" hidden>
       <div class="rc-top">
         <img src="../assets/img/logo.svg" alt="AVA Multiservices" width="85" height="40">
-        <div class="rc-n">Recibo<b id="num"></b><span id="fecha"></span></div>
+        <div class="rc-n">Factura<b id="num"></b><span id="fecha"></span></div>
       </div>
       <div class="rc-monto"><span>Monto recibido</span><b id="monto"></b><div class="rc-ok"><svg><use href="#i-check"/></svg>Pagado</div></div>
-      <div class="rc-row"><span>Cliente</span><b id="cliente"></b></div>
+      <div class="rc-row"><span>Facturado a</span><b id="cliente"></b></div>
+      <div class="rc-row"><span>Concepto</span><b id="nota"></b></div>
       <div class="rc-row" id="r-serv"><span>Servicio</span><b id="servicio"></b></div>
       <div class="rc-row"><span>Método de pago</span><b id="metodo"></b></div>
-      <div class="rc-row" id="r-nota"><span>Concepto</span><b id="nota"></b></div>
       <div class="rc-saldo" id="r-saldo"><span>Saldo pendiente de este servicio</span><b id="saldo"></b></div>
       <p class="rc-pie">AVA Multiservices · Dallas, Texas<span id="tel"></span><br>Gracias por tu confianza.</p>
     </div>
@@ -60,6 +60,6 @@
 </div></main>
 <footer class="p-foot">AVA Multiservices · Dallas, Texas</footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="../assets/js/recibo.js"></script>
+<script src="../assets/js/recibo.js?v=2"></script>
 </body>
 </html>

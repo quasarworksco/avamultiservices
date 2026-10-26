@@ -1095,3 +1095,32 @@ a.stat { display: block; color: inherit; animation: rise 0.5s var(--ease) both; 
 .fm-borrar { flex: none; color: var(--muted); }
 .fm-borrar:hover { color: #b4472f; border-color: #e6b8ab; }
 @media (max-width: 640px) { .undo { bottom: 84px; } .undo + .undo { bottom: 144px; } }
+
+/* ---------- Factura de un pago ---------- */
+.fac-card { width: min(620px, 100%); }
+.fac { padding: 18px 20px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.fac-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.fac-top img { height: 38px; width: auto; display: block; }
+.fac-de { margin-top: 6px; font-size: 12px; color: var(--muted); }
+.fac-n { text-align: right; font-size: 12.5px; color: var(--muted); }
+.fac-n span { display: block; }
+.fac-n span:first-child { font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--accent); }
+.fac-n b { display: block; font-family: var(--font-serif); font-size: 26px; font-weight: 500; color: var(--ink); line-height: 1.1; }
+.fac-para { padding: 14px 0; font-size: 13.5px; }
+.fac-para > span { display: block; font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.fac-para b { font-size: 15px; }
+.fac-tabla { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.fac-fila { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 11px 14px; border-top: 1px solid var(--line); font-size: 14px; }
+.fac-fila:first-child { border-top: 0; }
+.fac-fila small { display: block; margin-top: 2px; font-size: 12px; color: var(--muted); }
+.fac-fila > b { white-space: nowrap; }
+.fac-cab { background: var(--stone-50); font-size: 10.5px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); padding-top: 8px; padding-bottom: 8px; }
+.fac-total { background: var(--stone-50); font-weight: 700; align-items: center; }
+.fac-total b { font-family: var(--font-serif); font-size: 22px; font-weight: 600; }
+.fac-info { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+.fac-ok { padding: 3px 10px; border-radius: 999px; background: #e3f4e8; color: #15803d; font-weight: 700; }
+.fac-pie { margin-top: 14px; text-align: center; font-size: 12px; color: var(--muted); }
+.fac-acc { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 10px 24px 22px; }
+.fac-acc .btn { display: inline-flex; align-items: center; gap: 6px; }
+.fac-editar { margin-left: auto; }
+@media (max-width: 600px) { .fac { padding: 14px; } .fac-acc .btn { flex: 1 1 100%; justify-content: center; } .fac-editar { margin: 4px auto 0; } }
