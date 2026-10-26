@@ -80,6 +80,35 @@
     toastTimer = setTimeout(function () { t.remove(); }, 3200);
   }
 
+  /* Borrar con «Deshacer»: se espera 10 segundos antes de borrar de verdad.
+     ejecutar() borra; deshacer() vuelve a mostrar lo que se ocultó. Si se cierra la página, se borra en ese momento. */
+  var pendientes = [];
+  function conDeshacer(texto, ejecutar, deshacer, segundos) {
+    segundos = segundos || 10;
+    var p = { hecho: false };
+    p.correr = function () { if (p.hecho) return; p.hecho = true; clearInterval(p.int); pendientes.splice(pendientes.indexOf(p), 1); if (p.nodo) p.nodo.remove(); return ejecutar(); };
+    var cuenta = el('b', { class: 'ud-n', text: String(segundos) });
+    var barra = el('i');
+    p.nodo = el('div', { class: 'undo', role: 'status' }, [el('span', { class: 'ud-t', text: texto }), cuenta,
+      el('button', { type: 'button', text: 'Deshacer', onclick: function () {
+        if (p.hecho) return; p.hecho = true; clearInterval(p.int); pendientes.splice(pendientes.indexOf(p), 1); p.nodo.remove();
+        if (deshacer) deshacer(); toast('Listo, no se borró.');
+      } }), el('span', { class: 'ud-bar' }, [barra])]);
+    document.querySelectorAll('.undo').forEach(function (n, i, todos) { if (todos.length > 2) n.remove(); });
+    document.body.appendChild(p.nodo);
+    barra.style.transitionDuration = segundos + 's';
+    requestAnimationFrame(function () { requestAnimationFrame(function () { barra.style.width = '0%'; }); });
+    var fin = Date.now() + segundos * 1000;
+    p.int = setInterval(function () {
+      var r = Math.ceil((fin - Date.now()) / 1000);
+      if (r <= 0) { p.correr(); return; }
+      cuenta.textContent = String(r);
+    }, 250);
+    pendientes.push(p);
+    return p;
+  }
+  window.addEventListener('beforeunload', function () { pendientes.slice().forEach(function (p) { p.correr(); }); });
+
   /* Modal con formulario. campos: [{k, label, type, options, full, required, value, placeholder}] */
   function modal(o) {
     var form = el('form', { class: 'modal-card', novalidate: true });
@@ -410,7 +439,7 @@
   window.AVA = {
     sb: sb, el: el, icon: icon, fecha: fecha, hace: hace, dinero: dinero, iniciales: iniciales, nombreDe: nombreDe,
     hoyISO: hoyISO, soloDigitos: soloDigitos, msg: msg, toast: toast, modal: modal, drawer: drawer, cerrarDrawer: cerrarDrawer,
-    ventanaClave: ventanaClave, seccion: seccion, cabecera: cabecera, SERVICIOS: SERVICIOS, ORIGENES: ORIGENES, PERMISOS: PERMISOS, ROLES: ROLES, esFinal: esFinal,
+    ventanaClave: ventanaClave, conDeshacer: conDeshacer, seccion: seccion, cabecera: cabecera, SERVICIOS: SERVICIOS, ORIGENES: ORIGENES, PERMISOS: PERMISOS, ROLES: ROLES, esFinal: esFinal,
     serviciosVisibles: function () { return Object.keys(SERVICIOS).filter(function (k) { return !SERVICIOS[k].oculto; }); },
     puede: puede, yo: function () { return me; }, equipo: equipo, limpiarEquipo: function () { equipoCache = null; },
     clientesBasicos: clientesBasicos,

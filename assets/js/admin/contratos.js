@@ -158,10 +158,12 @@
       el('div', { class: 'ct-col' }, [el('div', { class: 'ct-col-h' }, [el('b', { text: 'Así lo verá el cliente' })]), prev])
     ]));
     if (id !== 'nueva') cont.appendChild(el('button', { class: 'link-btn danger', type: 'button', style: 'margin-top:16px', text: 'Eliminar plantilla', onclick: async function () {
-      if (!confirm('¿Eliminar la plantilla «' + p.titulo + '»? Los contratos que ya mandaste no se borran.')) return;
-      var d = await sb.from('contrato_plantillas').delete().eq('id', id);
-      if (d.error) { A.toast('No se pudo eliminar.', 'error'); return; }
-      sucio = false; A.toast('Plantilla eliminada.'); A.ir('contratos');
+      sucio = false; A.ir('contratos');
+      A.conDeshacer('Plantilla «' + p.titulo + '» eliminada', async function () {
+        var d = await sb.from('contrato_plantillas').delete().eq('id', id);
+        if (d.error) A.toast('No se pudo eliminar la plantilla.', 'error');
+        else if (location.hash === '#/contratos') A.ir('contratos');
+      }, function () { A.ir('contratos/' + id); });
     } }));
     pintar();
 

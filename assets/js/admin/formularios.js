@@ -128,7 +128,7 @@
         f.activo = this.checked; tarjeta.classList.toggle('off', !f.activo); A.toast(f.activo ? 'Formulario activo.' : 'Formulario apagado: el enlace ya no recibe respuestas.');
       } }), el('span')]);
       var tarjeta = el('div', { class: 'fm-card' + (f.activo ? '' : ' off'), style: 'animation-delay:' + Math.min(i * 50, 400) + 'ms', 'data-svc': f.servicio || 'otro' }, [
-        el('div', { class: 'fm-top' }, [el('span', { class: 'fm-ico' }, [A.icon('i-clipboard', 'icon-sm')]), el('div', { class: 'fm-tt' }, [el('b', { text: f.titulo }), el('span', { class: 'muted', text: preguntas + (preguntas === 1 ? ' pregunta' : ' preguntas') + (f.servicio && A.SERVICIOS[f.servicio] ? ' · abre caso de ' + A.SERVICIOS[f.servicio].corto : '') })]), sw]),
+        el('div', { class: 'fm-top' }, [el('span', { class: 'fm-ico' }, [A.icon('i-clipboard', 'icon-sm')]), el('div', { class: 'fm-tt' }, [el('b', { text: f.titulo }), el('span', { class: 'muted', text: preguntas + (preguntas === 1 ? ' pregunta' : ' preguntas') + (f.servicio && A.SERVICIOS[f.servicio] ? ' · abre caso de ' + A.SERVICIOS[f.servicio].corto : '') })]), el('button', { class: 'icon-btn sm fm-borrar', type: 'button', title: 'Eliminar formulario', 'aria-label': 'Eliminar «' + f.titulo + '»', onclick: function () { borrarFormulario(f, c.t, tarjeta); } }, [A.icon('i-trash', 'icon-sm')]), sw]),
         el('div', { class: 'fm-link' }, [el('code', { text: 'avamultiservices.com/f/?s=' + f.slug }),
           el('button', { class: 'mini-btn', type: 'button', text: 'Copiar', onclick: function () { copiar(urlDe(f)); } })]),
         el('div', { class: 'fm-num' }, [
@@ -142,6 +142,27 @@
         ])
       ]);
       box.appendChild(tarjeta);
+    });
+  }
+
+  // Eliminar un formulario con 10 segundos para deshacer. Sus respuestas y archivos también se borran
+  // (las que ya pasaron a la ficha de un cliente conservan allí sus documentos).
+  async function borrarFormulario(f, respuestas, tarjeta, alTerminar) {
+    if (respuestas && !confirm('«' + f.titulo + '» tiene ' + respuestas + (respuestas === 1 ? ' respuesta' : ' respuestas') + '. Si lo eliminas, también se borran sus respuestas y archivos (lo que ya pasaste a la ficha de un cliente se queda allí). ¿Eliminar?')) return;
+    if (tarjeta) tarjeta.hidden = true;
+    if (alTerminar) alTerminar();
+    A.conDeshacer('Formulario «' + f.titulo + '» eliminado', async function () {
+      var arch = await sb.from('formulario_respuestas').select('archivos').eq('formulario_id', f.id).limit(5000);
+      var paths = [];
+      (arch.data || []).forEach(function (x) { (x.archivos || []).forEach(function (a) { if (a.path) paths.push(a.path); }); });
+      for (var i = 0; i < paths.length; i += 100) await sb.storage.from(BUCKET).remove(paths.slice(i, i + 100));
+      var d = await sb.from('formularios').delete().eq('id', f.id);
+      if (d.error) { A.toast('No se pudo eliminar «' + f.titulo + '».', 'error'); if (tarjeta) tarjeta.hidden = false; return; }
+      if (tarjeta) tarjeta.remove();
+      A.contarSolicitudes();
+    }, function () {
+      if (tarjeta) tarjeta.hidden = false;
+      else A.ir('formularios/' + f.id);
     });
   }
 
@@ -257,7 +278,13 @@
       ]),
       el('div', { class: 'fm-link', style: 'margin-top:12px' }, [urlTxt,
         el('button', { class: 'mini-btn', type: 'button', text: 'Copiar enlace', onclick: function () { copiar(SITIO + '/f/?s=' + inp.slug.value); } }),
-        el('button', { class: 'mini-btn', type: 'button', text: 'Compartir por WhatsApp', onclick: function () { compartir({ slug: inp.slug.value }); } })])
+        el('button', { class: 'mini-btn', type: 'button', text: 'Compartir por WhatsApp', onclick: function () { compartir({ slug: inp.slug.value }); } })]),
+      el('button', { class: 'link-btn danger', type: 'button', style: 'margin-top:14px', text: 'Eliminar formulario', onclick: async function () {
+        var n = await sb.from('formulario_respuestas').select('id', { count: 'exact', head: true }).eq('formulario_id', f.id);
+        if (!(n.count || 0) && !confirm('¿Eliminar «' + f.titulo + '»? Tendrás 10 segundos para deshacer.')) return;
+        sucio = false;
+        borrarFormulario(f, n.count || 0, null, function () { A.ir('formularios'); });
+      } })
     ]);
 
     var listaCampos = el('div', { class: 'fm-campos' });
