@@ -68,6 +68,8 @@ Deno.serve(async (req) => {
   // Si el correo no salió (p. ej. falla el servidor de correo), se crea la invitación igual
   // y se devuelve el enlace para que la administradora lo envíe por WhatsApp
   const { data: link, error: e4 } = await admin.auth.admin.generateLink({ type: 'invite', email, options: { redirectTo: REDIRECT } });
-  if (!e4 && link?.properties?.action_link) return json(req, 200, { ok: true, estado: 'enlace', enlace: link.properties.action_link, motivo: error.message });
+  // El enlace lleva solo el código: el panel lo usa cuando la persona guarda su contraseña,
+  // así la vista previa de WhatsApp no lo gasta al abrirlo
+  if (!e4 && link?.properties?.hashed_token) return json(req, 200, { ok: true, estado: 'enlace', enlace: REDIRECT + '#invitacion=' + link.properties.hashed_token, motivo: error.message });
   return json(req, 500, { error: 'No se pudo enviar la invitación' });
 });
