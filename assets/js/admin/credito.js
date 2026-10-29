@@ -66,6 +66,7 @@
     var archivo = el('input', { type: 'file', accept: 'application/pdf', hidden: true });
     archivo.addEventListener('change', function () { var f = archivo.files[0]; archivo.value = ''; if (f) importar(k, f, recargar); });
     caja.appendChild(el('div', { class: 'card-h' }, [el('h3', { text: 'Reporte y cartas de disputa' }), el('div', { style: 'display:flex;gap:6px' }, [
+      el('a', { class: 'mini-btn', href: '#/ficha/' + k.id, text: 'Ficha del caso', title: 'Ficha de observaciones (uso interno)' }),
       el('button', { class: 'mini-btn', type: 'button', text: 'Plantillas', title: 'Ver y editar los modelos de cartas', onclick: function () { plantillas(); } }),
       el('button', { class: 'mini-btn', type: 'button', text: rep ? 'Importar nuevo reporte' : 'Importar reporte', onclick: function () { archivo.click(); } })
     ])]));
