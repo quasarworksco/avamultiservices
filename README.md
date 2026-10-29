@@ -20,7 +20,7 @@ Dominio: https://avamultiservices.com — Diseñado por [DGP Global Group](https
 
 ## Formulario
 
-Envía con [FormSubmit](https://formsubmit.co) a `anavargasdoria@gmail.com` y redirige a `gracias.html`.
+Envía con [FormSubmit](https://formsubmit.co) a `info@avamultiservices.com` y redirige a `gracias.html`.
 El **primer envío** genera un correo de activación que la clienta debe confirmar.
 Después de activarlo, se puede reemplazar el correo del `action` por el alias aleatorio que entrega FormSubmit para ocultarlo del código.
 
