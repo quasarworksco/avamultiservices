@@ -1,0 +1,52 @@
+{client_first_name} {client_last_name}
+{client_address}
+{bdate}    {ss_number}
+
+DATE: {curr_date}
+
+{bureau_name}
+{bureau_address}
+
+**Subject: Formal Request to Correct Personal Information under 15 U.S.C. § 1681i – FCRA**
+
+Dear Representatives,
+
+I, {client_first_name} {client_last_name}, am formally requesting the correction of inaccurate or outdated personal information in your records as required under the Fair Credit Reporting Act (15 U.S.C. §§ 1681e and 1681i).
+
+**SECTION 1: PERSONAL INFORMATION TO BE REMOVED**
+
+After reviewing my credit file, I request the removal of the following incorrect or outdated personal details:
+
+{dispute_item_and_explanation}
+
+**SECTION 2: ACCURATE INFORMATION TO BE REFLECTED**
+
+Please ensure that only the following verified personal information is reflected in my credit report:
+
+Full Legal Name: {client_first_name} {client_last_name}
+{bdate}
+{ss_number}
+Current Address: {client_address}
+
+**LEGAL BASIS**
+
+- § 1681e(b): Requires credit bureaus to maintain accurate and up-to-date records.
+- § 1681i(a)(1): Requires consumer reporting agencies to reinvestigate disputed information within 30 days.
+- § 1681c(f): Mandates accuracy in reporting names, dates of birth, and address history.
+
+> "Whenever a consumer reporting agency is notified by a consumer that information is inaccurate, the agency shall conduct a reasonable reinvestigation to determine whether the disputed information is inaccurate." — FCRA § 1681i(a)(1)(A)
+
+**ENCLOSURES**
+
+- A copy of my valid government-issued ID
+- A copy of my Social Security Card
+- A recent proof of address (e.g., utility bill, lease, bank statement)
+
+**FINAL REQUEST:**
+
+Once the inaccurate items are removed and the correct information is reflected, I kindly request an updated copy of my credit report showing the corrections. Thank you for your timely attention to this matter. Should you require any further information, feel free to contact me using the information listed above.
+
+Sincerely,
+
+{client_signature}
+{client_first_name} {client_last_name}

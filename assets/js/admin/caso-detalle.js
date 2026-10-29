@@ -63,7 +63,9 @@
         sb.from('puntajes').select('*').eq('caso_id', k.id).order('fecha'),
         sb.from('disputas').select('*').eq('caso_id', k.id).order('ronda').order('fecha_envio')
       ]);
-      cuerpo.push(contrato(k, recargar), puntajes(k, datos[0].data || [], recargar), disputas(k, datos[1].data || [], recargar));
+      cuerpo.push(contrato(k, recargar), puntajes(k, datos[0].data || [], recargar));
+      if (A.seccionCredito) cuerpo.push(await A.seccionCredito(k, recargar));
+      cuerpo.push(disputas(k, datos[1].data || [], recargar));
     }
     if (k.servicio === 'taxes') cuerpo.push(taxes(k, recargar));
     if (CAMPOS[k.servicio]) cuerpo.splice(2, 0, datosServicio(k, recargar));
