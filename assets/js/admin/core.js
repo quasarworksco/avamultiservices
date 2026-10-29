@@ -28,6 +28,7 @@
       var v = attrs[k];
       if (v == null || v === false) return;
       if (k === 'text') n.textContent = v;
+      else if (k === 'html') n.innerHTML = v; // solo con HTML ya escapado (AVA_FORMATO)
       else if (k === 'class') n.className = v;
       else if (k.slice(0, 2) === 'on' && typeof v === 'function') n.addEventListener(k.slice(2), v);
       else if (k === 'value') n.value = v;

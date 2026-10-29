@@ -1,0 +1,39 @@
+{client_first_name} {client_last_name}
+{client_address}
+{bdate}    {ss_number}
+
+DATE: {curr_date}
+
+{bureau_name}
+{bureau_address}
+
+**Subject: Dispute of Unauthorized Credit Inquiries**
+
+To Whom It May Concern,
+
+I am writing to dispute several unauthorized inquiries on my credit report, in accordance with my rights under the Fair Credit Reporting Act (FCRA), specifically sections 611 (15 U.S.C. § 1681i), 609 (15 U.S.C. § 1681g), and 604 (15 U.S.C. § 1681b).
+
+After reviewing my recent credit report, I have identified the following inquiries that I do not recognize or authorize:
+
+**Disputed Inquiries:**
+
+{dispute_item_and_explanation}
+
+**Basis for Dispute**
+
+Section 611 (15 U.S.C. § 1681i) states that I have the right to dispute any inaccurate or incomplete information on my credit report. I request that you investigate these unauthorized inquiries and remove them from my credit report.
+
+Section 609 (15 U.S.C. § 1681g) grants me the right to access all information in my file, including the inquiries made. After reviewing this information, I firmly believe that the inquiries listed above should not be on my report.
+
+Section 604 (15 U.S.C. § 1681b) defines the permissible purposes for obtaining credit reports. I did not give my consent for these inquiries to be made, and I cannot find a permissible purpose under this section that justifies their presence on my report.
+
+**Request**
+
+I request an immediate investigation into the listed inquiries. If it is determined that these inquiries were made without my authorization or in error, I ask that they be removed from my credit report. I also request that you provide me with an updated copy of my credit report once the necessary corrections have been made.
+
+Enclosed is a copy of my identification to verify my identity. I appreciate your prompt attention to this matter. Please confirm receipt of this letter and keep me informed of the progress of your investigation.
+
+Sincerely,
+
+{client_signature}
+{client_first_name} {client_last_name}
