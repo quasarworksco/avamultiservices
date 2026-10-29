@@ -78,6 +78,7 @@
       meta: s.corto + ' · ' + A.nombreDe(k.clientes || {}),
       cuerpo: cuerpo,
       pie: [el('div', { class: 'row2' }, [
+        k.servicio === 'credito' ? el('a', { class: 'btn btn-ghost', href: '#/ficha/' + k.id, title: 'Ficha de observaciones del caso (uso interno)' }, [A.icon('i-file'), el('span', { text: 'Ficha del caso' })]) : null,
         el('a', { class: 'btn btn-ghost', href: '#/clientes/' + k.cliente_id }, [A.icon('i-users'), el('span', { text: 'Ficha del cliente' })]),
         el('button', { class: 'btn btn-dark', type: 'button', onclick: function () { A.editarCaso(k, null, recargar); } }, [A.icon('i-edit'), el('span', { text: 'Editar caso' })])
       ])],
