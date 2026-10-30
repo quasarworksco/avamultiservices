@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="../assets/css/styles.css?v=20261023a">
-  <link rel="stylesheet" href="../assets/css/publico.css?v=20261023a">
+  <link rel="stylesheet" href="../assets/css/publico.css?v=20261030a">
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></symbol></svg>
@@ -21,9 +21,26 @@
 <main class="p-main"><div class="container"><div class="p-wrap">
   <div class="p-head"><span class="kicker" id="para">Contrato</span><h1 id="titulo">Cargando…</h1></div>
   <div class="p-card" id="card">
+    <div id="datos" hidden>
+      <div class="p-step">1 · Tus datos</div>
+      <p style="margin:-4px 0 14px;font-size:14px;color:var(--muted)">Se colocan solos en el contrato. Revísalos antes de firmar.</p>
+      <div class="p-grid">
+        <div class="field full"><label for="d-nombre">Nombre completo *</label><input class="input" id="d-nombre" autocomplete="name" maxlength="120"></div>
+        <div class="field"><label for="d-telefono">Teléfono *</label><input class="input" id="d-telefono" type="tel" autocomplete="tel" maxlength="20" placeholder="(214) 555-0123"></div>
+        <div class="field"><label for="d-email" id="l-email">Correo</label><input class="input" id="d-email" type="email" autocomplete="email" maxlength="200"></div>
+        <div class="field full" data-var="direccion"><label for="d-direccion">Dirección *</label><input class="input" id="d-direccion" autocomplete="street-address" maxlength="300" placeholder="Calle, número y apartamento"></div>
+        <div class="field" data-var="ciudad_estado_zip"><label for="d-ciudad">Ciudad *</label><input class="input" id="d-ciudad" autocomplete="address-level2" maxlength="120"></div>
+        <div class="field" data-var="ciudad_estado_zip" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label for="d-estado">Estado *</label><input class="input" id="d-estado" autocomplete="address-level1" maxlength="40" value="TX"></div>
+          <div><label for="d-zip">ZIP *</label><input class="input" id="d-zip" autocomplete="postal-code" inputmode="numeric" maxlength="10"></div>
+        </div>
+        <div class="field" data-var="fecha_nacimiento"><label for="d-nac">Fecha de nacimiento *</label><input class="input" id="d-nac" type="date" autocomplete="bday" max="2015-12-31"></div>
+      </div>
+      <div class="p-step" style="margin-top:26px">2 · Lee el contrato</div>
+    </div>
     <div class="contrato" id="texto"></div>
     <div id="firmar" hidden>
-      <div class="p-step" style="margin-top:22px">Tu firma</div>
+      <div class="p-step" style="margin-top:22px" id="paso-firma">Tu firma</div>
       <div class="firma-box"><canvas id="lienzo" aria-label="Dibuja tu firma"></canvas><span class="hint" id="hint">Firma aquí con tu dedo o el mouse</span></div>
       <div style="display:flex;justify-content:flex-end;margin-top:6px"><button type="button" class="link-btn" id="borrar">Borrar firma</button></div>
       <div class="field" style="margin-top:10px"><label for="nombre">Escribe tu nombre completo</label><input class="input" id="nombre" autocomplete="name" maxlength="120"></div>
@@ -41,6 +58,6 @@
 </div></div></main>
 <footer class="p-foot">AVA Multiservices · Dallas, Texas</footer>
 <script src="../assets/js/formato.js?v=20261023a"></script>
-<script src="../assets/js/firmar.js?v=20261023a"></script>
+<script src="../assets/js/firmar.js?v=20261030a"></script>
 </body>
 </html>
