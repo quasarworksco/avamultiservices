@@ -55,6 +55,14 @@
         if (!(d.monto >= 1)) { A.msg(aviso, 'Escribe un monto de al menos $1.'); return false; }
         d.metodos = Array.prototype.map.call(checks.querySelectorAll('input:checked'), function (c) { return c.value; });
         if (!d.metodos.length) { A.msg(aviso, 'Elige al menos una forma de pago.'); return false; }
+        // Reparación de crédito (CROA): no se cobra antes de hacer el trabajo. Debe haber al menos una ronda de cartas enviada
+        if (d.caso_id) {
+          var kc = await sb.from('casos').select('servicio').eq('id', d.caso_id).maybeSingle();
+          if (kc.data && kc.data.servicio === 'credito') {
+            var env = await sb.from('cartas_disputa').select('id', { count: 'exact', head: true }).eq('caso_id', d.caso_id).eq('estado', 'enviada');
+            if (!env.count) { A.msg(aviso, 'En reparación de crédito no se puede cobrar antes de hacer el trabajo (ley CROA). Envía y marca como enviada la primera ronda de cartas de este caso y después crea el cobro.'); return false; }
+          }
+        }
         var r = await sb.from('facturas').insert(d).select('*, clientes(id,nombre,apellidos,telefono,email)').single();
         if (r.error) { A.msg(aviso, 'No se pudo crear la factura.'); return false; }
         var f = r.data;
