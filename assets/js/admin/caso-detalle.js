@@ -129,7 +129,9 @@
       filas,
       el('form', { class: 'inline-form', style: 'margin-top:10px', onsubmit: function (e) {
         e.preventDefault();
-        var t = nuevo.value.trim(); if (!t) return;
+        var t = nuevo.value.trim();
+        if (!t) { A.toast('Escribe en la casilla el nombre del documento (por ejemplo «Licencia de conducir») y después toca Agregar.', 'error'); nuevo.focus(); return; }
+        if (lista.some(function (x) { return x.d.toLowerCase() === t.toLowerCase(); })) { A.toast('«' + t + '» ya está en la lista.', 'error'); nuevo.select(); return; }
         guardar(lista.concat([{ d: t, e: 'falta' }]), 'Documento agregado.');
       } }, [nuevo, el('button', { class: 'btn btn-dark btn-sm', type: 'submit', text: 'Agregar' })])
     ], pedir);
@@ -270,7 +272,7 @@
     hijos.push(el('form', { class: 'inline-form', onsubmit: async function (e) {
       e.preventDefault();
       var d = { caso_id: k.id, fecha: f.fecha.value || A.hoyISO() }, alguno = false, malo = false;
-      Object.keys(BUROS).forEach(function (b) { var v = f[b].value.trim(); if (v) { var n = Number(v); if (n < 300 || n > 850) malo = true; d[b] = n; alguno = true; } });
+      Object.keys(BUROS).forEach(function (b) { var v = f[b].value.trim(); if (v) { var n = Number(v); if (!(n >= 300 && n <= 850)) malo = true; d[b] = n; alguno = true; } });
       if (!alguno || malo) { A.toast('Escribe puntajes entre 300 y 850.', 'error'); return; }
       var ins = await sb.from('puntajes').insert(d);
       if (ins.error) { A.toast('No se pudo guardar.', 'error'); return; }
@@ -328,7 +330,7 @@
     hijos.push(el('form', { class: 'inline-form disp-form', onsubmit: async function (e) {
       e.preventDefault();
       var ac = f.acreedor.value.trim();
-      if (!ac) { f.acreedor.focus(); return; }
+      if (!ac) { A.toast('Escribe el acreedor o la cuenta que disputaste y después toca Agregar.', 'error'); f.acreedor.focus(); return; }
       var buros = f.buro.value === 'todos' ? Object.keys(BUROS) : [f.buro.value];
       var ins = await sb.from('disputas').insert(buros.map(function (b) { return { caso_id: k.id, ronda: Number(f.ronda.value), buro: b, acreedor: ac, tipo: f.tipo.value, fecha_envio: f.fecha.value || A.hoyISO() }; }));
       if (ins.error) { A.toast('No se pudo guardar la disputa.', 'error'); return; }
@@ -389,7 +391,7 @@
     var fecha = el('input', { class: 'input sm', type: 'date', 'aria-label': 'Fecha' });
     var form = A.puede('tareas') ? el('form', { class: 'inline-form', onsubmit: async function (e) {
       e.preventDefault();
-      if (!titulo.value.trim()) return;
+      if (!titulo.value.trim()) { A.toast('Escribe primero la tarea y después toca Agregar.', 'error'); titulo.focus(); return; }
       var ins = await sb.from('tareas').insert({ titulo: titulo.value.trim(), fecha: fecha.value || null, caso_id: k.id, cliente_id: k.cliente_id, asignada_a: k.responsable || A.yo().user_id });
       if (ins.error) { A.toast('No se pudo crear la tarea.', 'error'); return; }
       A.toast('Tarea creada.'); recargar();
