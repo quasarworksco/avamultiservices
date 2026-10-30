@@ -191,7 +191,7 @@
     var nueva = el('textarea', { class: 'input', rows: 3, maxlength: 4000, placeholder: 'Escribe una observación del caso…' });
     cont.appendChild(seccion('07', 'Notas y observaciones del caso', [nueva,
       el('button', { class: 'btn btn-dark btn-sm', type: 'button', style: 'margin:8px 0 14px', onclick: function () {
-        var t = nueva.value.trim(); if (!t) { nueva.focus(); return; }
+        var t = nueva.value.trim(); if (!t) { A.toast('Escribe la nota en la casilla y después toca Agregar nota.', 'error'); nueva.focus(); return; }
         var yo = A.yo() || {};
         fd.notas.push({ fecha: new Date().toISOString(), autor: yo.nombre || yo.email || 'Equipo', texto: t });
         nueva.value = ''; guardar(); pintarNotas();
@@ -225,12 +225,12 @@
     });
     // Registrar puntajes nuevos (incluye Innovis)
     var f = { fecha: el('input', { class: 'input sm', type: 'date', value: A.hoyISO(), 'aria-label': 'Fecha' }) };
-    BUROS4.forEach(function (b) { f[b[0]] = el('input', { class: 'input sm', type: 'number', min: '300', max: '900', placeholder: b[1], 'aria-label': b[1] }); });
+    BUROS4.forEach(function (b) { f[b[0]] = el('input', { class: 'input sm', type: 'number', min: '300', max: b[0] === 'innovis' ? '900' : '850', placeholder: b[1], 'aria-label': b[1] }); });
     var form = el('form', { class: 'inline-form fi-pts-form', onsubmit: async function (e) {
       e.preventDefault();
       var d = { caso_id: ctx.k.id, fecha: f.fecha.value || A.hoyISO() }, alguno = false, malo = false;
-      BUROS4.forEach(function (b) { var v = f[b[0]].value.trim(); if (v) { var n = Number(v); if (n < 300 || n > 900) malo = true; d[b[0]] = n; alguno = true; } });
-      if (!alguno || malo) { A.toast('Escribe puntajes entre 300 y 900.', 'error'); return; }
+      BUROS4.forEach(function (b) { var v = f[b[0]].value.trim(); if (v) { var n = Number(v); if (!(n >= 300 && n <= (b[0] === 'innovis' ? 900 : 850))) malo = true; d[b[0]] = n; alguno = true; } });
+      if (!alguno || malo) { A.toast('Escribe puntajes entre 300 y 850 (Innovis hasta 900).', 'error'); return; }
       var ins = await sb.from('puntajes').insert(d);
       if (ins.error) { A.toast('No se pudieron guardar los puntajes.', 'error'); return; }
       A.toast('Puntajes registrados.'); A.ir('ficha/' + ctx.k.id);
