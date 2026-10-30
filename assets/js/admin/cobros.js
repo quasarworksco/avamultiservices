@@ -89,12 +89,23 @@
       { k: 'metodo', label: 'Método', type: 'select', value: 'zelle', options: Object.keys(A.METODOS).map(function (k) { return [k, A.METODOS[k]]; }) },
       { k: 'nota', label: 'Concepto (sale en la factura)', full: true, max: 500, placeholder: 'Ej.: Declaración de taxes 2025 · cuota 2 de 5' }
     ];
+    // Si paga por cuotas, se dejan programados los siguientes cobros
+    var cuotas = A.campoCuotas('Paga en cuotas: programar los siguientes cobros');
     var m = A.modal({
-      titulo: 'Registrar pago', ok: 'Registrar', campos: campos,
+      titulo: 'Registrar pago', ok: 'Registrar', campos: campos, extra: cuotas.nodo,
       guardar: async function (d, aviso) {
         if (!(d.monto > 0)) { A.msg(aviso, 'Escribe un monto mayor que cero.'); return false; }
+        var plan = cuotas.activo() ? cuotas.plan(d.fecha || A.hoyISO(), d.monto) : [];
+        if (plan.length && plan[0].fecha <= A.hoyISO()) { A.msg(aviso, 'La próxima cuota quedaría para hoy o antes. Revisa la fecha del pago o cada cuánto paga.'); return false; }
         var r = await sb.from('pagos').insert(d).select('id,numero,token,monto,cliente_id').single();
         if (r.error) { A.msg(aviso, 'No se pudo registrar el pago.'); return false; }
+        if (plan.length) {
+          var caso = m.inputs.caso_id.value ? m.inputs.caso_id.options[m.inputs.caso_id.selectedIndex].text.replace(/ \(.*\)$/, '') : '';
+          var concepto = (d.nota || caso || 'Pago').replace(/\s*·?\s*cuota\s+\d+\s+de\s+\d+\s*$/i, '');
+          var okc = await A.programarCuotas({ cliente_id: d.cliente_id, caso_id: d.caso_id, concepto: concepto, metodos: await A.formasCuota() }, plan, 2, plan.length + 1);
+          if (okc) A.toast(plan.length === 1 ? 'Próxima cuota programada para el ' + A.fecha(plan[0].fecha) + '.' : plan.length + ' cuotas programadas, la primera el ' + A.fecha(plan[0].fecha) + '.');
+          else A.toast('El pago se registró, pero no se pudieron programar las cuotas.', 'error');
+        }
         A.toast('Pago de ' + A.dinero(d.monto) + ' registrado · factura #' + r.data.numero + '.');
         var cl = clientes.filter(function (x) { return x.id === d.cliente_id; })[0];
         if (cl && cl.telefono && confirm('Pago registrado. ¿Enviar la factura #' + r.data.numero + ' a ' + cl.nombre + ' por WhatsApp?')) A.enviarRecibo(r.data, cl);
@@ -110,6 +121,9 @@
     }
     casosDe(m.inputs.cliente_id.value, base.caso_id);
     m.inputs.cliente_id.addEventListener('change', function () { casosDe(this.value); });
+    cuotas.alCambiar = function () { cuotas.pintar(m.inputs.fecha.value || A.hoyISO(), m.inputs.monto.value); };
+    m.inputs.monto.addEventListener('input', cuotas.alCambiar);
+    m.inputs.fecha.addEventListener('input', cuotas.alCambiar);
   };
 
   /* Colores e íconos de cada método de pago */

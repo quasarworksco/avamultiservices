@@ -74,7 +74,8 @@
         vars.length ? el('div', { class: 'chips' }, vars.slice(0, 8).map(function (v) { return el('span', { class: 'chip-s', text: '{' + v + '}' }); })) : el('p', { class: 'muted', style: 'font-size:12.5px', text: 'Sin datos automáticos del cliente.' }),
         el('div', { class: 'fm-acc' }, [
           el('a', { class: 'btn btn-dark btn-sm', href: '#/contratos/' + p.id }, [A.icon('i-edit', 'icon-sm'), el('span', { text: 'Editar' })]),
-          el('button', { class: 'btn btn-ghost btn-sm', type: 'button', onclick: function () { vistaPrevia(p.titulo, p.contenido); } }, [A.icon('i-eye', 'icon-sm'), el('span', { text: 'Ver' })])
+          el('button', { class: 'btn btn-ghost btn-sm', type: 'button', onclick: function () { vistaPrevia(p.titulo, p.contenido); } }, [A.icon('i-eye', 'icon-sm'), el('span', { text: 'Ver' })]),
+          el('button', { class: 'btn btn-ghost btn-sm', type: 'button', title: 'Enlace para que cualquier cliente llene sus datos y firme', onclick: function () { compartir(p); } }, [A.icon('i-copy', 'icon-sm'), el('span', { text: 'Copiar enlace' })])
         ])
       ]));
     });
@@ -90,6 +91,38 @@
         el('span', { class: 'muted hide-m', text: A.fecha(k.enviado_at || k.created_at) }),
         el('span', null, [el('span', { class: 'pill ' + PILL[k.estado], text: EST[k.estado] })])
       ]));
+    });
+  }
+
+  /* ---------- Enlace para compartir ---------- */
+  // Un solo enlace por plantilla: el cliente llena sus datos, lo firma y queda en su ficha
+  A.urlContratoPublico = function (p) { return BASE + 'firmar/?p=' + p.token; };
+  function copiar(url, texto) {
+    var ok = function () { A.toast(texto || 'Enlace copiado. Pégalo en WhatsApp, Instagram o donde quieras.'); };
+    var mal = function () { window.prompt('Copia este enlace:', url); };
+    if (navigator.clipboard) navigator.clipboard.writeText(url).then(ok, mal); else mal();
+  }
+  function faltanValores(p) {
+    var v = p.valores || {};
+    return A.variablesContrato(p.contenido).filter(function (k) { return k in PREGUNTAR && !String(v[k] || '').trim(); });
+  }
+  function compartir(p) {
+    if (!p.activo) { A.toast('Esta plantilla está oculta. Entra a Editar y marca «Disponible para mandar a firmar».', 'error'); return; }
+    if (p.enlace_activo === false) { A.toast('El enlace de esta plantilla está apagado. Actívalo en Editar.', 'error'); return; }
+    var falta = faltanValores(p);
+    if (!falta.length) { copiar(A.urlContratoPublico(p)); return; }
+    // Lo que normalmente se pregunta al crear el contrato se deja fijo para el enlace
+    A.modal({
+      titulo: 'Antes de compartir', ok: 'Guardar y copiar enlace',
+      extra: el('p', { class: 'muted', style: 'font-size:13px;margin-top:10px', text: 'Esto queda escrito igual para todos los que firmen con el enlace. Lo puedes cambiar después en Editar.' }),
+      campos: falta.map(function (k) { return { k: k, label: PREGUNTAR[k], full: true, max: 500, required: true, type: 'textarea', value: (p.valores || {})[k] || '' }; }),
+      guardar: async function (d, aviso) {
+        var valores = Object.assign({}, p.valores || {}, d);
+        var r = await sb.from('contrato_plantillas').update({ valores: valores }).eq('id', p.id);
+        if (r.error) { A.msg(aviso, 'No se pudo guardar.'); return false; }
+        p.valores = valores;
+        copiar(A.urlContratoPublico(p));
+      }
     });
   }
 
@@ -116,7 +149,7 @@
     ta.value = p.contenido;
     var prev = el('div', { class: 'fx-doc ct-prev' });
     var cuenta = el('span', { class: 'muted', style: 'font-size:12px' });
-    function pintar() { prev.innerHTML = window.AVA_FORMATO(ta.value); cuenta.textContent = ta.value.length.toLocaleString('es-US') + ' / 30,000 caracteres'; }
+    function pintar() { prev.innerHTML = window.AVA_FORMATO(ta.value); cuenta.textContent = ta.value.length.toLocaleString('es-US') + ' / 30,000 caracteres'; if (typeof pintarValores === 'function') pintarValores(); }
     var t = null;
     ta.addEventListener('input', function () { sucio = true; clearTimeout(t); t = setTimeout(pintar, 200); });
     [titulo, serv, activo].forEach(function (x) { x.addEventListener('input', function () { sucio = true; }); x.addEventListener('change', function () { sucio = true; }); });
@@ -152,6 +185,38 @@
       el('div', { class: 'field' }, [el('label', { text: 'Servicio' }), serv]),
       el('label', { class: 'field', style: 'flex-direction:row;align-items:center;gap:10px;margin-top:22px' }, [activo, el('span', { text: 'Disponible para mandar a firmar' })])
     ])]));
+    // Enlace para compartir: lo que se pregunta queda fijo y se puede apagar
+    var valores = Object.assign({}, p.valores || {});
+    var enlaceOn = el('input', { type: 'checkbox', checked: p.enlace_activo === false ? null : true });
+    var camposValor = {};
+    var filas = Object.keys(PREGUNTAR).map(function (k) {
+      var inp = el('textarea', { class: 'input', rows: 2, maxlength: 500, placeholder: k === 'monto_consulta' ? 'Por ejemplo: $99' : k === 'esquema_pago' ? 'Por ejemplo: $300 cada 3 semanas, al terminar cada ronda' : '' });
+      inp.value = valores[k] || '';
+      inp.addEventListener('input', function () { sucio = true; });
+      camposValor[k] = inp;
+      return el('div', { class: 'field full', 'data-k': k }, [el('label', { text: PREGUNTAR[k] }), inp]);
+    });
+    var urlBox = id === 'nueva' ? el('p', { class: 'muted', style: 'font-size:13px', text: 'Guarda la plantilla para tener su enlace.' })
+      : el('div', { class: 'ct-link' }, [el('code', { text: A.urlContratoPublico(p) }),
+        el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: function () {
+          if (sucio) { A.toast('Guarda los cambios primero.', 'error'); return; }
+          if (!enlaceOn.checked) { A.toast('Activa el enlace y guarda.', 'error'); return; }
+          copiar(A.urlContratoPublico(p));
+        } }, [A.icon('i-copy', 'icon-sm'), el('span', { text: 'Copiar enlace' })])]);
+    var sinPreguntas = el('p', { class: 'muted', style: 'font-size:13px', text: 'Este contrato no tiene datos para preguntar: el cliente solo llena los suyos.' });
+    function pintarValores() {
+      var usadas = A.variablesContrato(ta.value), alguna = false;
+      filas.forEach(function (f) { var u = usadas.indexOf(f.getAttribute('data-k')) !== -1; f.hidden = !u; alguna = alguna || u; });
+      sinPreguntas.hidden = alguna;
+    }
+    enlaceOn.addEventListener('change', function () { sucio = true; });
+    cont.appendChild(el('div', { class: 'card', style: 'margin-top:16px' }, [
+      el('div', { class: 'ct-col-h' }, [el('b', { text: 'Enlace para compartir' })]),
+      el('p', { class: 'muted', style: 'font-size:13px;margin:4px 0 12px', text: 'Mándalo por WhatsApp o redes: el cliente escribe sus datos, firma desde el celular y queda como cliente con su caso, el contrato firmado y una tarea para ti.' }),
+      urlBox,
+      el('label', { class: 'field', style: 'flex-direction:row;align-items:center;gap:10px;margin:12px 0' }, [enlaceOn, el('span', { text: 'Enlace activo (si lo apagas, el enlace deja de funcionar)' })]),
+      el('div', { class: 'grid2' }, filas.concat([sinPreguntas]))
+    ]));
     cont.appendChild(ayuda);
     cont.appendChild(el('div', { class: 'ct-edit' }, [
       el('div', { class: 'ct-col' }, [el('div', { class: 'ct-col-h' }, [el('b', { text: 'Texto' }), cuenta]), ta]),
@@ -168,7 +233,8 @@
     pintar();
 
     async function guardar() {
-      var d = { titulo: titulo.value.trim(), servicio: serv.value || null, contenido: ta.value, activo: activo.checked, updated_at: new Date().toISOString() };
+      Object.keys(camposValor).forEach(function (k) { var v = camposValor[k].value.trim(); if (v) valores[k] = v; else delete valores[k]; });
+      var d = { titulo: titulo.value.trim(), servicio: serv.value || null, contenido: ta.value, activo: activo.checked, valores: valores, enlace_activo: enlaceOn.checked, updated_at: new Date().toISOString() };
       if (!d.titulo) { A.toast('Ponle un título al contrato.', 'error'); titulo.focus(); return; }
       if (!d.contenido.trim()) { A.toast('El contrato está vacío.', 'error'); return; }
       guardarBtn.disabled = true;
@@ -176,7 +242,7 @@
       guardarBtn.disabled = false;
       if (r.error) { A.toast('No se pudo guardar.', 'error'); return; }
       sucio = false; A.toast('Plantilla guardada.');
-      if (id === 'nueva') { id = r.data.id; history.replaceState(null, '', '#/contratos/' + id); }
+      if (id === 'nueva') { id = r.data.id; history.replaceState(null, '', '#/contratos/' + id); A.ir('contratos/' + id); }
     }
     window.addEventListener('beforeunload', function avisar(e) { if (!ta.isConnected) { window.removeEventListener('beforeunload', avisar); return; } if (sucio) { e.preventDefault(); e.returnValue = ''; } });
   }

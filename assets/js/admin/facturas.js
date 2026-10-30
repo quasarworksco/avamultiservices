@@ -27,6 +27,69 @@
     else { try { navigator.clipboard.writeText(A.urlFactura(f)); } catch (_) { /* */ } A.toast('El cliente no tiene teléfono: se copió el enlace de la factura.'); }
   };
 
+  /* ---------- Cuotas: cobros que se envían solos más adelante ---------- */
+  // Bloque «Programar los siguientes cobros» para los formularios de pago y de cobro
+  var CADA = [['7', 'Cada semana'], ['14', 'Cada 2 semanas'], ['21', 'Cada 3 semanas'], ['28', 'Cada 4 semanas'], ['mes', 'Cada mes']];
+  A.campoCuotas = function (titulo) {
+    var on = el('input', { type: 'checkbox' });
+    var monto = el('input', { class: 'input sm', type: 'number', min: '1', step: '0.01', placeholder: 'Igual a este' });
+    var cada = el('select', { class: 'input sm' }, CADA.map(function (c) { return el('option', { value: c[0], text: c[1] }); }));
+    cada.value = '21';
+    var cuantas = el('input', { class: 'input sm', type: 'number', min: '1', max: '24', step: '1', value: '1' });
+    var resumen = el('div', { class: 'muted', style: 'font-size:12.5px;grid-column:1/-1' });
+    var cuerpo = el('div', { class: 'grid2', style: 'margin-top:10px', hidden: true }, [
+      el('div', { class: 'field' }, [el('label', { text: 'Monto de cada cuota' }), monto]),
+      el('div', { class: 'field' }, [el('label', { text: '¿Cada cuánto?' }), cada]),
+      el('div', { class: 'field' }, [el('label', { text: '¿Cuántas cuotas faltan?' }), cuantas]),
+      resumen
+    ]);
+    var api = {
+      nodo: el('div', { class: 'cuotas-box' }, [el('label', { class: 'check-row' }, [on, el('span', null, [el('b', { text: titulo || 'Programar los siguientes cobros' }),
+        el('small', { class: 'muted', style: 'display:block', text: 'El día que toca, la factura se envía sola por WhatsApp (o te queda la tarea para cobrar).' })])]), cuerpo]),
+      activo: function () { return on.checked; },
+      // Fechas de cada cuota a partir de «desde»
+      plan: function (desde, montoBase) {
+        var n = Math.max(1, Math.min(24, parseInt(cuantas.value, 10) || 1));
+        var m = Number(monto.value) > 0 ? Number(monto.value) : Number(montoBase) || 0;
+        var out = [];
+        for (var i = 1; i <= n; i++) {
+          var d = new Date((desde || A.hoyISO()) + 'T12:00:00');
+          if (cada.value === 'mes') { var dia = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + i); d.setDate(Math.min(dia, new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate())); }
+          else d.setDate(d.getDate() + Number(cada.value) * i);
+          out.push({ fecha: d.toISOString().slice(0, 10), monto: m });
+        }
+        return out;
+      },
+      pintar: function (desde, montoBase) {
+        if (!on.checked) return;
+        var p = api.plan(desde, montoBase);
+        resumen.textContent = p.length ? 'Se enviará' + (p.length > 1 ? 'n' : '') + ': ' + p.map(function (x) { return A.dinero(x.monto) + ' el ' + A.fecha(x.fecha); }).join(' · ') : '';
+      }
+    };
+    on.addEventListener('change', function () { cuerpo.hidden = !on.checked; if (api.alCambiar) api.alCambiar(); });
+    [monto, cada, cuantas].forEach(function (x) { x.addEventListener('input', function () { if (api.alCambiar) api.alCambiar(); }); });
+    return api;
+  };
+  // Crea las facturas programadas; «primera» es el número de la primera cuota y «total» cuántas son en total
+  A.programarCuotas = async function (base, plan, primera, total) {
+    var filas = plan.map(function (x, i) {
+      var vence = new Date(x.fecha + 'T12:00:00'); vence.setDate(vence.getDate() + 3);
+      return { cliente_id: base.cliente_id, caso_id: base.caso_id || null, concepto: base.concepto, detalle: base.detalle || null, monto: x.monto,
+        metodos: base.metodos && base.metodos.length ? base.metodos : ['zelle', 'efectivo'], estado: 'programada', enviar_el: x.fecha, vence: vence.toISOString().slice(0, 10), cuota: (primera + i) + ' de ' + total };
+    });
+    if (!filas.length) return true;
+    var r = await sb.from('facturas').insert(filas);
+    return !r.error;
+  };
+  // Formas de pago que se pueden dejar en una cuota (la tarjeta necesita su enlace al momento)
+  A.formasCuota = async function () {
+    var neg = await negocio(), m = [];
+    if (neg.zelle) m.push('zelle');
+    if (neg.cashapp) m.push('cashapp');
+    m.push('efectivo');
+    return m;
+  };
+
   /* ---------- Crear un cobro ---------- */
   A.nuevoCobro = async function (base, alGuardar) {
     base = base || {};
@@ -40,6 +103,7 @@
       inp.checked = !falta && (f[0] === 'zelle' || f[0] === 'efectivo');
       checks.appendChild(el('label', { class: 'check' + (falta ? ' off' : '') }, [inp, el('span', null, [f[1], el('small', { class: 'muted', style: 'display:block;font-size:11.5px', text: falta || (f[0] === 'zelle' ? neg.zelle : f[0] === 'cashapp' ? neg.cashapp : f[2]) })])]));
     });
+    var cuotas = A.campoCuotas('Es en cuotas: programar los siguientes cobros');
     var m = A.modal({
       titulo: 'Nuevo cobro', ok: 'Crear factura',
       campos: [
@@ -50,7 +114,7 @@
         { k: 'monto', label: 'Monto (USD)', type: 'number', required: true, min: '1', step: '0.01', value: base.monto },
         { k: 'vence', label: 'Pagar antes del', type: 'date', value: hoyMas(7) }
       ],
-      extra: el('div', { class: 'field', style: 'margin-top:16px' }, [el('div', { class: 'field-legend', text: '¿Cómo puede pagar?' }), checks]),
+      extra: el('div', null, [el('div', { class: 'field', style: 'margin-top:16px' }, [el('div', { class: 'field-legend', text: '¿Cómo puede pagar?' }), checks]), cuotas.nodo]),
       guardar: async function (d, aviso) {
         if (!(d.monto >= 1)) { A.msg(aviso, 'Escribe un monto de al menos $1.'); return false; }
         d.metodos = Array.prototype.map.call(checks.querySelectorAll('input:checked'), function (c) { return c.value; });
@@ -63,9 +127,16 @@
             if (!env.count) { A.msg(aviso, 'En reparación de crédito no se puede cobrar antes de hacer el trabajo (ley CROA). Envía y marca como enviada la primera ronda de cartas de este caso y después crea el cobro.'); return false; }
           }
         }
+        var plan = cuotas.activo() ? cuotas.plan(A.hoyISO(), d.monto) : [];
+        if (plan.length) d.cuota = '1 de ' + (plan.length + 1);
         var r = await sb.from('facturas').insert(d).select('*, clientes(id,nombre,apellidos,telefono,email)').single();
         if (r.error) { A.msg(aviso, 'No se pudo crear la factura.'); return false; }
         var f = r.data;
+        if (plan.length) {
+          var met = d.metodos.filter(function (x) { return x !== 'tarjeta'; });
+          var okc = await A.programarCuotas({ cliente_id: d.cliente_id, caso_id: d.caso_id, concepto: d.concepto, detalle: d.detalle, metodos: met }, plan, 2, plan.length + 1);
+          if (!okc) A.toast('La factura se creó, pero no se pudieron programar las demás cuotas.', 'error');
+        }
         // Con tarjeta se crea el enlace de Square y queda unido a la factura (al pagarlo, la factura se marca sola)
         if (d.metodos.indexOf('tarjeta') !== -1) {
           var s = await sb.functions.invoke('square-pago', { body: { tipo: 'monto', cliente_id: d.cliente_id, caso_id: d.caso_id, monto: Number(d.monto), descripcion: 'Factura #' + f.numero + ' · ' + d.concepto } });
@@ -79,7 +150,7 @@
             if (en.data) await sb.from('facturas').update({ enlace_id: en.data.id }).eq('id', f.id);
           }
         }
-        A.toast('Factura #' + f.numero + ' creada.');
+        A.toast('Factura #' + f.numero + ' creada' + (plan.length ? ' · ' + plan.length + ' cuota' + (plan.length === 1 ? '' : 's') + ' programada' + (plan.length === 1 ? '' : 's') : '') + '.');
         if (alGuardar) alGuardar();
         setTimeout(function () { A.verCobro(f, alGuardar); }, 50);
       }
@@ -96,6 +167,8 @@
       var t = this.options[this.selectedIndex];
       if (this.value && !m.inputs.concepto.value) m.inputs.concepto.value = t.text.replace(/ \(.*\)$/, '');
     });
+    cuotas.alCambiar = function () { cuotas.pintar(A.hoyISO(), m.inputs.monto.value); };
+    m.inputs.monto.addEventListener('input', cuotas.alCambiar);
     casosDe(m.inputs.cliente_id.value);
   };
 
@@ -122,7 +195,7 @@
     if (res[0].error || !res[0].data) { hoja.innerHTML = ''; hoja.appendChild(el('div', { class: 'alert warn', text: 'No se pudo cargar esta factura.' })); return; }
     var f = res[0].data, neg = res[1], c = f.clientes || {};
     var servicio = f.casos ? (f.casos.titulo || A.SERVICIOS[f.casos.servicio].label) : '';
-    var est = f.estado === 'pagada' ? ['fac-ok', '✓ Pagada'] : f.estado === 'cancelada' ? ['fac-can', 'Cancelada'] : vencida(f) ? ['fac-ven', 'Vencida · por pagar'] : ['fac-pen', 'Por pagar'];
+    var est = f.estado === 'pagada' ? ['fac-ok', '✓ Pagada'] : f.estado === 'cancelada' ? ['fac-can', 'Cancelada'] : f.estado === 'programada' ? ['fac-pro', 'Programada · se envía el ' + A.fecha(f.enviar_el)] : vencida(f) ? ['fac-ven', 'Vencida · por pagar'] : ['fac-pen', 'Por pagar'];
     hoja.innerHTML = '';
     hoja.appendChild(el('div', { class: 'fac-top' }, [
       el('div', null, [el('img', { src: '../assets/img/logo.svg', alt: 'AVA Multiservices', width: 85, height: 40 }), el('div', { class: 'fac-de', text: 'AVA Multiservices · Dallas, Texas' + (neg.telefono ? ' · ' + neg.telefono : '') })]),
@@ -132,12 +205,12 @@
       c.telefono || c.email ? el('div', { class: 'muted', text: [c.telefono ? String(c.telefono).replace(/^\+?1?(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3') : null, c.email].filter(Boolean).join(' · ') }) : null]));
     hoja.appendChild(el('div', { class: 'fac-tabla' }, [
       el('div', { class: 'fac-fila fac-cab' }, [el('span', { text: 'Concepto' }), el('span', { text: 'Monto' })]),
-      el('div', { class: 'fac-fila' }, [el('span', null, [el('b', { text: f.concepto }), servicio && servicio !== f.concepto ? el('small', { text: servicio }) : null, f.detalle ? el('small', { class: 'fac-det', text: f.detalle }) : null]), el('b', { text: A.dinero(f.monto) })]),
+      el('div', { class: 'fac-fila' }, [el('span', null, [el('b', { text: f.concepto + (f.cuota ? ' · cuota ' + f.cuota : '') }), servicio && servicio !== f.concepto ? el('small', { text: servicio }) : null, f.detalle ? el('small', { class: 'fac-det', text: f.detalle }) : null]), el('b', { text: A.dinero(f.monto) })]),
       el('div', { class: 'fac-fila fac-total' }, [el('span', { text: f.estado === 'pagada' ? 'Total pagado' : 'Total a pagar' }), el('b', { text: A.dinero(f.monto) })])
     ]));
     hoja.appendChild(el('div', { class: 'fac-info' }, [el('span', { class: est[0], text: est[1] }),
       f.estado === 'pagada' && f.pagos ? el('span', { text: 'Pagada el ' + A.fecha(f.pagos.fecha) + ' · ' + (A.METODOS[f.pagos.metodo] || f.pagos.metodo) }) : null]));
-    if (f.estado === 'pendiente') {
+    if (f.estado === 'pendiente' || f.estado === 'programada') {
       var formas = el('div', { class: 'fac-formas' }, [el('div', { class: 'fac-formas-t', text: 'Cómo pagar' })]);
       f.metodos.forEach(function (k) {
         var t = k === 'zelle' ? 'Zelle a ' + (neg.zelle || '—') : k === 'cashapp' ? 'Cash App a ' + (neg.cashapp || '—') : k === 'tarjeta' ? (f.enlaces_pago && f.enlaces_pago.estado === 'pendiente' ? 'Tarjeta con el enlace de Square' : 'Tarjeta (sin enlace activo)') : k === 'efectivo' ? 'Efectivo en la oficina' : k === 'transferencia' ? 'Transferencia bancaria' : 'Cheque a nombre de AVA Multiservices';
@@ -161,6 +234,28 @@
         if (u.error) { A.toast('No se pudo cancelar.', 'error'); return; }
         if (f.enlace_id && f.enlaces_pago && f.enlaces_pago.estado === 'pendiente') await sb.from('enlaces_pago').update({ estado: 'cancelado' }).eq('id', f.enlace_id);
         A.toast('Cobro cancelado.'); cerrar(); if (alCambiar) alCambiar();
+      } }));
+    } else if (f.estado === 'programada') {
+      acciones.appendChild(el('button', { class: 'btn btn-dark btn-sm', type: 'button', title: 'No esperar a la fecha: queda por cobrar y la envías ya', onclick: async function () {
+        var u = await sb.from('facturas').update({ estado: 'pendiente', enviada_at: new Date().toISOString() }).eq('id', f.id).eq('estado', 'programada');
+        if (u.error) { A.toast('No se pudo cambiar.', 'error'); return; }
+        f.estado = 'pendiente'; A.enviarFactura(f, c); cerrar(); if (alCambiar) alCambiar();
+      } }, [A.icon('i-whatsapp', 'icon-sm'), el('span', { text: 'Enviar ahora' })]));
+      acciones.appendChild(el('button', { class: 'btn btn-ghost btn-sm', type: 'button', onclick: function () {
+        A.modal({ titulo: 'Cambiar la fecha de la cuota', ok: 'Guardar', campos: [{ k: 'enviar_el', label: 'Enviar la factura el', type: 'date', required: true, value: f.enviar_el }, { k: 'monto', label: 'Monto (USD)', type: 'number', required: true, min: '1', step: '0.01', value: Number(f.monto).toFixed(2) }],
+          guardar: async function (d, aviso) {
+            if (d.enviar_el < A.hoyISO()) { A.msg(aviso, 'Elige hoy o una fecha futura.'); return false; }
+            var v = new Date(d.enviar_el + 'T12:00:00'); v.setDate(v.getDate() + 3);
+            var u = await sb.from('facturas').update({ enviar_el: d.enviar_el, monto: d.monto, vence: v.toISOString().slice(0, 10) }).eq('id', f.id);
+            if (u.error) { A.msg(aviso, 'No se pudo guardar.'); return false; }
+            A.toast('Cuota cambiada al ' + A.fecha(d.enviar_el) + '.'); cerrar(); if (alCambiar) alCambiar();
+          } });
+      } }, [el('span', { text: 'Cambiar fecha o monto' })]));
+      acciones.appendChild(el('button', { class: 'link-btn danger fac-editar', type: 'button', text: 'Cancelar cuota', onclick: async function () {
+        if (!confirm('¿Cancelar esta cuota? No se enviará.')) return;
+        var u = await sb.from('facturas').update({ estado: 'cancelada' }).eq('id', f.id);
+        if (u.error) { A.toast('No se pudo cancelar.', 'error'); return; }
+        A.toast('Cuota cancelada.'); cerrar(); if (alCambiar) alCambiar();
       } }));
     } else if (f.estado === 'pagada' && f.pagos) {
       acciones.appendChild(el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: function () { A.enviarRecibo(f.pagos, c); } }, [A.icon('i-whatsapp', 'icon-sm'), el('span', { text: 'Enviar comprobante de pago' })]));
@@ -195,10 +290,12 @@
 
   /* ---------- Lista de cobros enviados que esperan pago (en Cobros) ---------- */
   A.pintarCobrosPendientes = async function (caja, alCambiar) {
-    var r = await sb.from('facturas').select('*, clientes(id,nombre,apellidos,telefono)').eq('estado', 'pendiente').order('created_at', { ascending: false }).limit(100);
+    var r = await sb.from('facturas').select('*, clientes(id,nombre,apellidos,telefono)').in('estado', ['pendiente', 'programada']).order('created_at', { ascending: false }).limit(200);
     caja.innerHTML = '';
-    var lista = r.data || [];
-    if (r.error || !lista.length) return 0;
+    var todas = r.data || [];
+    if (r.error || !todas.length) return 0;
+    var lista = todas.filter(function (f) { return f.estado === 'pendiente'; });
+    var prog = todas.filter(function (f) { return f.estado === 'programada'; }).sort(function (a, b) { return a.enviar_el < b.enviar_el ? -1 : 1; });
     var total = lista.reduce(function (a, f) { return a + Number(f.monto); }, 0);
     var nVenc = lista.filter(vencida).length;
     var card = el('div', { class: 'card cb-enlaces cb-facturas' }, [el('div', { class: 'cb-en-h' }, [
@@ -217,6 +314,20 @@
         ])
       ]));
     });
+    if (!lista.length) card.appendChild(el('div', { class: 'muted', style: 'padding:6px 2px;font-size:13px', text: 'No hay facturas esperando pago.' }));
+    if (prog.length) {
+      card.appendChild(el('div', { class: 'cb-sub', text: 'Cuotas programadas · ' + prog.length + ' · ' + A.dinero(prog.reduce(function (a, f) { return a + Number(f.monto); }, 0)) }));
+      prog.forEach(function (f) {
+        var c = f.clientes || {};
+        card.appendChild(el('div', { class: 'cb-en programada' }, [
+          el('span', { class: 'avatar', text: A.iniciales(A.nombreDe(c)) }),
+          el('button', { class: 'cb-en-t link-fila', type: 'button', title: 'Ver la cuota', onclick: function () { A.verCobro(f, alCambiar); } }, [el('b', { text: A.nombreDe(c) + (f.cuota ? ' · cuota ' + f.cuota : '') }),
+            el('div', { class: 'muted', text: f.concepto + ' · se envía el ' + A.fecha(f.enviar_el) })]),
+          el('strong', { text: A.dinero(f.monto) }),
+          el('div', { class: 'cb-en-a' }, [el('button', { class: 'mini-btn', type: 'button', text: 'Ver', onclick: function () { A.verCobro(f, alCambiar); } })])
+        ]));
+      });
+    }
     caja.appendChild(card);
     return total;
   };
