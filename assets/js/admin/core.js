@@ -239,7 +239,7 @@
     notaria: { label: 'Notaría', corto: 'Notaría', etapas: ['Pendiente', 'En proceso', 'Completado'], finales: ['Completado'], oculto: true }
   };
   function esFinal(servicio, etapa) { var s = SERVICIOS[servicio]; return !!s && s.finales.indexOf(etapa) !== -1; }
-  var ORIGENES = { meta_ads: 'Meta Ads', whatsapp: 'WhatsApp', instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok', referido: 'Referido', walk_in: 'Walk-in (oficina)', sitio_web: 'Sitio web', formulario: 'Formulario del sitio', google: 'Google', otro: 'Otro' };
+  var ORIGENES = { meta_ads: 'Meta Ads', whatsapp: 'WhatsApp', instagram: 'Instagram', facebook: 'Facebook', tiktok: 'TikTok', referido: 'Referido', walk_in: 'Walk-in (oficina)', sitio_web: 'Sitio web', formulario: 'Formulario del sitio', google: 'Google', realtor: 'Realtor', loan_officer: 'Loan officer', cliente_taxes: 'Cliente de taxes', otro: 'Otro' };
   var PERMISOS = [
     ['solicitudes', 'Solicitudes', 'Ver las solicitudes que llegan del sitio'],
     ['sensibles', 'Datos sensibles', 'Ver SSN y claves del monitor de crédito'],
