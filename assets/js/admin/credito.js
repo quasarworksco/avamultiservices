@@ -60,9 +60,10 @@
     var caja = el('section', { class: 'd-sec cr-sec' });
     var res = await Promise.all([
       sb.from('reportes_credito').select('id,created_at,fecha_reporte,puntajes,resumen,cuentas,consultas,personal').eq('caso_id', k.id).order('created_at', { ascending: false }).limit(1),
-      sb.from('cartas_disputa').select('id,created_at,ronda,buro,tipo,estado,enviada_at,items').eq('caso_id', k.id).order('ronda').order('buro')
+      sb.from('cartas_disputa').select('id,created_at,ronda,buro,tipo,estado,enviada_at,items').eq('caso_id', k.id).order('ronda').order('buro'),
+      sb.from('quejas_cfpb').select('*').eq('caso_id', k.id).order('fecha')
     ]);
-    var rep = (res[0].data || [])[0], cartas = res[1].data || [];
+    var rep = (res[0].data || [])[0], cartas = res[1].data || [], quejas = res[2].data || [];
     var archivo = el('input', { type: 'file', accept: 'application/pdf', hidden: true });
     archivo.addEventListener('change', function () { var f = archivo.files[0]; archivo.value = ''; if (f) importar(k, f, recargar); });
     caja.appendChild(el('div', { class: 'card-h' }, [el('h3', { text: 'Reporte y cartas de disputa' }), el('div', { style: 'display:flex;gap:6px' }, [
@@ -84,6 +85,7 @@
           el('div', { class: 'muted', text: neg + ' cuentas negativas · ' + (rep.consultas || []).length + ' consultas' })]),
         el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: function () { preparar(k, rep, cartas, recargar); } }, [A.icon('i-edit', 'icon-sm'), el('span', { text: 'Preparar cartas' })])
       ]));
+      if (A.seccionCotizacion) caja.appendChild(await A.seccionCotizacion(k, rep, recargar));
     }
     if (cartas.length) {
       var rondas = {};
@@ -105,6 +107,7 @@
         });
         if (borr.length) box.appendChild(el('div', { class: 'cr-enviar' }, [el('span', { class: 'muted', text: 'Cuando las mandes por correo postal, márcalas como enviadas: se crean las disputas con el plazo de 30 días.' }),
           el('button', { class: 'btn btn-ok btn-sm', type: 'button', onclick: function () { marcarEnviadas(k, borr, recargar); } }, [A.icon('i-check', 'icon-sm'), el('span', { text: 'Marcar ' + borr.length + ' como enviadas' })])]));
+        if (A.filaCFPB) box.appendChild(A.filaCFPB(k, Number(rn), quejas, lista, recargar));
         caja.appendChild(box);
       });
     }

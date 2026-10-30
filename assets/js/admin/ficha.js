@@ -26,6 +26,7 @@
       sb.from('puntajes').select('*').eq('caso_id', casoId).order('fecha'),
       sb.from('reportes_credito').select('fecha_reporte,created_at,cuentas,consultas').eq('caso_id', casoId).order('created_at', { ascending: false }).limit(1),
       sb.from('disputas').select('*').eq('caso_id', casoId).order('fecha_envio', { ascending: false }),
+      sb.from('quejas_cfpb').select('*').eq('caso_id', casoId).order('fecha'),
       A.puede('cobros') ? sb.from('pagos').select('*').eq('caso_id', casoId).order('fecha', { ascending: false }) : Promise.resolve({ data: null }),
       A.equipo()
     ]);
@@ -34,8 +35,8 @@
     if (!k) { cont.appendChild(el('div', { class: 'empty' }, [el('b', { text: 'No se encontró el caso' }), el('a', { href: '#/casos', class: 'link-btn', text: 'Volver a Casos' })])); return; }
     var c = k.clientes || {};
     var fd = (r[1].data && r[1].data.datos) || {};
-    var pts = r[2].data || [], rep = (r[3].data || [])[0] || null, disp = r[4].data || [], pagos = r[5].data, equipo = r[6] || [];
-    var ctx = { k: k, c: c, fd: fd, pts: pts, rep: rep, disp: disp, pagos: pagos, equipo: equipo };
+    var pts = r[2].data || [], rep = (r[3].data || [])[0] || null, disp = r[4].data || [], quejas = r[5].data || [], pagos = r[6].data, equipo = r[7] || [];
+    var ctx = { k: k, c: c, fd: fd, pts: pts, rep: rep, disp: disp, quejas: quejas, pagos: pagos, equipo: equipo };
     fd.plan = fd.plan || {}; fd.meta = fd.meta || {}; fd.monitor = fd.monitor || {}; fd.notas = fd.notas || [];
 
     /* Guardado automático de la ficha */
@@ -164,7 +165,10 @@
     /* 05 Historial de disputas */
     cont.appendChild(seccion('05', 'Historial de disputas', [tabla(['Fecha', 'Elemento disputado', 'Buró', 'Ronda', 'Resultado'], disp.map(function (d) {
       return [A.fecha(d.fecha_envio), d.acreedor, (d.buro || '').replace(/^./, function (x) { return x.toUpperCase(); }), String(d.ronda), RESULTADOS[d.resultado] || d.resultado];
-    }), 'Aún no hay disputas. Se crean al marcar las cartas como enviadas en el caso.')]));
+    }), 'Aún no hay disputas. Se crean al marcar las cartas como enviadas en el caso.'),
+      quejas.length ? el('div', { class: 'fi-bloque' }, [el('h3', { text: 'Quejas del CFPB' }), tabla(['Ronda', 'Fecha', 'Número', 'Burós', 'Estado'], quejas.map(function (q) {
+        return [String(q.ronda), A.fecha(q.fecha), q.numero || '', (q.buros || []).join(', '), { preparada: 'Preparada', enviada: 'Enviada', en_revision: 'En revisión', respondida: 'Respondida', cerrada: 'Cerrada' }[q.estado]];
+      }), '')]) : null]));
 
     /* 06 Pagos */
     if (pagos) cont.appendChild(seccion('06', 'Seguimiento de pagos', [tabla(['Fecha', 'Concepto', 'Monto', 'Método'], pagos.map(function (p) {
@@ -333,7 +337,8 @@
       '<h3>Tipo de disputa / cartas</h3>' + caja(CARTAS, p.cartas) + '<h3>Prioridades de trabajo</h3>' + prio + '<h3>Notas del plan</h3>' + texto(p.notas) +
       '<h2>04 · Monitor de crédito</h2><table class="kv">' + fila([['Plataforma', fd.monitor && fd.monitor.plataforma], ['Usuario', fd.monitor && fd.monitor.usuario]]) +
       fila([['Burós principales', fd.monitor && fd.monitor.principales], ['Burós secundarios', fd.monitor && fd.monitor.secundarios]]) + '</table>' +
-      '<h2>05 · Historial de disputas</h2>' + dsp + (ctx.pagos ? '<h2>06 · Seguimiento de pagos</h2>' + pag : '') +
+      '<h2>05 · Historial de disputas</h2>' + dsp + (ctx.quejas.length ? '<h3>Quejas del CFPB</h3><table class="g"><tr><th>Ronda</th><th>Fecha</th><th>Número</th><th>Burós</th><th>Estado</th></tr>' + ctx.quejas.map(function (q) {
+        return '<tr><td>' + q.ronda + '</td><td>' + esc(A.fecha(q.fecha)) + '</td><td>' + esc(q.numero) + '</td><td>' + esc((q.buros || []).join(', ')) + '</td><td>' + esc(q.estado) + '</td></tr>'; }).join('') + '</table>' : '') + (ctx.pagos ? '<h2>06 · Seguimiento de pagos</h2>' + pag : '') +
       '<h2>07 · Notas y observaciones del caso</h2><div class="tx">' + notas + '</div>';
     var w = window.open('', '_blank');
     if (!w) { A.toast('El navegador bloqueó la ventana. Permite ventanas emergentes para este sitio.', 'error'); return; }

@@ -1309,3 +1309,17 @@ a.stat { display: block; color: inherit; animation: rise 0.5s var(--ease) both; 
   .pl-board { grid-auto-columns: 82%; }
   .pl-det, .pl-auto-g { grid-template-columns: 1fr; }
 }
+
+/* ---------- Análisis y cotización · Queja del CFPB ---------- */
+.cot-box { margin-top: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 14px; background: #fff; }
+.cot-h { display: flex; align-items: center; gap: 12px; font-size: 13.5px; }
+.cot-h > div { flex: 1; min-width: 0; }
+.cot-h .muted { font-size: 12.5px; margin-top: 2px; }
+.cot-i { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 9px 0 2px; margin-top: 8px; border-top: 1px solid var(--line); font-size: 13px; }
+.cot-i > div:first-child { flex: 1 1 180px; }
+.cot-res { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; background: var(--stone-50); font-size: 12.5px; }
+.cfpb { padding: 10px 14px; border-top: 1px solid var(--line); font-size: 12.5px; }
+.cfpb-t { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; }
+.cfpb-t .link-btn { font-size: 12px; }
+.cfpb-i { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+.cfpb-i > span:nth-child(2) { flex: 1; min-width: 0; }
