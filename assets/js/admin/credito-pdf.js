@@ -194,7 +194,21 @@
     var f = r.personal.transunion && r.personal.transunion.fecha || r.personal.experian && r.personal.experian.fecha || r.personal.equifax && r.personal.equifax.fecha;
     if (f && /^\d{2}\/\d{2}\/\d{4}$/.test(f)) r.fecha = f.slice(6) + '-' + f.slice(0, 2) + '-' + f.slice(3, 5);
     r.valido = Object.keys(r.puntajes).length > 0 || r.cuentas.length > 0;
+    if (!r.valido) r.motivo = motivo(L);
     return r;
+  }
+
+  /* Por qué no se pudo leer: para decirle a la usuaria qué hacer */
+  function motivo(L) {
+    var t = L.map(function (l) { return l.texto; }).join(' \n ');
+    if (t.replace(/\s|\|/g, '').length < 200) return 'sin_texto';
+    if (/identity\s*iq/i.test(t)) return 'identityiq';
+    if (/my\s*score\s*iq/i.test(t)) return 'myscoreiq';
+    if (/credit\s*karma/i.test(t)) return 'creditkarma';
+    if (/annualcreditreport|experian\.com\/|equifax\.com\/|transunion\.com\//i.test(t) && !/smartcredit/i.test(t)) return 'un_buro';
+    if (/puntaje|informe de cr[eé]dito|cuentas renovables|consultas/i.test(t) && !/Credit Scores/.test(t)) return 'traducido';
+    if (/smartcredit/i.test(t)) return 'smartcredit_otro';
+    return 'otro';
   }
 
   /* Lee el PDF con pdf.js y devuelve los textos con su posición */
