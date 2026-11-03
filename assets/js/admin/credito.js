@@ -115,6 +115,21 @@
   };
 
   /* ---------- Importar el PDF ---------- */
+  var NO_LEIDO = {
+    sin_texto: ['El PDF es una imagen (foto o escaneo)', 'No trae texto que se pueda leer. En SmartCredit abre el reporte de 3 burós en la computadora y usa «Imprimir → Guardar como PDF» (no «Microsoft Print to PDF» ni una captura de pantalla).'],
+    traducido: ['El reporte se guardó traducido al español', 'El navegador tradujo la página antes de guardarla. Vuelve a abrir el reporte en SmartCredit, desactiva la traducción («Mostrar original» en Chrome) y guárdalo otra vez como PDF.'],
+    identityiq: ['Es un reporte de IdentityIQ', 'Por ahora el CRM lee solo el reporte 3B de SmartCredit. Descarga el del cliente desde SmartCredit, o mándale este PDF a Andrés para agregar este formato.'],
+    myscoreiq: ['Es un reporte de MyScoreIQ', 'Por ahora el CRM lee solo el reporte 3B de SmartCredit. Descarga el del cliente desde SmartCredit, o mándale este PDF a Andrés para agregar este formato.'],
+    creditkarma: ['Es un reporte de Credit Karma', 'Credit Karma no trae los 3 burós. Usa el reporte 3B de SmartCredit.'],
+    un_buro: ['Es el reporte de un solo buró', 'El CRM lee el reporte 3B de SmartCredit (los 3 burós juntos en columnas).'],
+    smartcredit_otro: ['Es de SmartCredit, pero no es el reporte 3B', 'Puede ser el resumen, el de 1 buró o una versión que SmartCredit cambió. En SmartCredit abre «3B Report» y usa «Imprimir → Guardar como PDF». Si así tampoco lo lee, mándale este PDF a Andrés.'],
+    otro: ['No se reconoce este PDF', 'El CRM lee el reporte 3B de SmartCredit guardado con «Imprimir → Guardar como PDF». Si este sí es ese reporte, mándale el PDF a Andrés para revisarlo.']
+  };
+  function noLeido(m) {
+    var x = NO_LEIDO[m] || NO_LEIDO.otro;
+    A.modal({ titulo: 'No se pudo leer el reporte', ok: 'Entendido', campos: [], guardar: function () { },
+      extra: el('div', { class: 'alert warn', style: 'display:block' }, [el('b', { text: x[0] }), el('p', { style: 'margin-top:6px', text: x[1] })]) });
+  }
   async function importar(k, archivo, recargar) {
     if (archivo.size > 20 * 1024 * 1024) { A.toast('El PDF supera 20 MB.', 'error'); return; }
     A.toast('Leyendo el reporte…');
@@ -123,7 +138,7 @@
       var lib = await pdfjs();
       r = await window.AVA_REPORTE.extraer(lib, new Uint8Array(await archivo.arrayBuffer()));
     } catch (e) { A.toast('No se pudo leer el PDF: ' + (e.message || e), 'error'); return; }
-    if (!r.valido) { A.toast('Este PDF no parece un reporte 3B de SmartCredit.', 'error'); return; }
+    if (!r.valido) { noLeido(r.motivo); return; }
     // El PDF también queda en los documentos del cliente
     var docId = null;
     if (A.puede('documentos')) {
