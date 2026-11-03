@@ -41,7 +41,7 @@
       var filas = [];
       items.forEach(function (it) {
         var f = null;
-        for (var i = 0; i < filas.length; i++) if (Math.abs(filas[i].y - it.y) <= 2) { f = filas[i]; break; }
+        for (var i = 0; i < filas.length; i++) if (Math.abs(filas[i].y - it.y) <= 2.6) { f = filas[i]; break; }
         if (!f) { f = { y: it.y, items: [] }; filas.push(f); }
         f.items.push(it);
       });
@@ -54,15 +54,45 @@
     return out;
   }
 
+  // SmartCredit en español: los títulos y etiquetas se pasan al inglés (los valores ya vienen en inglés)
+  var ES = {
+    'Puntajes de Crédito': 'Credit Scores', 'Información Personal': 'Personal Information', 'Resumen': 'Summary', 'Registros Públicos': 'Public Records',
+    'Cuentas Rotativas': 'Revolving Accounts', 'Cuentas a Plazos': 'Installment Accounts', 'Otras Cuentas': 'Other Accounts', 'Cuentas de Cobranza': 'Collections Accounts',
+    'Cuentas Hipotecarias': 'Mortgage Accounts', 'Cuentas de Hipoteca': 'Mortgage Accounts', 'Cuentas de Bienes Raíces': 'Real Estate Accounts', 'Cuentas Abiertas': 'Open Accounts',
+    'Cuentas de Auto': 'Auto Accounts', 'Cuentas de Línea de Crédito': 'Line of Credit Accounts', 'Líneas de Crédito': 'Line of Credit Accounts',
+    'Consultas': 'Inquiries', 'Contactos de Acreedores': 'Creditor Contacts', 'Negativo': 'Negative', 'Coincide': 'Match', 'No Coincide': 'No Match',
+    'Fecha del Reporte de Crédito': 'Credit Report Date', 'Nombre': 'Name', 'También Conocido Como': 'Also Known As', 'Fecha de Nacimiento': 'Date of Birth',
+    'Dirección Actual': 'Current Address', 'Direcciones Anteriores': 'Previous Addresses', 'Empleador': 'Employer', 'Declaración del Consumidor': 'Consumer Statement',
+    'Total de Cuentas': 'Total Accounts', 'Cuentas Cerradas': 'Closed Accounts', 'Moroso': 'Delinquent', 'Despectivo': 'Derogatory', 'Saldos': 'Balances', 'Pagos': 'Payments',
+    'Consultas (2 Años)': 'Inquiries (2 Years)', 'Utilización de Crédito': 'Credit Utilization',
+    'Número de Cuenta': 'Account Number', 'Saldo Máximo': 'High Balance', 'Última Verificación': 'Last Verified', 'Fecha de Última Actividad': 'Date of Last Activity',
+    'Fecha de Reporte': 'Date Reported', 'Fecha de Apertura': 'Date Opened', 'Saldo Adeudado': 'Balance Owed', 'Fecha de Cierre': 'Closed Date',
+    'Calificación de la Cuenta': 'Account Rating', 'Descripción de la Cuenta': 'Account Description', 'Estado de la Disputa': 'Dispute Status', 'Tipo de Acreedor': 'Creditor Type',
+    'Estado de la Cuenta': 'Account Status', 'Estado del Pago': 'Payment Status', 'Observaciones del Acreedor': 'Creditor Remarks', 'Monto del Pago': 'Payment Amount',
+    'Último Pago': 'Last Payment', 'Plazo': 'Term Length', 'Monto Vencido': 'Past Due Amount', 'Tipo de Cuenta': 'Account Type', 'Frecuencia de Pago': 'Payment Frequency',
+    'Límite de Crédito': 'Credit Limit', 'Acreedor Original': 'Original Creditor', 'Utilización': 'Utilization'
+  };
+  function aIngles(L) {
+    L.forEach(function (l) {
+      var cambio = false;
+      l.segs.forEach(function (g) {
+        var t = ES[g.t] || (/^Historial de Pagos\b/.test(g.t) ? 'Payment History' : /^Días de Atraso\b/.test(g.t) ? 'Days Late' : /^Las siguientes consultas\b/.test(g.t) ? 'The inquiries' : /^A continuación\b/.test(g.t) ? 'Below are' : null);
+        if (t) { g.t = t; cambio = true; }
+      });
+      if (cambio) l.texto = l.segs.map(function (g) { return g.t; }).join(' | ');
+    });
+    return L;
+  }
+
   function vacio(v) { return v == null || v === '' || /^[—–-]+$/.test(v); }
   function esCabecera(l) {
     return l.segs.length === 3 && l.segs.every(function (s) { return NOMBRE_BURO[s.t]; });
   }
 
   function parsear(paginas) {
-    var L = lineas(paginas);
+    var L = aIngles(lineas(paginas));
     var r = { puntajes: {}, personal: {}, resumen: {}, cuentas: [], consultas: [], contactos: [] };
-    var seccion = '', cols = null, etiquetaX = 0, tabla = null, ultimo = null, modo = '', previas = [], cuenta = null, consulta = null;
+    var seccion = '', cols = null, etiquetaX = 0, tabla = null, ultimo = null, modo = '', previas = [], cuenta = null, consulta = null, xContacto = -1e9;
 
     function columnas(l) {
       // Los valores empiezan unos 35 puntos a la izquierda del nombre del buró
@@ -117,8 +147,10 @@
 
     L.forEach(function (l, i) {
       var t = l.texto, s0 = l.segs[0].t;
+      // Encabezado y pie que el navegador pone en cada página al imprimir
+      if (/smartcredit\.com\/reports|^\d{1,2}\/\d{1,2}\/\d{2},\s*\d{1,2}:\d{2}/i.test(t)) return;
       // Títulos de sección
-      if (l.segs.length === 1 && (s0 === 'Credit Scores' || s0 === 'Personal Information' || s0 === 'Summary' || s0 === 'Public Records' || SECCIONES.indexOf(s0) !== -1)) {
+      if (l.segs.length === 1 && (s0 === 'Credit Scores' || s0 === 'Personal Information' || s0 === 'Summary' || s0 === 'Public Records' || s0 === 'Credit Utilization' || SECCIONES.indexOf(s0) !== -1)) {
         cerrarCuenta(); seccion = s0; modo = ''; previas = []; tabla = null; return;
       }
       if (/^Inquiries\b/.test(s0) && !/\(2 Years\)/.test(s0) && l.segs.length <= 2 && (l.segs.length === 1 || /^\d+$/.test(l.segs[1].t) || /^Inquiries\s+\d+$/.test(s0))) {
@@ -127,7 +159,7 @@
       if (/^Creditor Contacts\b/.test(s0)) { cerrarCuenta(); seccion = 'Creditor Contacts'; modo = ''; return; }
 
       if (esCabecera(l)) {
-        if (l.segs[0].x > 150) columnas(l);
+        if (l.segs[0].x > 150 || seccion === 'Credit Scores') columnas(l);
         if (seccion === 'Personal Information') { tabla = r.personal; return; }
         if (seccion === 'Summary') { tabla = r.resumen; return; }
         if (SECCIONES.indexOf(seccion) !== -1) {
@@ -184,8 +216,8 @@
       }
       if (seccion === 'Creditor Contacts') {
         var tel = l.segs.length >= 2 && /\d{3}-\d{3}-\d{4}/.test(l.segs[l.segs.length - 1].t);
-        if (tel) r.contactos.push({ nombre: l.segs[0].t, direccion: l.segs.length > 2 ? l.segs.slice(1, -1).map(function (s) { return s.t; }).join(' ') : '', telefono: l.segs[l.segs.length - 1].t });
-        else if (r.contactos.length && l.segs.length === 1 && l.segs[0].x > 150) {
+        if (tel) { xContacto = l.segs[0].x; r.contactos.push({ nombre: l.segs[0].t, direccion: l.segs.length > 2 ? l.segs.slice(1, -1).map(function (s) { return s.t; }).join(' ') : '', telefono: l.segs[l.segs.length - 1].t }); }
+        else if (r.contactos.length && l.segs.length === 1 && (l.segs[0].x > 150 || Math.abs(l.segs[0].x - xContacto) < 6)) {
           var u = r.contactos[r.contactos.length - 1]; u.direccion = (u.direccion ? u.direccion + ', ' : '') + l.segs[0].t;
         }
       }
