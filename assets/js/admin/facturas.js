@@ -7,7 +7,7 @@
   var FORMAS = [
     ['zelle', 'Zelle', 'al Zelle del negocio'],
     ['cashapp', 'Cash App', 'al $cashtag del negocio'],
-    ['tarjeta', 'Tarjeta', 'enlace de pago con Square'],
+    ['tarjeta', 'Tarjeta', 'enlace de pago con Stripe'],
     ['efectivo', 'Efectivo', 'en la oficina'],
     ['transferencia', 'Transferencia', 'bancaria'],
     ['cheque', 'Cheque', 'a nombre de AVA Multiservices']
@@ -22,6 +22,11 @@
     return 'Hola ' + ((c && c.nombre) || '') + ', te envío la factura #' + f.numero + ' por ' + A.dinero(f.monto) + ' (' + f.concepto + ')' +
       (f.vence ? ', con vencimiento el ' + A.fecha(f.vence) : '') + '. Aquí puedes verla y ver cómo pagar: ' + A.urlFactura(f);
   }
+  // Cancela un enlace de pago con tarjeta: Stripe lo desactiva para que el cliente ya no pueda pagar con él
+  A.cancelarEnlace = async function (id) {
+    var r = await sb.functions.invoke('stripe-pago', { body: { tipo: 'cancelar', id: id } });
+    if (r.error) await sb.from('enlaces_pago').update({ estado: 'cancelado' }).eq('id', id);
+  };
   A.enviarFactura = function (f, c) {
     if (c && c.telefono) window.open(A.wa(c.telefono, mensaje(f, c)), '_blank', 'noopener');
     else { try { navigator.clipboard.writeText(A.urlFactura(f)); } catch (_) { /* */ } A.toast('El cliente no tiene teléfono: se copió el enlace de la factura.'); }
@@ -98,7 +103,7 @@
     if (!clientes.length) { A.toast('Primero crea un cliente.', 'error'); return; }
     var checks = el('div', { class: 'check-grid' });
     FORMAS.forEach(function (f) {
-      var falta = f[0] === 'tarjeta' && !integ.pagos ? 'Conecta Square en Ajustes para usarla' : f[0] === 'zelle' && !neg.zelle ? 'Pon el Zelle del negocio en Ajustes' : f[0] === 'cashapp' && !neg.cashapp ? 'Pon el $cashtag en Ajustes' : '';
+      var falta = f[0] === 'tarjeta' && !integ.pagos ? 'Conecta Stripe en Ajustes para usarla' : f[0] === 'zelle' && !neg.zelle ? 'Pon el Zelle del negocio en Ajustes' : f[0] === 'cashapp' && !neg.cashapp ? 'Pon el $cashtag en Ajustes' : '';
       var inp = el('input', { type: 'checkbox', value: f[0], disabled: !!falta });
       inp.checked = !falta && (f[0] === 'zelle' || f[0] === 'efectivo');
       checks.appendChild(el('label', { class: 'check' + (falta ? ' off' : '') }, [inp, el('span', null, [f[1], el('small', { class: 'muted', style: 'display:block;font-size:11.5px', text: falta || (f[0] === 'zelle' ? neg.zelle : f[0] === 'cashapp' ? neg.cashapp : f[2]) })])]));
@@ -137,9 +142,9 @@
           var okc = await A.programarCuotas({ cliente_id: d.cliente_id, caso_id: d.caso_id, concepto: d.concepto, detalle: d.detalle, metodos: met }, plan, 2, plan.length + 1);
           if (!okc) A.toast('La factura se creó, pero no se pudieron programar las demás cuotas.', 'error');
         }
-        // Con tarjeta se crea el enlace de Square y queda unido a la factura (al pagarlo, la factura se marca sola)
+        // Con tarjeta se crea el enlace de Stripe y queda unido a la factura (al pagarlo, la factura se marca sola)
         if (d.metodos.indexOf('tarjeta') !== -1) {
-          var s = await sb.functions.invoke('square-pago', { body: { tipo: 'monto', cliente_id: d.cliente_id, caso_id: d.caso_id, monto: Number(d.monto), descripcion: 'Factura #' + f.numero + ' · ' + d.concepto } });
+          var s = await sb.functions.invoke('stripe-pago', { body: { tipo: 'monto', cliente_id: d.cliente_id, caso_id: d.caso_id, monto: Number(d.monto), descripcion: 'Factura #' + f.numero + ' · ' + d.concepto } });
           if (s.error) {
             var e = {}; try { e = await s.error.context.json(); } catch (_) { /* */ }
             A.toast((e.error || 'No se pudo crear el enlace de tarjeta.') + ' La factura se creó sin tarjeta.', 'error');
@@ -213,7 +218,7 @@
     if (f.estado === 'pendiente' || f.estado === 'programada') {
       var formas = el('div', { class: 'fac-formas' }, [el('div', { class: 'fac-formas-t', text: 'Cómo pagar' })]);
       f.metodos.forEach(function (k) {
-        var t = k === 'zelle' ? 'Zelle a ' + (neg.zelle || '—') : k === 'cashapp' ? 'Cash App a ' + (neg.cashapp || '—') : k === 'tarjeta' ? (f.enlaces_pago && f.enlaces_pago.estado === 'pendiente' ? 'Tarjeta con el enlace de Square' : 'Tarjeta (sin enlace activo)') : k === 'efectivo' ? 'Efectivo en la oficina' : k === 'transferencia' ? 'Transferencia bancaria' : 'Cheque a nombre de AVA Multiservices';
+        var t = k === 'zelle' ? 'Zelle a ' + (neg.zelle || '—') : k === 'cashapp' ? 'Cash App a ' + (neg.cashapp || '—') : k === 'tarjeta' ? (f.enlaces_pago && f.enlaces_pago.estado === 'pendiente' ? 'Tarjeta con el enlace de Stripe' : 'Tarjeta (sin enlace activo)') : k === 'efectivo' ? 'Efectivo en la oficina' : k === 'transferencia' ? 'Transferencia bancaria' : 'Cheque a nombre de AVA Multiservices';
         formas.appendChild(el('div', { class: 'fac-forma' }, [el('b', { text: NOMBRE[k] || k }), el('span', { class: 'muted', text: t })]));
       });
       hoja.appendChild(formas);
@@ -232,7 +237,7 @@
         if (!confirm('¿Cancelar la factura #' + f.numero + '? El enlace dejará de funcionar para el cliente.')) return;
         var u = await sb.from('facturas').update({ estado: 'cancelada' }).eq('id', f.id);
         if (u.error) { A.toast('No se pudo cancelar.', 'error'); return; }
-        if (f.enlace_id && f.enlaces_pago && f.enlaces_pago.estado === 'pendiente') await sb.from('enlaces_pago').update({ estado: 'cancelado' }).eq('id', f.enlace_id);
+        if (f.enlace_id && f.enlaces_pago && f.enlaces_pago.estado === 'pendiente') await A.cancelarEnlace(f.enlace_id);
         A.toast('Cobro cancelado.'); cerrar(); if (alCambiar) alCambiar();
       } }));
     } else if (f.estado === 'programada') {
@@ -279,7 +284,7 @@
           .select('id,numero,token,monto,cliente_id,fecha,metodo').single();
         if (p.error) { A.msg(aviso, 'No se pudo registrar el pago.'); return false; }
         await sb.from('facturas').update({ estado: 'pagada', pago_id: p.data.id, pagada_at: new Date().toISOString() }).eq('id', f.id);
-        if (f.enlace_id && f.enlaces_pago && f.enlaces_pago.estado === 'pendiente') await sb.from('enlaces_pago').update({ estado: 'cancelado' }).eq('id', f.enlace_id);
+        if (f.enlace_id && f.enlaces_pago && f.enlaces_pago.estado === 'pendiente') await A.cancelarEnlace(f.enlace_id);
         A.toast('Factura #' + f.numero + ' pagada · ' + A.dinero(d.monto) + '.', 'ok');
         var c = f.clientes || {};
         if (c.telefono && confirm('Pago registrado. ¿Enviar el comprobante a ' + (c.nombre || 'el cliente') + ' por WhatsApp?')) A.enviarRecibo(p.data, c);

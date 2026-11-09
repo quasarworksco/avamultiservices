@@ -60,7 +60,7 @@
     ]));
     hoja.appendChild(el('div', { class: 'fac-info' }, [
       el('span', { class: 'fac-ok', text: '✓ Pagado' }),
-      el('span', { text: 'Método: ' + (A.METODOS[x.metodo] || x.metodo) + (x.pasarela_id ? ' (Square)' : '') }),
+      el('span', { text: 'Método: ' + (A.METODOS[x.metodo] || x.metodo) + (x.pasarela_id ? ' (' + A.pasarela(x) + ')' : '') }),
       saldo != null ? el('span', { text: 'Saldo pendiente de este servicio: ' + A.dinero(saldo) }) : null
     ]));
     hoja.appendChild(el('p', { class: 'fac-pie', text: 'Gracias por tu confianza.' }));
@@ -126,11 +126,14 @@
     m.inputs.fecha.addEventListener('input', cuotas.alCambiar);
   };
 
+  // Pasarela de un pago con tarjeta en línea: los de Stripe empiezan con pi_ o cs_ (antes se usaba Square)
+  A.pasarela = function (p) { return /^(pi|cs|ch)_/.test(p.pasarela_id || '') ? 'Stripe' : 'Square'; };
+
   /* Colores e íconos de cada método de pago */
   var MET_ICO = { efectivo: 'i-cash', zelle: 'i-zap', tarjeta: 'i-card', cashapp: 'i-dollar', transferencia: 'i-bank', cheque: 'i-receipt', otro: 'i-dots' };
   function icoMet(k, cls) { return A.icon(MET_ICO[k] || 'i-dots', cls || 'icon-sm'); }
   function chipMetodo(p) {
-    return el('span', { class: 'mt mt-' + p.metodo }, [icoMet(p.metodo), A.METODOS[p.metodo] || p.metodo, p.pasarela_id ? el('em', { text: 'Square' }) : null]);
+    return el('span', { class: 'mt mt-' + p.metodo }, [icoMet(p.metodo), A.METODOS[p.metodo] || p.metodo, p.pasarela_id ? el('em', { text: A.pasarela(p) }) : null]);
   }
   function pct(a, b) { return b > 0 ? Math.round(a / b * 100) : 0; }
 
@@ -183,10 +186,10 @@
     pagosMes = res[0].data || [];
     A.pintarCobrosPendientes(ui.facturas, cargar);
     var enlaces = res[3].data || [];
-    // Si hay enlaces de tarjeta esperando pago, se le pregunta a Square una vez (por si su aviso no llegó)
+    // Si hay enlaces de tarjeta esperando pago, se le pregunta a Stripe una vez (por si su aviso no llegó)
     if (!verificado && enlaces.length) {
       verificado = true;
-      sb.functions.invoke('square-pago', { body: { tipo: 'verificar' } }).then(function (v) {
+      sb.functions.invoke('stripe-pago', { body: { tipo: 'verificar' } }).then(function (v) {
         if (v.data && v.data.registrados) { A.toast(v.data.registrados === 1 ? 'Llegó un pago con tarjeta y quedó registrado.' : 'Llegaron ' + v.data.registrados + ' pagos con tarjeta y quedaron registrados.', 'ok'); cargar(); }
       });
     }
@@ -206,7 +209,7 @@
       ['verde', 'i-wallet', A.dinero(total) || '$0', 'Cobrado en ' + nombreMes,
         dif == null ? (anterior === 0 && total > 0 ? 'Primer mes con cobros' : 'Sin cobros en ' + nombreAnt) : el('span', { class: dif >= 0 ? 'sube' : 'baja' }, [A.icon(dif >= 0 ? 'i-up' : 'i-down', 'icon-sm'), Math.abs(dif) + '% vs ' + nombreAnt + ' (' + (A.dinero(anterior) || '$0') + ')'])],
       ['ambar', 'i-hourglass', A.dinero(totalSaldo) || '$0', 'Por cobrar', saldos.length ? saldos.length + (saldos.length === 1 ? ' caso con saldo' : ' casos con saldo') : 'Nadie te debe'],
-      ['azul', 'i-card', A.dinero(suma(tarjeta)) || '$0', 'Con tarjeta (Square)', tarjeta.length + (tarjeta.length === 1 ? ' pago' : ' pagos') + (enlaces.length ? ' · ' + enlaces.length + ' enlace' + (enlaces.length === 1 ? '' : 's') + ' esperando' : '')],
+      ['azul', 'i-card', A.dinero(suma(tarjeta)) || '$0', 'Con tarjeta (Stripe)', tarjeta.length + (tarjeta.length === 1 ? ' pago' : ' pagos') + (enlaces.length ? ' · ' + enlaces.length + ' enlace' + (enlaces.length === 1 ? '' : 's') + ' esperando' : '')],
       ['morado', 'i-receipt', String(pagosMes.length), 'Pagos en ' + nombreMes, pagosMes.length ? 'Promedio ' + A.dinero(Math.round(total / pagosMes.length * 100) / 100) : 'Aún no hay pagos']
     ].forEach(function (s, i) {
       ui.stats.appendChild(el('div', { class: 'cb-kpi ' + s[0], style: 'animation-delay:' + i * 60 + 'ms' }, [
@@ -252,12 +255,12 @@
     if (enlaces.length) {
       var cEn = el('div', { class: 'card cb-enlaces' }, [el('div', { class: 'cb-en-h' }, [
         el('h3', { class: 't cb-t' }, [A.icon('i-card', 'icon-sm'), 'Enlaces de tarjeta esperando pago · ' + enlaces.length + ' · ' + A.dinero(suma(enlaces))]),
-        el('button', { class: 'mini-btn', type: 'button', text: 'Revisar en Square', title: 'Preguntar a Square si ya se pagaron', onclick: async function () {
+        el('button', { class: 'mini-btn', type: 'button', text: 'Revisar en Stripe', title: 'Preguntar a Stripe si ya se pagaron', onclick: async function () {
           this.disabled = true;
-          var v = await sb.functions.invoke('square-pago', { body: { tipo: 'verificar' } });
+          var v = await sb.functions.invoke('stripe-pago', { body: { tipo: 'verificar' } });
           this.disabled = false;
-          if (v.error) { A.toast('No se pudo revisar con Square.', 'error'); return; }
-          A.toast(v.data && v.data.registrados ? 'Se registraron ' + v.data.registrados + ' pago(s) con tarjeta.' : 'Todavía no hay pagos nuevos en Square.', v.data && v.data.registrados ? 'ok' : undefined);
+          if (v.error) { A.toast('No se pudo revisar con Stripe.', 'error'); return; }
+          A.toast(v.data && v.data.registrados ? 'Se registraron ' + v.data.registrados + ' pago(s) con tarjeta.' : 'Todavía no hay pagos nuevos en Stripe.', v.data && v.data.registrados ? 'ok' : undefined);
           if (v.data && v.data.registrados) cargar();
         } })
       ])]);
@@ -274,7 +277,7 @@
             } }) : null,
             el('button', { class: 'mini-btn', type: 'button', text: 'Cancelar', title: 'Marcar como cancelado en el CRM', onclick: async function () {
               if (!confirm('¿Marcar este enlace como cancelado?')) return;
-              await sb.from('enlaces_pago').update({ estado: 'cancelado' }).eq('id', e.id); cargar();
+              await A.cancelarEnlace(e.id); cargar();
             } })
           ])
         ]));
@@ -362,7 +365,7 @@
     A.csv('pagos-' + st.mes, [
       ['Factura', 'numero'], ['Fecha', 'fecha'], ['Cliente', function (p) { return A.nombreDe(p.clientes || {}); }],
       ['Servicio', function (p) { return p.casos ? (p.casos.titulo || A.SERVICIOS[p.casos.servicio].label) : ''; }],
-      ['Método', function (p) { return A.METODOS[p.metodo] + (p.pasarela_id ? ' (Square)' : ''); }], ['Monto', 'monto'], ['Concepto', 'nota']
+      ['Método', function (p) { return A.METODOS[p.metodo] + (p.pasarela_id ? ' (' + A.pasarela(p) + ')' : ''); }], ['Monto', 'monto'], ['Concepto', 'nota']
     ], pagosMes);
   }
 })();

@@ -10,7 +10,7 @@ const ORIGENES = ['https://avamultiservices.com', 'https://www.avamultiservices.
 const VENTANA = 24 * 3600e3;
 
 // Claves de integración: primero los secretos de Supabase, si no las guardadas desde el panel (Vault).
-const NOMBRES = ['META_VERIFY_TOKEN', 'META_APP_SECRET', 'WHATSAPP_TOKEN', 'WHATSAPP_PHONE_ID', 'META_PAGE_ID', 'META_PAGE_TOKEN', 'WHATSAPP_TEMPLATE', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET', 'SQUARE_ACCESS_TOKEN', 'SQUARE_WEBHOOK_SIGNATURE_KEY'];
+const NOMBRES = ['META_VERIFY_TOKEN', 'META_APP_SECRET', 'WHATSAPP_TOKEN', 'WHATSAPP_PHONE_ID', 'META_PAGE_ID', 'META_PAGE_TOKEN', 'WHATSAPP_TEMPLATE', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'];
 let K: Record<string, string> = {};
 let kHora = 0;
 async function cargarClaves(db: any) {
@@ -52,8 +52,8 @@ function estado() {
     whatsapp: e('WHATSAPP_TOKEN') && e('WHATSAPP_PHONE_ID'),
     meta: e('META_PAGE_TOKEN') || (e('META_PAGE_ID') && e('WHATSAPP_TOKEN')),
     webhook_meta: e('META_APP_SECRET') && e('META_VERIFY_TOKEN'),
-    pagos: e('SQUARE_ACCESS_TOKEN'),
-    webhook_pagos: e('SQUARE_WEBHOOK_SIGNATURE_KEY'),
+    pagos: e('STRIPE_SECRET_KEY'),
+    webhook_pagos: e('STRIPE_WEBHOOK_SECRET'),
     plantilla: K.WHATSAPP_TEMPLATE || 'aviso_ava'
   };
 }

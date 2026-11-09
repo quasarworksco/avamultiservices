@@ -459,7 +459,7 @@
     puede: puede, yo: function () { return me; }, equipo: equipo, limpiarEquipo: function () { equipoCache = null; },
     clientesBasicos: clientesBasicos,
     nuevoClienteBD: function (d) { cliCache = null; return sb.from('clientes').insert(d); }, limpiarClientes: function () { cliCache = null; }, recordar: recordar, olvidar: function (clave) { delete memo[clave]; },
-    // Qué integraciones están conectadas (WhatsApp, Meta, Square, IA, Google Calendar). Se pregunta una vez por sesión.
+    // Qué integraciones están conectadas (WhatsApp, Meta, Stripe, IA, Google Calendar). Se pregunta una vez por sesión.
     integraciones: function () {
       if (!integCache) integCache = Promise.all([
         sb.functions.invoke('enviar-mensaje', { body: { estado: true } }).then(function (r) { return r.data || {}; }).catch(function () { return {}; }),

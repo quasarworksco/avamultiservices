@@ -9,7 +9,7 @@
     ['WhatsApp Business (API de Meta)', 'Recibir y enviar mensajes dentro del CRM, respuesta fuera de horario y envíos automáticos de la cola.', 'whatsapp', 'i-whatsapp'],
     ['Instagram y Messenger', 'Mensajes directos de Instagram y Facebook en la misma bandeja.', 'meta', 'i-message'],
     ['Meta Ads (formularios de anuncios)', 'Los leads de tus anuncios entran solos a Solicitudes con origen «Meta Ads».', 'meta', 'i-trending'],
-    ['Pagos con tarjeta (Square)', 'Enlaces de pago por WhatsApp y botón de pago en el portal. Cada pago entra solo a Cobros con su recibo.', 'pagos', 'i-dollar'],
+    ['Pagos con tarjeta (Stripe)', 'Enlaces de pago por WhatsApp y botón de pago en el portal. Cada pago entra solo a Cobros con su recibo.', 'pagos', 'i-dollar'],
     ['Llamadas desde el CRM (Twilio)', 'Marcador en el panel, llamadas entrantes, buzón de voz, grabación y resumen con IA de cada llamada.', 'llamadas', 'i-phone'],
     ['Asistente con IA (Groq)', 'Lee cada mensaje: qué servicio busca, qué tan interesado está y una respuesta sugerida que tú envías.', 'ia', 'i-sparkles'],
     ['QuickBooks', 'Sincronizar tus cobros y la contabilidad de tus clientes.', null, 'i-calculator'],
@@ -92,12 +92,12 @@
         intCard.appendChild(el('div', { class: 'integ' }, [el('span', { class: 'ti-ico' }, [A.icon(x[3], 'icon-sm')]), el('div', null, [el('b', { text: x[0] }), el('span', { class: 'muted', text: detalle })]),
           el('span', { class: 'pill ' + (on ? 'completado' : 'pendiente'), text: on ? 'Activo' : 'Por conectar' })]));
       });
-      // Direcciones para configurar en Meta y Square
+      // Direcciones para configurar en Meta y Stripe
       function copiar(txt) { return el('button', { class: 'mini-btn', type: 'button', text: 'Copiar', onclick: function () { navigator.clipboard.writeText(txt).then(function () { A.toast('Copiado.'); }); } }); }
       intCard.appendChild(el('div', { class: 'field', style: 'margin-top:14px' }, [el('label', { text: 'Webhook para Meta (WhatsApp, Instagram, Messenger y anuncios)' }),
         el('div', { style: 'display:flex;gap:8px;align-items:center' }, [el('code', { style: 'flex:1;min-width:0;overflow-wrap:anywhere;font-size:12px', text: FN + 'meta-webhook' }), copiar(FN + 'meta-webhook')])]));
-      intCard.appendChild(el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: 'Webhook para Square (eventos payment.created, payment.updated y refund.updated)' }),
-        el('div', { style: 'display:flex;gap:8px;align-items:center' }, [el('code', { style: 'flex:1;min-width:0;overflow-wrap:anywhere;font-size:12px', text: FN + 'square-webhook' }), copiar(FN + 'square-webhook')])]));
+      intCard.appendChild(el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: 'Webhook para Stripe (eventos checkout.session.completed, checkout.session.async_payment_succeeded, checkout.session.async_payment_failed y charge.refunded)' }),
+        el('div', { style: 'display:flex;gap:8px;align-items:center' }, [el('code', { style: 'flex:1;min-width:0;overflow-wrap:anywhere;font-size:12px', text: FN + 'stripe-webhook' }), copiar(FN + 'stripe-webhook')])]));
       // Últimos eventos recibidos
       var ev = await sb.from('integraciones_eventos').select('*').order('created_at', { ascending: false }).limit(8);
       if ((ev.data || []).length) {
@@ -115,9 +115,8 @@
         ['WHATSAPP_PHONE_ID', 'Phone number ID de WhatsApp', 'App → WhatsApp → Configuración de la API (número largo, no el teléfono)'],
         ['META_PAGE_ID', 'ID de la página de Facebook', 'Página de AVA → Información → Identificador'],
         ['WHATSAPP_TEMPLATE', 'Nombre de la plantilla de avisos (opcional)', 'Si no se llena se usa «aviso_ava»'],
-        ['SQUARE_ACCESS_TOKEN', 'Access token de Square', 'developer.squareup.com → tu app → Credentials → Production → Access token'],
-        ['SQUARE_WEBHOOK_SIGNATURE_KEY', 'Signature key del webhook de Square', 'developer.squareup.com → tu app → Webhooks → Subscriptions → Signature key'],
-        ['SQUARE_LOCATION_ID', 'Location ID de Square (opcional)', 'Solo si tienes varias sucursales en Square; si no, se usa la principal'],
+        ['STRIPE_SECRET_KEY', 'Clave secreta de Stripe', 'dashboard.stripe.com → Developers → API keys → Secret key (sk_live_…) o una Restricted key (rk_live_…)'],
+        ['STRIPE_WEBHOOK_SECRET', 'Signing secret del webhook de Stripe', 'dashboard.stripe.com → Developers → Webhooks → tu endpoint → Signing secret (whsec_…)'],
         ['GROQ_API_KEY', 'Clave de Groq (IA gratuita)', 'console.groq.com → API Keys (gsk_…)'],
         ['TWILIO_ACCOUNT_SID', 'Account SID de Twilio (llamadas)', 'console.twilio.com → Account Info → Account SID (empieza con AC)'],
         ['TWILIO_AUTH_TOKEN', 'Auth Token de Twilio', 'console.twilio.com → Account Info → Auth Token'],
@@ -126,10 +125,10 @@
         ['TWILIO_NUMERO', 'Número de Twilio de AVA', 'Phone Numbers → Active numbers (por ejemplo +12145550123). El CRM lo configura solo.']
       ];
       var claveCard = el('div', { class: 'card' }, [el('h3', { class: 't', text: 'Claves de integración' }),
-        el('p', { class: 'muted', style: 'margin-bottom:12px', text: 'Pega aquí las claves de Meta, Square y Groq. Se guardan cifradas y nadie puede volver a verlas; para cambiar una, pega la nueva.' })]);
+        el('p', { class: 'muted', style: 'margin-bottom:12px', text: 'Pega aquí las claves de Meta, Stripe y Groq. Se guardan cifradas y nadie puede volver a verlas; para cambiar una, pega la nueva.' })]);
       var cfgClaves = (await sb.rpc('claves_configuradas')).data || {};
       CLAVES.forEach(function (c) {
-        var inp = el('input', { class: 'input sm', type: c[0] === 'WHATSAPP_PHONE_ID' || c[0] === 'META_PAGE_ID' || c[0] === 'WHATSAPP_TEMPLATE' || c[0] === 'SQUARE_LOCATION_ID' ? 'text' : 'password', autocomplete: 'off', placeholder: cfgClaves[c[0]] ? '•••••••• (guardada)' : 'Pegar aquí', 'aria-label': c[1] });
+        var inp = el('input', { class: 'input sm', type: c[0] === 'WHATSAPP_PHONE_ID' || c[0] === 'META_PAGE_ID' || c[0] === 'WHATSAPP_TEMPLATE' ? 'text' : 'password', autocomplete: 'off', placeholder: cfgClaves[c[0]] ? '•••••••• (guardada)' : 'Pegar aquí', 'aria-label': c[1] });
         var pill = el('span', { class: 'pill ' + (cfgClaves[c[0]] ? 'completado' : 'pendiente'), text: cfgClaves[c[0]] ? 'Guardada' : 'Falta' });
         claveCard.appendChild(el('div', { class: 'field', style: 'margin-top:10px' }, [
           el('label', { style: 'display:flex;justify-content:space-between;gap:8px;align-items:center' }, [el('span', { text: c[1] }), pill]),
