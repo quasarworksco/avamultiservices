@@ -126,8 +126,8 @@
     m.inputs.fecha.addEventListener('input', cuotas.alCambiar);
   };
 
-  // Pasarela de un pago con tarjeta en línea: los de Stripe empiezan con pi_ o cs_ (antes se usaba Square)
-  A.pasarela = function (p) { return /^(pi|cs|ch)_/.test(p.pasarela_id || '') ? 'Stripe' : 'Square'; };
+  // Pasarela de un pago con tarjeta en línea (Stripe; los pocos pagos anteriores salen como «en línea»)
+  A.pasarela = function (p) { return /^(pi|cs|ch)_/.test(p.pasarela_id || '') ? 'Stripe' : 'en línea'; };
 
   /* Colores e íconos de cada método de pago */
   var MET_ICO = { efectivo: 'i-cash', zelle: 'i-zap', tarjeta: 'i-card', cashapp: 'i-dollar', transferencia: 'i-bank', cheque: 'i-receipt', otro: 'i-dots' };

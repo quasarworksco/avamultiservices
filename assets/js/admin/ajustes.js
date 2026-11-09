@@ -18,7 +18,7 @@
     ['Portal del cliente', 'Tus clientes ven su avance, suben documentos y firman.', true, 'i-lock'],
     ['Citas en línea', 'Reservas en avamultiservices.com/citas con recordatorio.', true, 'i-clock']
   ];
-  var FUENTES = { whatsapp: 'WhatsApp', messenger: 'Messenger', instagram: 'Instagram', meta_ads: 'Meta Ads', stripe: 'Stripe', square: 'Square', cola: 'Envío automático' };
+  var FUENTES = { whatsapp: 'WhatsApp', messenger: 'Messenger', instagram: 'Instagram', meta_ads: 'Meta Ads', stripe: 'Stripe', square: 'Tarjeta (sistema anterior)', cola: 'Envío automático' };
 
   A.vista('ajustes', {
     permiso: 'equipo',
