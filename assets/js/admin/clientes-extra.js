@@ -140,12 +140,12 @@
   var SERV_PLAN = { credito: 'Reparación de crédito', contabilidad: 'Contabilidad mensual', plan_irs: 'Plan de pago IRS', otro: 'Otro' };
   var COBRO = { manual: '', pendiente: 'esperando que el cliente registre su tarjeta', activo: 'se cobra solo con tarjeta', fallido: 'el último cobro con tarjeta falló', cancelado: 'cobro con tarjeta cancelado' };
 
-  // Crea un enlace de pago de Square y lo comparte por WhatsApp con el cliente
+  // Crea un enlace de pago de Stripe y lo comparte por WhatsApp con el cliente
   async function enlacePago(c, cuerpo, mensaje) {
-    // La ventana se abre antes de esperar a Square para que el navegador no la bloquee
+    // La ventana se abre antes de esperar a Stripe para que el navegador no la bloquee
     var w = c.telefono ? window.open('', '_blank') : null;
     if (w) w.opener = null;
-    var r = await sb.functions.invoke('square-pago', { body: cuerpo });
+    var r = await sb.functions.invoke('stripe-pago', { body: cuerpo });
     if (r.error) {
       if (w) w.close();
       var e = {}; try { e = await r.error.context.json(); } catch (_) { /* */ }
@@ -172,7 +172,7 @@
           el('div', null, [el('b', { text: SERV_PLAN[p.servicio] + (p.descripcion ? ' · ' + p.descripcion : '') }), el('div', { class: 'muted', text: 'Día ' + p.dia_cobro + ' de cada mes' + (p.activo ? '' : ' · pausado') + (COBRO[p.estado_cobro] ? ' · ' + COBRO[p.estado_cobro] : '') + (p.servicio === 'contabilidad' && p.activo ? ' · crea el caso del mes automáticamente' : '') })]),
           el('b', { class: p.activo ? '' : 'muted', text: A.dinero(p.monto) + '/mes' })
         ]));
-        // Square no permite cobrar reparación de crédito con tarjeta
+        // Stripe no permite cobrar reparación de crédito con tarjeta
         if (integ.pagos && p.activo && A.puede('cobros') && p.servicio !== 'credito') {
           card.appendChild(el('button', { class: 'mini-btn', type: 'button', style: 'margin:-2px 0 10px', text: 'Enviar enlace de pago del mes',
             onclick: async function () {
@@ -186,10 +186,10 @@
       if (A.puede('cobros')) {
         var en = await sb.from('enlaces_pago').select('*').eq('cliente_id', c.id).order('created_at', { ascending: false }).limit(5);
         if ((en.data || []).length) {
-          // Si hay enlaces esperando pago, se le pregunta a Square una vez (por si el aviso de Square no llegó)
+          // Si hay enlaces esperando pago, se le pregunta a Stripe una vez (por si su aviso no llegó)
           if (!verificado[c.id] && en.data.some(function (e) { return e.estado === 'pendiente'; })) {
             verificado[c.id] = true;
-            sb.functions.invoke('square-pago', { body: { tipo: 'verificar', cliente_id: c.id } }).then(function (v) {
+            sb.functions.invoke('stripe-pago', { body: { tipo: 'verificar', cliente_id: c.id } }).then(function (v) {
               if (v.data && v.data.registrados) { A.toast('Pago con tarjeta recibido y registrado en Cobros.', 'ok'); pintar(); }
             });
           }
@@ -201,9 +201,9 @@
               el('div', { style: 'display:flex;gap:6px;align-items:center;flex:none' }, [
                 el('span', { class: 'pill ' + EST[0], text: EST[1] }),
                 e.estado === 'pendiente' ? el('button', { class: 'mini-btn', type: 'button', text: 'Copiar', onclick: function () { navigator.clipboard.writeText(e.url).then(function () { A.toast('Enlace copiado.'); }); } }) : null,
-                e.estado === 'pendiente' ? el('button', { class: 'mini-btn', type: 'button', text: 'Cancelar', title: 'Marcar como cancelado en el CRM (el cliente ya no debería usarlo)', onclick: async function () {
-                  if (!confirm('¿Marcar este enlace como cancelado?')) return;
-                  await sb.from('enlaces_pago').update({ estado: 'cancelado' }).eq('id', e.id); pintar();
+                e.estado === 'pendiente' ? el('button', { class: 'mini-btn', type: 'button', text: 'Cancelar', title: 'Desactivar el enlace: el cliente ya no podrá pagar con él', onclick: async function () {
+                  if (!confirm('¿Cancelar este enlace? El cliente ya no podrá pagar con él.')) return;
+                  await A.cancelarEnlace(e.id); pintar();
                 } }) : null
               ])
             ]));
@@ -221,7 +221,7 @@
         { k: 'monto', label: 'Monto (USD)', type: 'number', required: true, min: '1', step: '0.01' },
         { k: 'descripcion', label: 'Concepto', max: 120, placeholder: 'Preparación de taxes 2025', full: true }
       ],
-      extra: el('p', { class: 'muted', style: 'margin-top:10px;font-size:12.5px', text: 'Se abre WhatsApp con el enlace de pago seguro de Square. Cuando el cliente pague, el pago aparece solo en Cobros con su recibo. No lo uses para reparación de crédito: Square no lo permite (cóbralo por Zelle o efectivo).' }),
+      extra: el('p', { class: 'muted', style: 'margin-top:10px;font-size:12.5px', text: 'Se abre WhatsApp con el enlace de pago seguro de Stripe. Cuando el cliente pague, el pago aparece solo en Cobros con su recibo. No lo uses para reparación de crédito: Stripe no lo permite (cóbralo por Zelle o efectivo).' }),
       guardar: async function (d) {
         await enlacePago(c, { tipo: 'monto', cliente_id: c.id, monto: Number(d.monto), descripcion: d.descripcion || 'Pago a AVA Multiservices' },
           'Hola ' + (c.nombre || '') + ', puedes pagar ' + A.dinero(d.monto) + (d.descripcion ? ' (' + d.descripcion + ')' : '') + ' con tarjeta aquí:');
@@ -242,7 +242,7 @@
         { k: 'activo', label: 'Estado', type: 'select', value: p.activo === false ? 'no' : 'si', options: [['si', 'Activo'], ['no', 'Pausado']] },
         { k: 'descripcion', label: 'Descripción', full: true, value: p.descripcion, max: 200, placeholder: 'Plan crédito 6 meses' }
       ],
-      extra: el('p', { class: 'muted', style: 'margin-top:10px;font-size:12.5px', text: 'El sistema te avisa 2 días antes de cada cobro. Con Square conectado, toca «Enviar enlace de pago del mes» y el cliente paga con tarjeta desde su celular.' }),
+      extra: el('p', { class: 'muted', style: 'margin-top:10px;font-size:12.5px', text: 'El sistema te avisa 2 días antes de cada cobro. Con Stripe conectado, toca «Enviar enlace de pago del mes» y el cliente paga con tarjeta desde su celular.' }),
       guardar: async function (d, aviso) {
         d.activo = d.activo !== 'no';
         d.dia_cobro = Math.min(28, Math.max(1, Number(d.dia_cobro) || 1));

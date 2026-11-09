@@ -109,7 +109,7 @@
       card.disabled = !conTarjeta; card.style.marginTop = '8px';
       card.onclick = async function () {
         card.disabled = true; card.textContent = 'Abriendo pago seguro…';
-        var s = await sb.functions.invoke('square-pago', { body: { tipo: 'saldo' } });
+        var s = await sb.functions.invoke('stripe-pago', { body: { tipo: 'saldo' } });
         if (s.data && s.data.url) { location.href = s.data.url; return; }
         var e = {}; try { e = await s.error.context.json(); } catch (_) { /* */ }
         msg('pmsg', e.error || 'No se pudo abrir el pago. Intenta de nuevo.');

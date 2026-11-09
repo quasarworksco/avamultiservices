@@ -1,105 +1,81 @@
-// Webhook de Stripe para AVA: registra en Cobros los pagos con tarjeta y los cobros mensuales.
+// Webhook de Stripe para AVA: cuando un cliente paga con un enlace del CRM, el pago aparece solo en Cobros.
+// Los pagos hechos en Stripe fuera del CRM y los reembolsos se avisan en Ajustes → Actividad reciente.
 import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2.49.8';
 
 const enc = new TextEncoder();
 
-// Claves de integración: primero los secretos de Supabase, si no las guardadas desde el panel (Vault).
-const NOMBRES = ['META_VERIFY_TOKEN', 'META_APP_SECRET', 'WHATSAPP_TOKEN', 'WHATSAPP_PHONE_ID', 'META_PAGE_ID', 'META_PAGE_TOKEN', 'WHATSAPP_TEMPLATE', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET'];
-let K: Record<string, string> = {};
+let secreto = '';
 let kHora = 0;
-async function cargarClaves(db: any) {
-  if (Date.now() - kHora < 60000) return K;
+async function cargarClave(db: SupabaseClient) {
+  if (Date.now() - kHora < 60000) return secreto;
   const { data } = await db.rpc('claves_integracion');
-  const v = (data || {}) as Record<string, string>;
-  const n: Record<string, string> = {};
-  NOMBRES.forEach((x) => { n[x] = Deno.env.get(x) || v[x] || ''; });
-  K = n; kHora = Date.now(); pagTok = '';
-  return K;
-}
-// Token de la página: el guardado o, si no, se pide a Meta con el token del usuario del sistema
-let pagTok = '';
-async function tokenPagina(graph: string) {
-  if (K.META_PAGE_TOKEN) return K.META_PAGE_TOKEN;
-  if (pagTok) return pagTok;
-  if (!K.META_PAGE_ID || !K.WHATSAPP_TOKEN) return '';
-  const r = await fetch(`${graph}/${K.META_PAGE_ID}?fields=access_token&access_token=${encodeURIComponent(K.WHATSAPP_TOKEN)}`);
-  const j = await r.json().catch(() => ({}));
-  pagTok = j.access_token || '';
-  return pagTok;
+  secreto = Deno.env.get('STRIPE_WEBHOOK_SECRET') || (data || {}).STRIPE_WEBHOOK_SECRET || '';
+  kHora = Date.now();
+  return secreto;
 }
 
+// Cabecera Stripe-Signature: t=marca,v1=firma (HMAC-SHA256 de «t.cuerpo» con el secreto whsec_…)
 async function firmaValida(cuerpo: string, cabecera: string | null) {
-  const secreto = K.STRIPE_WEBHOOK_SECRET;
   if (!secreto || !cabecera) return false;
-  const partes: Record<string, string[]> = {};
-  cabecera.split(',').forEach((x) => { const [k, v] = x.split('='); (partes[k] = partes[k] || []).push(v); });
-  const t = partes.t?.[0];
-  if (!t || Math.abs(Date.now() / 1000 - Number(t)) > 300) return false;
+  let t = '';
+  const firmas: string[] = [];
+  cabecera.split(',').forEach((x) => { const i = x.indexOf('='); const k = x.slice(0, i).trim(), v = x.slice(i + 1).trim(); if (k === 't') t = v; if (k === 'v1') firmas.push(v); });
+  if (!t || !firmas.length || Math.abs(Date.now() / 1000 - Number(t)) > 300) return false;
   const key = await crypto.subtle.importKey('raw', enc.encode(secreto), { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
-  const mac = new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode(`${t}.${cuerpo}`)));
-  const hex = Array.from(mac, (b) => b.toString(16).padStart(2, '0')).join('');
-  return (partes.v1 || []).some((v) => {
-    if (v.length !== hex.length) return false;
+  const mac = new Uint8Array(await crypto.subtle.sign('HMAC', key, enc.encode(t + '.' + cuerpo)));
+  const esperada = Array.from(mac, (b) => b.toString(16).padStart(2, '0')).join('');
+  return firmas.some((f) => {
+    if (f.length !== esperada.length) return false;
     let r = 0;
-    for (let i = 0; i < hex.length; i++) r |= hex.charCodeAt(i) ^ v.charCodeAt(i);
+    for (let i = 0; i < f.length; i++) r |= f.charCodeAt(i) ^ esperada.charCodeAt(i);
     return r === 0;
   });
 }
 
 const hoy = () => new Date().toLocaleDateString('sv-SE', { timeZone: 'America/Chicago' });
+const dinero = (centavos: number) => '$' + (centavos / 100).toFixed(2);
 async function log(db: SupabaseClient, tipo: string, ok: boolean, detalle?: string) {
   await db.from('integraciones_eventos').insert({ fuente: 'stripe', tipo, ok, detalle: detalle?.slice(0, 1000) || null });
 }
-async function registrarPago(db: SupabaseClient, p: { cliente_id: string; caso_id?: string | null; monto: number; nota: string; stripe_id: string }) {
-  const ins = await db.from('pagos').insert({ cliente_id: p.cliente_id, caso_id: p.caso_id || null, monto: p.monto, fecha: hoy(), metodo: 'tarjeta', nota: p.nota.slice(0, 500), stripe_id: p.stripe_id });
-  if (ins.error && ins.error.code !== '23505') throw new Error(ins.error.message);
+
+async function sesionPagada(db: SupabaseClient, s: Record<string, any>) {
+  if (s.payment_status !== 'paid') return;
+  const centavos = Number(s.amount_total || 0);
+  if (!(centavos > 0)) return;
+  const ref = String(s.payment_intent || s.id);
+  const { data: ya } = await db.from('pagos').select('id').eq('pasarela_id', ref).maybeSingle();
+  if (ya) return;
+  const { data: e } = s.payment_link ? await db.from('enlaces_pago').select('*').eq('enlace_id', s.payment_link).maybeSingle() : { data: null };
+  if (!e) {
+    await log(db, 'pago_sin_vincular', true, dinero(centavos) + ' cobrado en Stripe fuera del CRM' + (s.customer_details?.email ? ' · ' + s.customer_details.email : '') + '. Regístralo en Cobros si es de un cliente.');
+    return;
+  }
+  if (e.estado === 'pagado') return;
+  const ins = await db.from('pagos').insert({
+    cliente_id: e.cliente_id, caso_id: e.caso_id, monto: centavos / 100, fecha: hoy(), metodo: 'tarjeta',
+    nota: ('Pago con tarjeta (Stripe)' + (e.concepto ? ': ' + e.concepto : '')).slice(0, 500), pasarela_id: ref
+  }).select('id').single();
+  if (ins.error) {
+    if (ins.error.code === '23505') return; // Stripe avisó dos veces
+    throw new Error(ins.error.message);
+  }
+  await db.from('enlaces_pago').update({ estado: 'pagado', pago_id: ins.data.id, pagado_at: new Date().toISOString() }).eq('id', e.id);
+  await log(db, 'pago', true, dinero(centavos) + (e.concepto ? ' · ' + e.concepto : ''));
 }
 
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('Método no permitido', { status: 405 });
   const cuerpo = await req.text();
   const db = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
-  await cargarClaves(db);
-  if (!(await firmaValida(cuerpo, req.headers.get('Stripe-Signature')))) return new Response('Firma inválida', { status: 400 });
-  const ev = JSON.parse(cuerpo);
-  const o = ev.data?.object || {};
+  await cargarClave(db);
+  if (!(await firmaValida(cuerpo, req.headers.get('stripe-signature')))) return new Response('Firma inválida', { status: 400 });
+  let ev: Record<string, any> = {};
+  try { ev = JSON.parse(cuerpo); } catch (_) { return new Response('JSON inválido', { status: 400 }); }
+  const obj = ev.data?.object || {};
   try {
-    switch (ev.type) {
-      case 'checkout.session.completed': {
-        const m = o.metadata || {};
-        if (o.mode === 'payment' && o.payment_status === 'paid' && m.cliente_id) {
-          await registrarPago(db, { cliente_id: m.cliente_id, caso_id: m.caso_id || null, monto: o.amount_total / 100, nota: 'Pago con tarjeta (Stripe)', stripe_id: String(o.payment_intent || o.id) });
-          await log(db, 'pago', true, '$' + (o.amount_total / 100).toFixed(2));
-        } else if (o.mode === 'subscription' && m.plan_id) {
-          await db.from('planes').update({ stripe_suscripcion: o.subscription, estado_cobro: 'activo' }).eq('id', m.plan_id);
-          await log(db, 'plan_activado', true);
-        }
-        break;
-      }
-      case 'invoice.paid': {
-        const sub = o.subscription || o.parent?.subscription_details?.subscription;
-        if (!sub || !(o.amount_paid > 0)) break;
-        const { data: p } = await db.from('planes').select('id,cliente_id,descripcion').eq('stripe_suscripcion', sub).maybeSingle();
-        const meta = o.subscription_details?.metadata || o.parent?.subscription_details?.metadata || {};
-        const plan = p || (meta.plan_id ? (await db.from('planes').select('id,cliente_id,descripcion').eq('id', meta.plan_id).maybeSingle()).data : null);
-        if (!plan) { await log(db, 'cobro_mensual', false, 'Suscripción sin plan: ' + sub); break; }
-        if (!p) await db.from('planes').update({ stripe_suscripcion: sub }).eq('id', plan.id);
-        await registrarPago(db, { cliente_id: plan.cliente_id, monto: o.amount_paid / 100, nota: 'Cobro mensual con tarjeta: ' + (plan.descripcion || 'plan'), stripe_id: o.id });
-        await db.from('planes').update({ estado_cobro: 'activo' }).eq('id', plan.id);
-        await log(db, 'cobro_mensual', true, '$' + (o.amount_paid / 100).toFixed(2));
-        break;
-      }
-      case 'invoice.payment_failed': {
-        const sub = o.subscription || o.parent?.subscription_details?.subscription;
-        if (sub) await db.from('planes').update({ estado_cobro: 'fallido' }).eq('stripe_suscripcion', sub);
-        await log(db, 'cobro_fallido', false, o.customer_email || '');
-        break;
-      }
-      case 'customer.subscription.deleted':
-        await db.from('planes').update({ estado_cobro: 'cancelado' }).eq('stripe_suscripcion', o.id);
-        await log(db, 'plan_cancelado', true);
-        break;
-    }
+    if (ev.type === 'checkout.session.completed' || ev.type === 'checkout.session.async_payment_succeeded') await sesionPagada(db, obj);
+    else if (ev.type === 'checkout.session.async_payment_failed') await log(db, 'pago_fallido', false, dinero(Number(obj.amount_total || 0)) + ': el pago bancario del cliente no se completó.');
+    else if (ev.type === 'charge.refunded') await log(db, 'reembolso', true, dinero(Number(obj.amount_refunded || 0)) + ' devuelto en Stripe. Ajusta el pago en Cobros.');
   } catch (e) {
     await log(db, ev.type || 'error', false, (e as Error).message);
     return new Response('Error', { status: 500 }); // Stripe reintenta

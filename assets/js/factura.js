@@ -61,7 +61,7 @@
           }
           if (k === 'tarjeta' && d.tarjeta) {
             var t = nodo('a', 'btn btn-primary'); t.appendChild(nodo('span', 'btn-label', 'Pagar ' + dinero(d.monto) + ' con tarjeta')); t.href = d.tarjeta; t.target = '_blank'; t.rel = 'noopener';
-            ops.appendChild(opcion('Tarjeta de crédito o débito', 'Pago seguro con Square. Se registra solo.', [t]));
+            ops.appendChild(opcion('Tarjeta de crédito o débito', 'Pago seguro con Stripe. Se registra solo.', [t]));
           }
           if (k === 'efectivo') ops.appendChild(opcion('Efectivo', 'Puedes pagar en efectivo en nuestra oficina.'));
           if (k === 'transferencia') ops.appendChild(opcion('Transferencia bancaria', 'Escríbenos y te enviamos los datos de la cuenta.'));
