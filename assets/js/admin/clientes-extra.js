@@ -140,8 +140,8 @@
   var SERV_PLAN = { credito: 'Reparación de crédito', contabilidad: 'Contabilidad mensual', plan_irs: 'Plan de pago IRS', otro: 'Otro' };
   var COBRO = { manual: '', pendiente: 'esperando que el cliente registre su tarjeta', activo: 'se cobra solo con tarjeta', fallido: 'el último cobro con tarjeta falló', cancelado: 'cobro con tarjeta cancelado' };
 
-  // Crea un enlace de pago de Stripe y lo comparte por WhatsApp con el cliente
-  async function enlacePago(c, cuerpo, mensaje) {
+  // Crea un enlace de pago de Stripe y lo comparte por WhatsApp con el cliente (y, si tiene correo, también por correo)
+  async function enlacePago(c, cuerpo, mensaje, asunto) {
     // La ventana se abre antes de esperar a Stripe para que el navegador no la bloquee
     var w = c.telefono ? window.open('', '_blank') : null;
     if (w) w.opener = null;
@@ -153,7 +153,19 @@
     }
     var texto = mensaje + ' ' + r.data.url;
     if (w) w.location.href = A.wa(c.telefono, texto);
-    else { try { await navigator.clipboard.writeText(r.data.url); } catch (_) { /* */ } A.toast('Enlace copiado: el cliente no tiene teléfono.'); }
+    else if (!c.email) { try { await navigator.clipboard.writeText(r.data.url); } catch (_) { /* */ } A.toast('Enlace copiado: el cliente no tiene teléfono.'); }
+    if (c.email) correoEnlace(c, texto, asunto || 'Tu enlace de pago · AVA Multiservices', !!w);
+  }
+  // Se abre el correo con el mensaje listo (el navegador solo lo permite con un toque, por eso es un botón)
+  function correoEnlace(c, texto, asunto, porWhatsapp) {
+    var cuerpo = texto + '\n\nEl pago es seguro: se hace en la página de Stripe y tu tarjeta no se guarda en nuestro sistema.\n\nAVA Multiservices';
+    var m = A.modal({ titulo: porWhatsapp ? '¿También por correo?' : 'Enviar por correo', ok: 'Listo', campos: [],
+      extra: el('div', null, [
+        el('p', { class: 'muted', style: 'margin-bottom:12px;font-size:13.5px', text: (porWhatsapp ? 'Ya se abrió WhatsApp. ' : 'El cliente no tiene teléfono. ') + 'Envíale el mismo enlace a ' + c.email + ':' }),
+        el('a', { class: 'btn btn-dark btn-sm', href: 'mailto:' + encodeURIComponent(c.email) + '?subject=' + encodeURIComponent(asunto) + '&body=' + encodeURIComponent(cuerpo),
+          onclick: function () { setTimeout(function () { m.cerrar(); }, 300); } }, [A.icon('i-mail', 'icon-sm'), el('span', { text: 'Abrir correo con el mensaje' })])
+      ]),
+      guardar: function () { } });
   }
   A.enlacePago = enlacePago;
   var verificado = {};
@@ -173,13 +185,29 @@
           el('b', { class: p.activo ? '' : 'muted', text: A.dinero(p.monto) + '/mes' })
         ]));
         // Stripe no permite cobrar reparación de crédito con tarjeta
-        if (integ.pagos && p.activo && A.puede('cobros') && p.servicio !== 'credito') {
-          card.appendChild(el('button', { class: 'mini-btn', type: 'button', style: 'margin:-2px 0 10px', text: 'Enviar enlace de pago del mes',
-            onclick: async function () {
-              await enlacePago(c, { tipo: 'monto', cliente_id: c.id, plan_id: p.id, monto: Number(p.monto), descripcion: (SERV_PLAN[p.servicio] + (p.descripcion ? ' · ' + p.descripcion : '')) + ' (mensualidad)' },
-                'Hola ' + (c.nombre || '') + ', aquí puedes pagar con tarjeta tu mensualidad de ' + A.dinero(p.monto) + ':');
-              pintar();
-            } }));
+        if (integ.pagos && A.puede('cobros') && p.servicio !== 'credito' && (p.activo || p.stripe_suscripcion)) {
+          var acc = el('div', { style: 'display:flex;gap:6px;flex-wrap:wrap;margin:-2px 0 10px' });
+          if (p.stripe_suscripcion) {
+            // Ya se cobra solo cada mes (o Stripe está reintentando un cobro fallido)
+            acc.appendChild(el('button', { class: 'mini-btn', type: 'button', text: 'Cancelar cobro automático', onclick: function () { cancelarAuto(p); } }));
+          } else {
+            acc.appendChild(el('button', { class: 'mini-btn', type: 'button', text: 'Enviar enlace de pago del mes',
+              onclick: async function () {
+                await enlacePago(c, { tipo: 'monto', cliente_id: c.id, plan_id: p.id, monto: Number(p.monto), descripcion: (SERV_PLAN[p.servicio] + (p.descripcion ? ' · ' + p.descripcion : '')) + ' (mensualidad)' },
+                  'Hola ' + (c.nombre || '') + ', aquí puedes pagar con tarjeta tu mensualidad de ' + A.dinero(p.monto) + ':', 'Pago de tu mensualidad · AVA Multiservices');
+                pintar();
+              } }));
+            acc.appendChild(el('button', { class: 'mini-btn', type: 'button', text: p.estado_cobro === 'pendiente' ? 'Reenviar enlace del cobro automático' : 'Activar cobro automático',
+              title: 'El cliente registra su tarjeta una vez y la mensualidad se le cobra sola cada mes', onclick: async function () {
+                if (p.estado_cobro !== 'pendiente' && !confirm('Se le enviará a ' + (c.nombre || 'el cliente') + ' un enlace para registrar su tarjeta. Al registrarla se le cobra ' + A.dinero(p.monto) + ' ese mismo día y después cada mes en esa fecha, sin que tengas que mandarle nada. ¿Continuar?')) return;
+                await enlacePago(c, { tipo: 'suscripcion', plan_id: p.id },
+                  'Hola ' + (c.nombre || '') + ', para que tu mensualidad de ' + A.dinero(p.monto) + ' se pague sola cada mes con tu tarjeta, regístrala aquí (pago seguro con Stripe). El primer cobro se hace al registrarla y después cada mes en la misma fecha:',
+                  'Activa el pago automático de tu mensualidad · AVA Multiservices');
+                pintar();
+              } }));
+            if (p.estado_cobro === 'pendiente') acc.appendChild(el('button', { class: 'mini-btn', type: 'button', text: 'Cancelar', onclick: function () { cancelarAuto(p); } }));
+          }
+          card.appendChild(acc);
         }
       });
       // Enlaces de pago enviados y si ya se pagaron
@@ -210,6 +238,12 @@
           });
         }
       }
+    }
+    async function cancelarAuto(p) {
+      if (!confirm(p.stripe_suscripcion ? '¿Cancelar el cobro automático? Ya no se le cobrará solo cada mes; el plan vuelve a cobro manual.' : '¿Cancelar el enlace para activar el cobro automático?')) return;
+      var r = await sb.functions.invoke('stripe-pago', { body: { tipo: 'cancelar_suscripcion', plan_id: p.id } });
+      if (r.error) { var e = {}; try { e = await r.error.context.json(); } catch (_) { /* */ } A.toast(e.error || 'No se pudo cancelar.', 'error'); return; }
+      A.toast(p.stripe_suscripcion ? 'Cobro automático cancelado.' : 'Enlace cancelado.'); pintar();
     }
     pintar();
     return card;
@@ -242,9 +276,12 @@
         { k: 'activo', label: 'Estado', type: 'select', value: p.activo === false ? 'no' : 'si', options: [['si', 'Activo'], ['no', 'Pausado']] },
         { k: 'descripcion', label: 'Descripción', full: true, value: p.descripcion, max: 200, placeholder: 'Plan crédito 6 meses' }
       ],
-      extra: el('p', { class: 'muted', style: 'margin-top:10px;font-size:12.5px', text: 'El sistema te avisa 2 días antes de cada cobro. Con Stripe conectado, toca «Enviar enlace de pago del mes» y el cliente paga con tarjeta desde su celular.' }),
+      extra: el('p', { class: 'muted', style: 'margin-top:10px;font-size:12.5px', text: p.stripe_suscripcion ? 'Este plan se cobra solo con tarjeta cada mes. Para cambiar el monto, pausarlo o eliminarlo, primero cancela el cobro automático.' :
+        'El sistema te avisa 2 días antes de cada cobro. Con Stripe conectado puedes enviar el enlace de pago de cada mes o activar el cobro automático: el cliente registra su tarjeta una vez y se le cobra solo.' }),
       guardar: async function (d, aviso) {
         d.activo = d.activo !== 'no';
+        // La suscripción de Stripe tiene el monto fijo: se cancela antes de cambiarlo o pausar el plan
+        if (p.stripe_suscripcion && (Number(d.monto) !== Number(p.monto) || !d.activo)) { A.msg(aviso, 'Este plan se cobra solo con tarjeta. Primero toca «Cancelar cobro automático» y luego cambia el monto o páusalo.'); return false; }
         d.dia_cobro = Math.min(28, Math.max(1, Number(d.dia_cobro) || 1));
         d.cliente_id = c.id;
         var q = nuevo ? sb.from('planes').insert(d) : sb.from('planes').update(d).eq('id', p.id);
@@ -253,7 +290,10 @@
         if (nuevo && d.servicio === 'contabilidad') await sb.rpc('generar_contabilidad_mes', { p_fecha: A.hoyISO() });
         A.toast(nuevo ? 'Cobro mensual creado.' : 'Guardado.'); alGuardar();
       },
-      borrar: nuevo ? null : async function () { await sb.from('planes').delete().eq('id', p.id); alGuardar(); }
+      borrar: nuevo ? null : async function () {
+        if (p.stripe_suscripcion) { A.toast('Primero cancela el cobro automático de este plan.', 'error'); return false; }
+        await sb.from('planes').delete().eq('id', p.id); alGuardar();
+      }
     });
   }
 })();

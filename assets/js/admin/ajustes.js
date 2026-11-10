@@ -96,7 +96,7 @@
       function copiar(txt) { return el('button', { class: 'mini-btn', type: 'button', text: 'Copiar', onclick: function () { navigator.clipboard.writeText(txt).then(function () { A.toast('Copiado.'); }); } }); }
       intCard.appendChild(el('div', { class: 'field', style: 'margin-top:14px' }, [el('label', { text: 'Webhook para Meta (WhatsApp, Instagram, Messenger y anuncios)' }),
         el('div', { style: 'display:flex;gap:8px;align-items:center' }, [el('code', { style: 'flex:1;min-width:0;overflow-wrap:anywhere;font-size:12px', text: FN + 'meta-webhook' }), copiar(FN + 'meta-webhook')])]));
-      intCard.appendChild(el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: 'Webhook para Stripe (eventos checkout.session.completed, checkout.session.async_payment_succeeded, checkout.session.async_payment_failed y charge.refunded)' }),
+      intCard.appendChild(el('div', { class: 'field', style: 'margin-top:10px' }, [el('label', { text: 'Webhook para Stripe (eventos checkout.session.completed, checkout.session.async_payment_succeeded, checkout.session.async_payment_failed, charge.refunded, invoice.paid, invoice.payment_failed y customer.subscription.deleted)' }),
         el('div', { style: 'display:flex;gap:8px;align-items:center' }, [el('code', { style: 'flex:1;min-width:0;overflow-wrap:anywhere;font-size:12px', text: FN + 'stripe-webhook' }), copiar(FN + 'stripe-webhook')])]));
       // Últimos eventos recibidos
       var ev = await sb.from('integraciones_eventos').select('*').order('created_at', { ascending: false }).limit(8);
