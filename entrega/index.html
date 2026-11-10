@@ -320,10 +320,10 @@
     .pg-sub { margin: 48px 0 18px; font-size: 22px; font-weight: 500; text-align: center; }
     .pg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 48px; }
     .pg-card { padding: 22px; border: 1px solid var(--line); border-radius: 18px; background: #fff; }
-    .pg-card h3 { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600; margin-bottom: 10px; }
-    .pg-card h3 .icon { width: 18px; height: 18px; }
-    .pg-card ul { display: grid; gap: 10px; padding-left: 18px; font-size: 14px; line-height: 1.55; color: var(--ink-2, var(--ink)); }
-    .pg-card code { font-size: 12px; overflow-wrap: anywhere; }
+    .pg-card h3 { font-size: 19px; font-weight: 600; margin: 10px 0 6px; }
+    .pg-tag { display: inline-block; padding: 4px 10px; border-radius: 999px; background: var(--stone-50, #f3efe9); font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+    .pg-ej { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
+    .pg-pasos { display: grid; gap: 9px; padding-left: 20px; list-style: decimal; font-size: 14px; line-height: 1.55; color: var(--ink-2, var(--ink)); }
   </style>
 </head>
 <body>
@@ -537,7 +537,7 @@
       <div class="section-head center reveal">
         <span class="script-kicker">Pagos con tarjeta</span>
         <h2 class="section-title" id="pg-title">Cómo funciona <span class="serif">Stripe en tu CRM</span></h2>
-        <p class="section-lead">Tú creas el cobro, el cliente paga desde su celular en la página segura de Stripe y el pago aparece solo en Cobros, con su recibo. No tienes que revisar Stripe para saber quién pagó.</p>
+        <p class="section-lead">Tú creas el cobro, el cliente paga desde su celular en la página segura de Stripe y el pago aparece solo en Cobros, con su recibo. Así se ve para ti y para tu cliente.</p>
       </div>
       <div class="arch reveal">
         <div class="arch-box">
@@ -553,7 +553,7 @@
           <h3>Paga en Stripe</h3>
           <p>Con tarjeta, Apple Pay o Google Pay. La tarjeta se escribe en la página de Stripe: nunca pasa por tu sitio.</p>
         </div>
-        <div class="arch-link" aria-hidden="true"><span>Stripe avisa</span><i></i><span>con firma verificada</span></div>
+        <div class="arch-link" aria-hidden="true"><span>Stripe avisa</span><i></i><span>al momento</span></div>
         <div class="arch-box">
           <span class="ab-ico"><svg class="icon"><use href="#i-check"/></svg></span>
           <div class="ab-k">Paso 3 · Solo</div>
@@ -562,52 +562,58 @@
         </div>
       </div>
 
-      <h3 class="pg-sub reveal">Seis formas de cobrar con tarjeta</h3>
-      <div class="tech">
-        <div class="tech-i reveal"><b>Factura con tarjeta</b><p>En <b>Cobros → Nuevo cobro</b> marca <b>Tarjeta</b>. El cliente abre su factura y toca «Pagar con tarjeta». Al terminar regresa a su factura y la ve <b>✓ Pagada</b>, con el botón de su comprobante.</p></div>
-        <div class="tech-i reveal" style="--d:.06s"><b>Cobro rápido</b><p>En la ficha del cliente toca <b>Cobrar con tarjeta</b>: pones monto y concepto, y se abre WhatsApp con el enlace listo.</p></div>
-        <div class="tech-i reveal" style="--d:.12s"><b>Cuotas programadas</b><p>Si el cobro es en cuotas, cada cuota llega sola el día que toca y también se puede pagar con tarjeta desde su factura.</p></div>
-        <div class="tech-i reveal"><b>Cobro automático mensual</b><p>En <b>Cobros mensuales</b> toca <b>Activar cobro automático</b>. El cliente registra su tarjeta una vez: se le cobra ese día y después cada mes en la misma fecha, sin que le mandes nada.</p></div>
-        <div class="tech-i reveal" style="--d:.06s"><b>Enlace del mes</b><p>Si el cliente prefiere pagar a mano cada mes, toca <b>Enviar enlace de pago del mes</b>. El sistema te avisa 2 días antes de cada cobro.</p></div>
-        <div class="tech-i reveal" style="--d:.12s"><b>Portal del cliente</b><p>En avamultiservices.com/portal tu cliente puede pagar su saldo pendiente con tarjeta él solo.</p></div>
-      </div>
-
-      <h3 class="pg-sub reveal">Lo que pasa solo, sin que hagas nada</h3>
-      <div class="tech">
-        <div class="tech-i reveal"><b>El pago entra a Cobros</b><p>Con su recibo, marcado como tarjeta, unido al cliente y a su caso. Si Stripe avisa dos veces, no se duplica.</p></div>
-        <div class="tech-i reveal" style="--d:.06s"><b>Respaldo cada 10 minutos</b><p>Si el aviso de Stripe no llegara, el sistema le pregunta a Stripe por los enlaces pendientes y registra los pagados.</p></div>
-        <div class="tech-i reveal" style="--d:.12s"><b>Mensualidades cobradas</b><p>Cada mes que Stripe cobra la mensualidad, el pago entra a Cobros con la nota «cobro automático».</p></div>
-        <div class="tech-i reveal"><b>Tarjeta rechazada</b><p>Si un cobro automático no pasa, Stripe lo reintenta solo unos días y a ti te llega una <b>tarea</b> para escribirle al cliente.</p></div>
-        <div class="tech-i reveal" style="--d:.06s"><b>Reembolsos y pagos fuera del CRM</b><p>Si devuelves dinero en Stripe o alguien paga por fuera, te sale el aviso en <b>Ajustes → Actividad reciente</b>.</p></div>
-        <div class="tech-i reveal" style="--d:.12s"><b>Cancelar es fácil</b><p>Cancelar un cobro o un cobro automático desde el CRM también lo desactiva en Stripe: el enlace deja de funcionar.</p></div>
-      </div>
-
-      <div class="pg-grid">
+      <h3 class="pg-sub reveal">Tres maneras de cobrar</h3>
+      <div class="pg-grid" style="margin-top:0">
         <div class="pg-card reveal">
-          <h3><svg class="icon"><use href="#i-shield"/></svg>Seguridad</h3>
-          <ul>
-            <li>Solo se aceptan los avisos que vienen firmados por Stripe. Un aviso falso se rechaza: nadie puede marcar una factura como pagada sin pagar.</li>
-            <li>Tus claves de Stripe se guardan cifradas en la base de datos y nadie puede volver a verlas, ni desde el panel.</li>
-            <li>Cada factura se abre solo con su enlace privado, imposible de adivinar. Facturas, pagos y enlaces solo los ve tu equipo con permiso de cobros.</li>
-            <li>Cada enlace de pago sirve para <b>un solo pago</b>; después deja de funcionar.</li>
-          </ul>
+          <span class="pg-tag">Pago único</span>
+          <h3>Una factura, un pago</h3>
+          <p class="pg-ej">Ejemplo: declaración de taxes por <b>$250</b>.</p>
+          <ol class="pg-pasos">
+            <li>En <b>Cobros → Nuevo cobro</b> escribes el concepto y el monto, y marcas <b>Tarjeta</b>.</li>
+            <li>Le mandas la factura por WhatsApp.</li>
+            <li>Tu cliente la abre, toca <b>«Pagar $250 con tarjeta»</b> y paga desde su celular.</li>
+            <li>Vuelve a su factura y la ve <b>✓ Pagada</b>, con su comprobante. Tú lo ves en Cobros.</li>
+          </ol>
         </div>
         <div class="pg-card reveal" style="--d:.06s">
-          <h3><svg class="icon"><use href="#i-zap"/></svg>Reglas que ya trae</h3>
-          <ul>
-            <li><b>Reparación de crédito no se cobra con tarjeta.</b> Stripe no lo permite: el sistema lo bloquea en facturas, cuotas, planes y portal. Esos pagos van por Zelle o efectivo.</li>
-            <li>Un plan con cobro automático no se puede cambiar de monto, pausar ni borrar sin antes tocar <b>Cancelar cobro automático</b> (así nunca se cobra de más).</li>
-            <li>Si cambias el monto de una factura, el enlace viejo se desactiva y se crea uno nuevo con el monto correcto.</li>
-          </ul>
+          <span class="pg-tag">En cuotas</span>
+          <h3>El total dividido en pagos</h3>
+          <p class="pg-ej">Ejemplo: formación de LLC por <b>$600</b> en 3 cuotas de <b>$200</b>, cada 3 semanas.</p>
+          <ol class="pg-pasos">
+            <li>Al crear el cobro activas <b>«Es en cuotas»</b> y eliges cuántas y cada cuánto.</li>
+            <li>La primera factura sale hoy; las demás quedan <b>programadas</b>.</li>
+            <li>El día que toca, a tu cliente le llega sola su factura y a ti una tarea para cobrarla.</li>
+            <li>Paga cada cuota con tarjeta desde su factura, y cada pago entra solo a Cobros.</li>
+          </ol>
         </div>
         <div class="pg-card reveal" style="--d:.12s">
-          <h3><svg class="icon"><use href="#i-settings"/></svg>Configuración</h3>
-          <ul>
-            <li><b>Claves:</b> la clave secreta y el signing secret del webhook van en <b>Ajustes → Integraciones</b>. La clave publicable no se usa.</li>
-            <li><b>Webhook en Stripe</b> (Developers → Webhooks) con la dirección que muestra Ajustes y estos eventos: <code>checkout.session.completed</code>, <code>checkout.session.async_payment_succeeded</code>, <code>checkout.session.async_payment_failed</code>, <code>charge.refunded</code>, <code>invoice.paid</code>, <code>invoice.payment_failed</code> y <code>customer.subscription.deleted</code>.</li>
-            <li><b>Métodos de pago:</b> los que actives en Stripe (Settings → Payment methods) aparecen solos; no hay que cambiar nada en el sitio.</li>
-          </ul>
+          <span class="pg-tag">Mensual</span>
+          <h3>Se cobra solo cada mes</h3>
+          <p class="pg-ej">Ejemplo: contabilidad mensual por <b>$150</b> al mes.</p>
+          <ol class="pg-pasos">
+            <li>En la ficha del cliente, en <b>Cobros mensuales</b>, creas el plan y tocas <b>Activar cobro automático</b>.</li>
+            <li>Le llega un enlace por WhatsApp (y si quieres, por correo) para registrar su tarjeta.</li>
+            <li>Ese día se le cobran los $150, y después <b>cada mes en la misma fecha</b>, sin que le mandes nada.</li>
+            <li>Cada mensualidad entra sola a Cobros. Si su tarjeta falla, te llega una tarea para escribirle.</li>
+          </ol>
         </div>
+      </div>
+
+      <h3 class="pg-sub reveal">Otras formas de cobrar con tarjeta</h3>
+      <div class="tech">
+        <div class="tech-i reveal"><b>Cobro rápido</b><p>En la ficha del cliente toca <b>Cobrar con tarjeta</b>, escribe el monto y se abre WhatsApp con el enlace listo.</p></div>
+        <div class="tech-i reveal" style="--d:.06s"><b>Enlace del mes</b><p>Si tu cliente prefiere pagar a mano cada mes, toca <b>Enviar enlace de pago del mes</b>. El sistema te recuerda 2 días antes.</p></div>
+        <div class="tech-i reveal" style="--d:.12s"><b>Desde su portal</b><p>En avamultiservices.com/portal tu cliente puede pagar su saldo pendiente con tarjeta él solo.</p></div>
+      </div>
+
+      <h3 class="pg-sub reveal">Bueno saber</h3>
+      <div class="tech">
+        <div class="tech-i reveal"><b>No revisas Stripe</b><p>Cada pago aparece solo en <b>Cobros</b> con su recibo. Si devuelves dinero en Stripe, te sale un aviso en Ajustes.</p></div>
+        <div class="tech-i reveal" style="--d:.06s"><b>Pago seguro</b><p>Tu cliente escribe su tarjeta en la página de Stripe; nunca pasa por tu sitio. Puede pagar con tarjeta, Apple Pay o Google Pay.</p></div>
+        <div class="tech-i reveal" style="--d:.12s"><b>Crédito, sin tarjeta</b><p>Stripe no permite cobrar reparación de crédito. El sistema lo bloquea solo: esos pagos van por Zelle o efectivo.</p></div>
+        <div class="tech-i reveal"><b>Cancelar cuando quieras</b><p>Si cancelas un cobro o un cobro automático en el CRM, el enlace deja de funcionar y no se le cobra más.</p></div>
+        <div class="tech-i reveal" style="--d:.06s"><b>Cambiar una mensualidad</b><p>Para cambiar el monto de un cobro automático, primero tócale <b>Cancelar cobro automático</b> y luego actívalo con el nuevo monto.</p></div>
+        <div class="tech-i reveal" style="--d:.12s"><b>Cada enlace, un pago</b><p>Después de pagar, el enlace deja de funcionar, así nadie paga dos veces lo mismo.</p></div>
       </div>
     </div>
   </section>

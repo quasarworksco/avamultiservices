@@ -140,8 +140,8 @@
   var SERV_PLAN = { credito: 'Reparación de crédito', contabilidad: 'Contabilidad mensual', plan_irs: 'Plan de pago IRS', otro: 'Otro' };
   var COBRO = { manual: '', pendiente: 'esperando que el cliente registre su tarjeta', activo: 'se cobra solo con tarjeta', fallido: 'el último cobro con tarjeta falló', cancelado: 'cobro con tarjeta cancelado' };
 
-  // Crea un enlace de pago de Stripe y lo comparte por WhatsApp con el cliente
-  async function enlacePago(c, cuerpo, mensaje) {
+  // Crea un enlace de pago de Stripe y lo comparte por WhatsApp con el cliente (y, si tiene correo, también por correo)
+  async function enlacePago(c, cuerpo, mensaje, asunto) {
     // La ventana se abre antes de esperar a Stripe para que el navegador no la bloquee
     var w = c.telefono ? window.open('', '_blank') : null;
     if (w) w.opener = null;
@@ -153,7 +153,19 @@
     }
     var texto = mensaje + ' ' + r.data.url;
     if (w) w.location.href = A.wa(c.telefono, texto);
-    else { try { await navigator.clipboard.writeText(r.data.url); } catch (_) { /* */ } A.toast('Enlace copiado: el cliente no tiene teléfono.'); }
+    else if (!c.email) { try { await navigator.clipboard.writeText(r.data.url); } catch (_) { /* */ } A.toast('Enlace copiado: el cliente no tiene teléfono.'); }
+    if (c.email) correoEnlace(c, texto, asunto || 'Tu enlace de pago · AVA Multiservices', !!w);
+  }
+  // Se abre el correo con el mensaje listo (el navegador solo lo permite con un toque, por eso es un botón)
+  function correoEnlace(c, texto, asunto, porWhatsapp) {
+    var cuerpo = texto + '\n\nEl pago es seguro: se hace en la página de Stripe y tu tarjeta no se guarda en nuestro sistema.\n\nAVA Multiservices';
+    var m = A.modal({ titulo: porWhatsapp ? '¿También por correo?' : 'Enviar por correo', ok: 'Listo', campos: [],
+      extra: el('div', null, [
+        el('p', { class: 'muted', style: 'margin-bottom:12px;font-size:13.5px', text: (porWhatsapp ? 'Ya se abrió WhatsApp. ' : 'El cliente no tiene teléfono. ') + 'Envíale el mismo enlace a ' + c.email + ':' }),
+        el('a', { class: 'btn btn-dark btn-sm', href: 'mailto:' + encodeURIComponent(c.email) + '?subject=' + encodeURIComponent(asunto) + '&body=' + encodeURIComponent(cuerpo),
+          onclick: function () { setTimeout(function () { m.cerrar(); }, 300); } }, [A.icon('i-mail', 'icon-sm'), el('span', { text: 'Abrir correo con el mensaje' })])
+      ]),
+      guardar: function () { } });
   }
   A.enlacePago = enlacePago;
   var verificado = {};
@@ -182,14 +194,15 @@
             acc.appendChild(el('button', { class: 'mini-btn', type: 'button', text: 'Enviar enlace de pago del mes',
               onclick: async function () {
                 await enlacePago(c, { tipo: 'monto', cliente_id: c.id, plan_id: p.id, monto: Number(p.monto), descripcion: (SERV_PLAN[p.servicio] + (p.descripcion ? ' · ' + p.descripcion : '')) + ' (mensualidad)' },
-                  'Hola ' + (c.nombre || '') + ', aquí puedes pagar con tarjeta tu mensualidad de ' + A.dinero(p.monto) + ':');
+                  'Hola ' + (c.nombre || '') + ', aquí puedes pagar con tarjeta tu mensualidad de ' + A.dinero(p.monto) + ':', 'Pago de tu mensualidad · AVA Multiservices');
                 pintar();
               } }));
             acc.appendChild(el('button', { class: 'mini-btn', type: 'button', text: p.estado_cobro === 'pendiente' ? 'Reenviar enlace del cobro automático' : 'Activar cobro automático',
               title: 'El cliente registra su tarjeta una vez y la mensualidad se le cobra sola cada mes', onclick: async function () {
                 if (p.estado_cobro !== 'pendiente' && !confirm('Se le enviará a ' + (c.nombre || 'el cliente') + ' un enlace para registrar su tarjeta. Al registrarla se le cobra ' + A.dinero(p.monto) + ' ese mismo día y después cada mes en esa fecha, sin que tengas que mandarle nada. ¿Continuar?')) return;
                 await enlacePago(c, { tipo: 'suscripcion', plan_id: p.id },
-                  'Hola ' + (c.nombre || '') + ', para que tu mensualidad de ' + A.dinero(p.monto) + ' se pague sola cada mes con tu tarjeta, regístrala aquí (pago seguro con Stripe). El primer cobro se hace al registrarla y después cada mes en la misma fecha:');
+                  'Hola ' + (c.nombre || '') + ', para que tu mensualidad de ' + A.dinero(p.monto) + ' se pague sola cada mes con tu tarjeta, regístrala aquí (pago seguro con Stripe). El primer cobro se hace al registrarla y después cada mes en la misma fecha:',
+                  'Activa el pago automático de tu mensualidad · AVA Multiservices');
                 pintar();
               } }));
             if (p.estado_cobro === 'pendiente') acc.appendChild(el('button', { class: 'mini-btn', type: 'button', text: 'Cancelar', onclick: function () { cancelarAuto(p); } }));
