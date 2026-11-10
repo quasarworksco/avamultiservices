@@ -102,7 +102,7 @@
         if (plan.length) {
           var caso = m.inputs.caso_id.value ? m.inputs.caso_id.options[m.inputs.caso_id.selectedIndex].text.replace(/ \(.*\)$/, '') : '';
           var concepto = (d.nota || caso || 'Pago').replace(/\s*·?\s*cuota\s+\d+\s+de\s+\d+\s*$/i, '');
-          var okc = await A.programarCuotas({ cliente_id: d.cliente_id, caso_id: d.caso_id, concepto: concepto, metodos: await A.formasCuota() }, plan, 2, plan.length + 1);
+          var okc = await A.programarCuotas({ cliente_id: d.cliente_id, caso_id: d.caso_id, concepto: concepto, metodos: await A.formasCuota(d.caso_id) }, plan, 2, plan.length + 1);
           if (okc) A.toast(plan.length === 1 ? 'Próxima cuota programada para el ' + A.fecha(plan[0].fecha) + '.' : plan.length + ' cuotas programadas, la primera el ' + A.fecha(plan[0].fecha) + '.');
           else A.toast('El pago se registró, pero no se pudieron programar las cuotas.', 'error');
         }

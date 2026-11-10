@@ -42,6 +42,9 @@
     .fc-dato { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 8px; padding: 8px 10px; border-radius: 10px; background: var(--stone-50); font-weight: 600; overflow-wrap: anywhere; }
     .fc-dato button { flex: none; padding: 5px 12px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
     .fc-op .btn { margin-top: 10px; }
+    .fc-err { margin-top: 8px !important; color: #b4472f !important; font-size: 13px !important; }
+    .fc-aviso { margin-top: 12px; padding: 12px 14px; border-radius: 12px; background: #fdf1e1; color: #7a4a1f; font-size: 14px; }
+    .fc-aviso.ok { background: #e3f4e8; color: #166534; }
     .fc-pie { margin-top: 18px; font-size: 12.5px; color: var(--muted); text-align: center; }
     @media print { body { background: #fff; } .p-card { padding: 0; box-shadow: none; } .p-top, .p-foot, .p-actions, .fc-dato button, .fc-op .btn { display: none !important; } }
   </style>
@@ -65,6 +68,8 @@
         <div class="fc-fila fc-total"><span id="total-t">Total a pagar</span><b id="total"></b></div>
       </div>
       <div id="estado" class="fc-est"></div>
+      <p class="fc-aviso" id="confirmando" hidden>Recibimos tu pago con tarjeta y lo estamos confirmando con Stripe. Esta página se actualiza sola en unos segundos.</p>
+      <p class="fc-aviso ok" id="gracias" hidden>¡Gracias! Tu pago quedó registrado. Abajo puedes ver tu comprobante.</p>
       <div class="fc-pagar" id="pagar" hidden>
         <h2>Cómo pagar</h2>
         <p>Elige la forma que prefieras. En la nota del pago escribe <b id="ref"></b> para que lo identifiquemos rápido.</p>
@@ -80,6 +85,6 @@
   </div>
 </div></main>
 <footer class="p-foot">AVA Multiservices · Dallas, Texas</footer>
-<script src="../assets/js/factura.js?v=20261108a"></script>
+<script src="../assets/js/factura.js?v=20261110a"></script>
 </body>
 </html>

@@ -86,11 +86,14 @@
     var r = await sb.from('facturas').insert(filas);
     return !r.error;
   };
-  // Formas de pago que se pueden dejar en una cuota (la tarjeta necesita su enlace al momento)
-  A.formasCuota = async function () {
-    var neg = await negocio(), m = [];
+  // Formas de pago de una cuota. Con Stripe conectado lleva tarjeta: el enlace se crea cuando el cliente abre su factura
+  // (reparación de crédito no: Stripe no lo permite)
+  A.formasCuota = async function (casoId) {
+    var res = await Promise.all([negocio(), A.integraciones(), casoId ? sb.from('casos').select('servicio').eq('id', casoId).maybeSingle() : Promise.resolve({ data: null })]);
+    var neg = res[0], m = [];
     if (neg.zelle) m.push('zelle');
     if (neg.cashapp) m.push('cashapp');
+    if (res[1].pagos && !(res[2].data && res[2].data.servicio === 'credito')) m.push('tarjeta');
     m.push('efectivo');
     return m;
   };
@@ -138,21 +141,20 @@
         if (r.error) { A.msg(aviso, 'No se pudo crear la factura.'); return false; }
         var f = r.data;
         if (plan.length) {
-          var met = d.metodos.filter(function (x) { return x !== 'tarjeta'; });
+          var met = d.metodos;
           var okc = await A.programarCuotas({ cliente_id: d.cliente_id, caso_id: d.caso_id, concepto: d.concepto, detalle: d.detalle, metodos: met }, plan, 2, plan.length + 1);
           if (!okc) A.toast('La factura se creó, pero no se pudieron programar las demás cuotas.', 'error');
         }
         // Con tarjeta se crea el enlace de Stripe y queda unido a la factura (al pagarlo, la factura se marca sola)
         if (d.metodos.indexOf('tarjeta') !== -1) {
-          var s = await sb.functions.invoke('stripe-pago', { body: { tipo: 'monto', cliente_id: d.cliente_id, caso_id: d.caso_id, monto: Number(d.monto), descripcion: 'Factura #' + f.numero + ' · ' + d.concepto } });
+          var s = await sb.functions.invoke('stripe-pago', { body: { tipo: 'monto', cliente_id: d.cliente_id, caso_id: d.caso_id, monto: Number(d.monto), descripcion: 'Factura #' + f.numero + ' · ' + d.concepto, factura_token: f.token } });
           if (s.error) {
             var e = {}; try { e = await s.error.context.json(); } catch (_) { /* */ }
             A.toast((e.error || 'No se pudo crear el enlace de tarjeta.') + ' La factura se creó sin tarjeta.', 'error');
             f.metodos = d.metodos.filter(function (x) { return x !== 'tarjeta'; });
             await sb.from('facturas').update({ metodos: f.metodos.length ? f.metodos : ['efectivo'] }).eq('id', f.id);
           } else {
-            var en = await sb.from('enlaces_pago').select('id').eq('url', s.data.url).maybeSingle();
-            if (en.data) await sb.from('facturas').update({ enlace_id: en.data.id }).eq('id', f.id);
+            await sb.from('facturas').update({ enlace_id: s.data.id }).eq('id', f.id);
           }
         }
         A.toast('Factura #' + f.numero + ' creada' + (plan.length ? ' · ' + plan.length + ' cuota' + (plan.length === 1 ? '' : 's') + ' programada' + (plan.length === 1 ? '' : 's') : '') + '.');
@@ -218,7 +220,7 @@
     if (f.estado === 'pendiente' || f.estado === 'programada') {
       var formas = el('div', { class: 'fac-formas' }, [el('div', { class: 'fac-formas-t', text: 'Cómo pagar' })]);
       f.metodos.forEach(function (k) {
-        var t = k === 'zelle' ? 'Zelle a ' + (neg.zelle || '—') : k === 'cashapp' ? 'Cash App a ' + (neg.cashapp || '—') : k === 'tarjeta' ? (f.enlaces_pago && f.enlaces_pago.estado === 'pendiente' ? 'Tarjeta con el enlace de Stripe' : 'Tarjeta (sin enlace activo)') : k === 'efectivo' ? 'Efectivo en la oficina' : k === 'transferencia' ? 'Transferencia bancaria' : 'Cheque a nombre de AVA Multiservices';
+        var t = k === 'zelle' ? 'Zelle a ' + (neg.zelle || '—') : k === 'cashapp' ? 'Cash App a ' + (neg.cashapp || '—') : k === 'tarjeta' ? (f.enlaces_pago && f.enlaces_pago.estado === 'pendiente' ? 'Tarjeta con el enlace de Stripe' : 'Tarjeta (el cliente la paga desde su factura)') : k === 'efectivo' ? 'Efectivo en la oficina' : k === 'transferencia' ? 'Transferencia bancaria' : 'Cheque a nombre de AVA Multiservices';
         formas.appendChild(el('div', { class: 'fac-forma' }, [el('b', { text: NOMBRE[k] || k }), el('span', { class: 'muted', text: t })]));
       });
       hoja.appendChild(formas);

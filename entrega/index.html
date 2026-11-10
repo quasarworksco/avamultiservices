@@ -317,6 +317,13 @@
       .vg-prog { min-width: 0; width: 100%; }
     }
     @media (prefers-reduced-motion: reduce) { .vg-card, .vg-thumb img, .vg-play, .vg-box, .vg-modal.on { transition: none; animation: none; } }
+    .pg-sub { margin: 48px 0 18px; font-size: 22px; font-weight: 500; text-align: center; }
+    .pg-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-top: 48px; }
+    .pg-card { padding: 22px; border: 1px solid var(--line); border-radius: 18px; background: #fff; }
+    .pg-card h3 { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600; margin-bottom: 10px; }
+    .pg-card h3 .icon { width: 18px; height: 18px; }
+    .pg-card ul { display: grid; gap: 10px; padding-left: 18px; font-size: 14px; line-height: 1.55; color: var(--ink-2, var(--ink)); }
+    .pg-card code { font-size: 12px; overflow-wrap: anywhere; }
   </style>
 </head>
 <body>
@@ -376,7 +383,7 @@
         <img class="brand-logo" src="../assets/img/logo.svg" alt="AVA" width="72" height="34"><span class="brand-divider"></span><span class="brand-sub">Entrega<br>técnica</span>
       </a>
       <div class="nav-cta">
-        <nav class="e-nav" aria-label="Secciones"><a href="#crm">Módulos</a><a href="#como">Cómo está hecho</a><a href="#videos">Videos</a><a href="#guia">Guía</a><a href="#checklist">Checklist</a></nav>
+        <nav class="e-nav" aria-label="Secciones"><a href="#crm">Módulos</a><a href="#como">Cómo está hecho</a><a href="#pagos">Pagos</a><a href="#videos">Videos</a><a href="#guia">Guía</a><a href="#checklist">Checklist</a></nav>
         <a href="../admin/" target="_blank" rel="noopener" class="btn btn-primary btn-sm"><span>Entrar al panel</span><svg class="icon icon-sm arrow"><use href="#i-arrow-up-right"/></svg></a>
       </div>
     </div>
@@ -524,6 +531,87 @@
     </div>
   </section>
 
+  <!-- Pagos con tarjeta (Stripe) -->
+  <section class="section" id="pagos" aria-labelledby="pg-title">
+    <div class="container">
+      <div class="section-head center reveal">
+        <span class="script-kicker">Pagos con tarjeta</span>
+        <h2 class="section-title" id="pg-title">Cómo funciona <span class="serif">Stripe en tu CRM</span></h2>
+        <p class="section-lead">Tú creas el cobro, el cliente paga desde su celular en la página segura de Stripe y el pago aparece solo en Cobros, con su recibo. No tienes que revisar Stripe para saber quién pagó.</p>
+      </div>
+      <div class="arch reveal">
+        <div class="arch-box">
+          <span class="ab-ico"><svg class="icon"><use href="#i-send"/></svg></span>
+          <div class="ab-k">Paso 1 · Tú</div>
+          <h3>Creas el cobro</h3>
+          <p>Una factura, un cobro rápido, cuotas o una mensualidad. Le llega al cliente por WhatsApp con su enlace.</p>
+        </div>
+        <div class="arch-link" aria-hidden="true"><span>enlace seguro</span><i></i><span>por WhatsApp</span></div>
+        <div class="arch-box dark">
+          <span class="ab-ico"><svg class="icon"><use href="#i-lock"/></svg></span>
+          <div class="ab-k">Paso 2 · Tu cliente</div>
+          <h3>Paga en Stripe</h3>
+          <p>Con tarjeta, Apple Pay o Google Pay. La tarjeta se escribe en la página de Stripe: nunca pasa por tu sitio.</p>
+        </div>
+        <div class="arch-link" aria-hidden="true"><span>Stripe avisa</span><i></i><span>con firma verificada</span></div>
+        <div class="arch-box">
+          <span class="ab-ico"><svg class="icon"><use href="#i-check"/></svg></span>
+          <div class="ab-k">Paso 3 · Solo</div>
+          <h3>Se registra en Cobros</h3>
+          <p>Entra el pago con su recibo, la factura queda pagada y el cliente vuelve a su factura y la ve pagada.</p>
+        </div>
+      </div>
+
+      <h3 class="pg-sub reveal">Seis formas de cobrar con tarjeta</h3>
+      <div class="tech">
+        <div class="tech-i reveal"><b>Factura con tarjeta</b><p>En <b>Cobros → Nuevo cobro</b> marca <b>Tarjeta</b>. El cliente abre su factura y toca «Pagar con tarjeta». Al terminar regresa a su factura y la ve <b>✓ Pagada</b>, con el botón de su comprobante.</p></div>
+        <div class="tech-i reveal" style="--d:.06s"><b>Cobro rápido</b><p>En la ficha del cliente toca <b>Cobrar con tarjeta</b>: pones monto y concepto, y se abre WhatsApp con el enlace listo.</p></div>
+        <div class="tech-i reveal" style="--d:.12s"><b>Cuotas programadas</b><p>Si el cobro es en cuotas, cada cuota llega sola el día que toca y también se puede pagar con tarjeta desde su factura.</p></div>
+        <div class="tech-i reveal"><b>Cobro automático mensual</b><p>En <b>Cobros mensuales</b> toca <b>Activar cobro automático</b>. El cliente registra su tarjeta una vez: se le cobra ese día y después cada mes en la misma fecha, sin que le mandes nada.</p></div>
+        <div class="tech-i reveal" style="--d:.06s"><b>Enlace del mes</b><p>Si el cliente prefiere pagar a mano cada mes, toca <b>Enviar enlace de pago del mes</b>. El sistema te avisa 2 días antes de cada cobro.</p></div>
+        <div class="tech-i reveal" style="--d:.12s"><b>Portal del cliente</b><p>En avamultiservices.com/portal tu cliente puede pagar su saldo pendiente con tarjeta él solo.</p></div>
+      </div>
+
+      <h3 class="pg-sub reveal">Lo que pasa solo, sin que hagas nada</h3>
+      <div class="tech">
+        <div class="tech-i reveal"><b>El pago entra a Cobros</b><p>Con su recibo, marcado como tarjeta, unido al cliente y a su caso. Si Stripe avisa dos veces, no se duplica.</p></div>
+        <div class="tech-i reveal" style="--d:.06s"><b>Respaldo cada 10 minutos</b><p>Si el aviso de Stripe no llegara, el sistema le pregunta a Stripe por los enlaces pendientes y registra los pagados.</p></div>
+        <div class="tech-i reveal" style="--d:.12s"><b>Mensualidades cobradas</b><p>Cada mes que Stripe cobra la mensualidad, el pago entra a Cobros con la nota «cobro automático».</p></div>
+        <div class="tech-i reveal"><b>Tarjeta rechazada</b><p>Si un cobro automático no pasa, Stripe lo reintenta solo unos días y a ti te llega una <b>tarea</b> para escribirle al cliente.</p></div>
+        <div class="tech-i reveal" style="--d:.06s"><b>Reembolsos y pagos fuera del CRM</b><p>Si devuelves dinero en Stripe o alguien paga por fuera, te sale el aviso en <b>Ajustes → Actividad reciente</b>.</p></div>
+        <div class="tech-i reveal" style="--d:.12s"><b>Cancelar es fácil</b><p>Cancelar un cobro o un cobro automático desde el CRM también lo desactiva en Stripe: el enlace deja de funcionar.</p></div>
+      </div>
+
+      <div class="pg-grid">
+        <div class="pg-card reveal">
+          <h3><svg class="icon"><use href="#i-shield"/></svg>Seguridad</h3>
+          <ul>
+            <li>Solo se aceptan los avisos que vienen firmados por Stripe. Un aviso falso se rechaza: nadie puede marcar una factura como pagada sin pagar.</li>
+            <li>Tus claves de Stripe se guardan cifradas en la base de datos y nadie puede volver a verlas, ni desde el panel.</li>
+            <li>Cada factura se abre solo con su enlace privado, imposible de adivinar. Facturas, pagos y enlaces solo los ve tu equipo con permiso de cobros.</li>
+            <li>Cada enlace de pago sirve para <b>un solo pago</b>; después deja de funcionar.</li>
+          </ul>
+        </div>
+        <div class="pg-card reveal" style="--d:.06s">
+          <h3><svg class="icon"><use href="#i-zap"/></svg>Reglas que ya trae</h3>
+          <ul>
+            <li><b>Reparación de crédito no se cobra con tarjeta.</b> Stripe no lo permite: el sistema lo bloquea en facturas, cuotas, planes y portal. Esos pagos van por Zelle o efectivo.</li>
+            <li>Un plan con cobro automático no se puede cambiar de monto, pausar ni borrar sin antes tocar <b>Cancelar cobro automático</b> (así nunca se cobra de más).</li>
+            <li>Si cambias el monto de una factura, el enlace viejo se desactiva y se crea uno nuevo con el monto correcto.</li>
+          </ul>
+        </div>
+        <div class="pg-card reveal" style="--d:.12s">
+          <h3><svg class="icon"><use href="#i-settings"/></svg>Configuración</h3>
+          <ul>
+            <li><b>Claves:</b> la clave secreta y el signing secret del webhook van en <b>Ajustes → Integraciones</b>. La clave publicable no se usa.</li>
+            <li><b>Webhook en Stripe</b> (Developers → Webhooks) con la dirección que muestra Ajustes y estos eventos: <code>checkout.session.completed</code>, <code>checkout.session.async_payment_succeeded</code>, <code>checkout.session.async_payment_failed</code>, <code>charge.refunded</code>, <code>invoice.paid</code>, <code>invoice.payment_failed</code> y <code>customer.subscription.deleted</code>.</li>
+            <li><b>Métodos de pago:</b> los que actives en Stripe (Settings → Payment methods) aparecen solos; no hay que cambiar nada en el sitio.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Seguridad -->
   <section class="section section-dark" aria-labelledby="sec-title">
     <div class="container" style="position:relative">
@@ -608,7 +696,7 @@
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-share"/></svg></span><span class="g-t">Contrato con enlace para compartir</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Dónde está</b><p><b>Formularios → Contratos</b>. Cada contrato tiene el botón <b>Copiar enlace</b>. Es un solo enlace por contrato: lo mandas por WhatsApp, Instagram o lo pones en tus redes.</p></div></li><li><span>2</span><div><b>La primera vez</b><p>Si el contrato tiene datos que normalmente se preguntan (monto de la consulta, esquema de pago…), el CRM te los pide una vez y quedan iguales para todos los que firmen con ese enlace. Los cambias cuando quieras en <b>Editar → Enlace para compartir</b>.</p></div></li><li><span>3</span><div><b>Lo que hace el cliente</b><p>Abre el enlace, escribe su nombre, teléfono, correo, dirección y fecha de nacimiento, ve el contrato ya lleno con sus datos, firma con el dedo y listo. Puede guardar o imprimir su copia.</p></div></li><li><span>4</span><div><b>Lo que pasa en el CRM</b><p>Si no existía, se crea como cliente (si ya existía, se completan sus datos). Se abre su caso del servicio con la fecha del contrato, aparece en el Pipeline I en <b>Contrato</b>, el contrato firmado queda en su ficha y te llega una tarea «Contrato firmado en línea».</p></div></li><li><span>5</span><div><b>Apagar el enlace</b><p>En <b>Editar</b> desmarca <b>Enlace activo</b> y guarda: el enlace deja de funcionar. Para contratos con datos especiales de un cliente sigue usando su ficha → Contratos → Nuevo contrato.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-calendar"/></svg></span><span class="g-t">Pagos en cuotas (recordatorio automático)</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Cuando el cliente ya pagó una parte</b><p><b>Cobros → Registrar pago</b>. Pon el monto que pagó (por ejemplo $300) y marca <b>Paga en cuotas</b>: elige cada cuánto (cada 3 semanas, por ejemplo) y cuántas cuotas faltan. Abajo ves la fecha exacta de cada una.</p></div></li><li><span>2</span><div><b>Cuando todavía no ha pagado</b><p><b>Cobros → Nuevo cobro</b> y marca <b>Es en cuotas</b>: la primera factura sale ya y las demás quedan programadas.</p></div></li><li><span>3</span><div><b>El día que toca</b><p>La factura de la cuota se envía sola (mientras WhatsApp no esté conectado queda en <b>Mensajes → Por enviar</b>) y te aparece la tarea <b>Cobrar cuota 2 de 3</b>. Si no paga, recibe los recordatorios de siempre.</p></div></li><li><span>4</span><div><b>Dónde las ves</b><p>En <b>Cobros</b>, dentro de <b>Facturas por cobrar</b>, abajo dice <b>Cuotas programadas</b>. Toca una para <b>Enviar ahora</b>, <b>Cambiar fecha o monto</b> o <b>Cancelar cuota</b>. Cuando te pague, ábrela y toca <b>Marcar como pagada</b>.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-calculator"/></svg></span><span class="g-t">Taxes</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Datos de la declaración</b><p>En el caso de taxes guarda el año fiscal y el tipo (individual, negocio propio, LLC, corporación o enmienda).</p></div></li><li><span>2</span><div><b>Resultado</b><p>Cuando la tengas lista, marca si sale reembolso o monto a pagar y la cantidad.</p></div></li></ol></details>
-          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-trending"/></svg></span><span class="g-t">Cobros</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Registrar un pago</b><p>Desde <b>Cobros</b>, la ficha o el caso toca <b>Registrar pago</b>: monto, fecha, método (Zelle, efectivo, Cash App…) y una nota, por ejemplo «Cuota 2 de 5».</p></div></li><li><span>2</span><div><b>Saber quién debe</b><p>Si el caso tiene precio, el panel calcula el saldo. En <b>Cobros</b> verás lo cobrado en el mes comparado con el anterior, cómo te pagaron (Zelle, tarjeta, efectivo…), cuánto deja cada servicio y la lista de saldos pendientes.</p></div></li><li><span>3</span><div><b>Cobrar con tarjeta</b><p>En la ficha del cliente toca <b>Cobrar con tarjeta</b>: se abre WhatsApp con un enlace seguro de Stripe. Cuando el cliente paga, el pago entra solo a Cobros con su recibo. Stripe no permite cobrar reparación de crédito: esos pagos van por Zelle o efectivo.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-trending"/></svg></span><span class="g-t">Cobros</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Registrar un pago</b><p>Desde <b>Cobros</b>, la ficha o el caso toca <b>Registrar pago</b>: monto, fecha, método (Zelle, efectivo, Cash App…) y una nota, por ejemplo «Cuota 2 de 5».</p></div></li><li><span>2</span><div><b>Saber quién debe</b><p>Si el caso tiene precio, el panel calcula el saldo. En <b>Cobros</b> verás lo cobrado en el mes comparado con el anterior, cómo te pagaron (Zelle, tarjeta, efectivo…), cuánto deja cada servicio y la lista de saldos pendientes.</p></div></li><li><span>3</span><div><b>Cobrar con tarjeta</b><p>En la ficha del cliente toca <b>Cobrar con tarjeta</b>: se abre WhatsApp con un enlace seguro de Stripe. Cuando el cliente paga, el pago entra solo a Cobros con su recibo. Stripe no permite cobrar reparación de crédito: esos pagos van por Zelle o efectivo.</p></div></li><li><span>4</span><div><b>Facturas y cuotas con tarjeta</b><p>Al crear un cobro marca <b>Tarjeta</b>. El cliente paga desde su factura (también cada cuota programada) y al terminar la ve pagada con su comprobante. Todo cómo funciona está en la sección <a href="#pagos">Pagos</a>.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-clipboard"/></svg></span><span class="g-t">Tareas</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Crear tareas</b><p>Crea tareas con fecha límite y asígnalas a ti o a tu compañera, ligadas a un cliente o a un caso.</p></div></li><li><span>2</span><div><b>Completarlas</b><p>Marca la casilla cuando esté hecha. En <b>Tareas</b> se agrupan en vencidas, hoy, próximos 7 días y más adelante.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-file"/></svg></span><span class="g-t">Documentos</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Subir</b><p>En la ficha del cliente arrastra los archivos (o toca para elegirlos): fotos o PDF de hasta 10 MB.</p></div></li><li><span>2</span><div><b>Ver</b><p>Toca «Ver»: se abre con un enlace privado que caduca en 2 minutos. Los documentos del formulario de inicio también aparecen en la ficha.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-globe"/></svg></span><span class="g-t">Tu sitio web</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Precios y servicios</b><p>En <b>Sitio web</b> escribe el precio «desde» de cada servicio o apaga los que no estés ofreciendo. Se publica al instante.</p></div></li><li><span>2</span><div><b>Anuncio</b><p>Activa un aviso flotante en tu sitio, por ejemplo «¡Temporada de taxes abierta!», con botón para agendar.</p></div></li><li><span>3</span><div><b>Testimonios y preguntas</b><p>Agrega lo que dicen tus clientes y preguntas frecuentes. Puedes ocultarlos o editarlos cuando quieras.</p></div></li></ol></details>
@@ -620,7 +708,7 @@
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-image"/></svg></span><span class="g-t">Fotos y archivos en el chat</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Ver lo que te mandan</b><p>Las fotos y PDF que el cliente envía por Messenger o Instagram se ven dentro del chat. Toca la foto para verla en grande o <b>Descargar</b>.</p></div></li><li><span>2</span><div><b>Notas de voz en texto</b><p>Cuando un cliente te manda una nota de voz, la IA la convierte en texto y la muestra debajo del audio. Además la usa para entender qué busca y sugerirte la respuesta. En audios que llegaron antes, toca <b>Transcribir a texto</b>.</p></div></li><li><span>3</span><div><b>Guardar en sus documentos</b><p>Toca <b>Guardar en documentos</b> y el archivo pasa a la ficha del cliente, en Documentos. Si todavía es prospecto, primero conviértelo en cliente.</p></div></li><li><span>4</span><div><b>Enviar un archivo</b><p>Toca el clip junto al botón de enviar, elige una foto o un PDF (hasta 25 MB) y envíalo con o sin texto.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-zap"/></svg></span><span class="g-t">Avisos automáticos</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Por enviar</b><p>Los recordatorios de documentos, pagos y citas, los cambios de etapa y los pedidos de reseña aparecen en la pestaña <b>Por enviar</b>. Toca <b>Enviar</b> y se abre WhatsApp con el mensaje listo.</p></div></li><li><span>2</span><div><b>Automatizaciones</b><p>En la pestaña <b>Automatizaciones</b> enciende o apaga cada aviso y edita su texto, incluida la respuesta fuera de horario.</p></div></li><li><span>3</span><div><b>Pronto, solos</b><p>Cuando quede conectada la API de WhatsApp, estos avisos saldrán sin que tengas que tocar nada.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-calendar"/></svg></span><span class="g-t">Agenda y citas en línea</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Tus clientes reservan</b><p>Comparte <b>avamultiservices.com/citas</b>: eligen servicio, día y hora libre, y la cita aparece en tu <b>Agenda</b>.</p></div></li><li><span>2</span><div><b>Tu semana</b><p>En <b>Agenda</b> ves la semana, confirmas, mueves o cancelas citas y creas citas tú misma.</p></div></li><li><span>3</span><div><b>Horario</b><p>En <b>Ajustes</b> defines los días y horas en que atiendes, cuánto dura cada cita y con cuánta anticipación pueden reservar.</p></div></li><li><span>4</span><div><b>Google Calendar</b><p>En <b>Agenda</b> toca <b>Google Calendar</b>, copia tu enlace privado y agrégalo en Google Calendar → Otros calendarios → <b>Desde URL</b>. Tus citas aparecen en el celular con aviso 30 minutos antes. Google lo actualiza cada pocas horas.</p></div></li></ol></details>
-          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-pen"/></svg></span><span class="g-t">Contratos y planes mensuales</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Crear el contrato</b><p>En la ficha del cliente, en <b>Contratos</b>, elige una plantilla (crédito, contabilidad o general) y revisa el texto.</p></div></li><li><span>2</span><div><b>Enviar a firmar</b><p>Toca <b>Enviar</b>: se abre WhatsApp con un enlace privado. El cliente lee, dibuja su firma con el dedo y acepta.</p></div></li><li><span>3</span><div><b>Firmado</b><p>Verás la fecha, el nombre y la firma en la ficha, y el cliente lo puede volver a ver en su portal.</p></div></li><li><span>4</span><div><b>Planes mensuales</b><p>En <b>Planes mensuales</b> registras lo que el cliente paga cada mes (por ejemplo, contabilidad). El sistema te avisa antes de cada cobro y, con Stripe conectado, le envías al cliente el enlace para pagar el mes con tarjeta.</p></div></li></ol></details>
+          <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-pen"/></svg></span><span class="g-t">Contratos y planes mensuales</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Crear el contrato</b><p>En la ficha del cliente, en <b>Contratos</b>, elige una plantilla (crédito, contabilidad o general) y revisa el texto.</p></div></li><li><span>2</span><div><b>Enviar a firmar</b><p>Toca <b>Enviar</b>: se abre WhatsApp con un enlace privado. El cliente lee, dibuja su firma con el dedo y acepta.</p></div></li><li><span>3</span><div><b>Firmado</b><p>Verás la fecha, el nombre y la firma en la ficha, y el cliente lo puede volver a ver en su portal.</p></div></li><li><span>4</span><div><b>Planes mensuales</b><p>En <b>Cobros mensuales</b> registras lo que el cliente paga cada mes (por ejemplo, contabilidad). Puedes enviarle cada mes el enlace para pagar con tarjeta, o tocar <b>Activar cobro automático</b>: el cliente registra su tarjeta una vez y se le cobra solo cada mes. Si la tarjeta falla, te llega una tarea.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-smartphone"/></svg></span><span class="g-t">Portal del cliente</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Darle acceso</b><p>En la ficha del cliente toca <b>Invitar al portal</b>. Le llega un correo y entra sin contraseña, con un enlace seguro.</p></div></li><li><span>2</span><div><b>Lo que ve</b><p>En <b>avamultiservices.com/portal</b> ve en qué etapa va su trámite, su saldo, sus contratos y sus próximas citas.</p></div></li><li><span>3</span><div><b>Te sube documentos</b><p>Desde el portal te envía fotos o PDF, y aparecen en su ficha en el panel.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-send"/></svg></span><span class="g-t">Campañas y ventas</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Campañas</b><p>En <b>Campañas</b> elige una plantilla (temporada de taxes, Franchise Tax, crédito o contabilidad), filtra a quién va y toca <b>Preparar envío</b>. Los mensajes pasan a <b>Por enviar</b>.</p></div></li><li><span>2</span><div><b>Oportunidades</b><p>En <b>Inicio</b> verás a quién ofrecerle otro servicio: clientes de taxes sin crédito y clientes con LLC sin contabilidad.</p></div></li><li><span>3</span><div><b>Referidos</b><p>En la ficha del cliente marca quién lo refirió; el panel cuenta los referidos y muestra el descuento que definiste en Ajustes.</p></div></li><li><span>4</span><div><b>Ingresos por servicio</b><p>En <b>Inicio</b> ves cuánto deja cada servicio.</p></div></li></ol></details>
           <details class="g-item reveal"><summary><span class="g-ico"><svg class="icon"><use href="#i-clipboard"/></svg></span><span class="g-t">Lista de documentos por servicio</span><span class="plus" aria-hidden="true"></span></summary><ol class="g-steps"><li><span>1</span><div><b>Se crea sola</b><p>Cada caso nuevo trae la lista de documentos de su servicio, por ejemplo ID, W-2 y 1099 en Taxes. La editas en <b>Ajustes → Documentos por servicio</b>.</p></div></li><li><span>2</span><div><b>Marca lo que llega</b><p>Dentro del caso toca cada documento para marcarlo como recibido, o <b>No aplica</b>. La barra muestra el avance y en el tablero ves «Docs 3/5».</p></div></li><li><span>3</span><div><b>Pide lo que falta</b><p>Toca <b>Pedir lo que falta</b> y se arma el mensaje de WhatsApp con la lista exacta. El cliente también puede subirlos desde su portal, uno por uno.</p></div></li></ol></details>
@@ -773,7 +861,7 @@
             <li><span class="ck rec"></span><div><b>WhatsApp Business API</b><p>App de Meta, token y webhook listos. Falta que Meta verifique el negocio para conectar el número de Ana sin quitárselo del celular.</p></div></li>
             <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Instagram y Messenger</b><p>Conectados: los mensajes, fotos y archivos llegan a la bandeja y se responden desde el CRM.</p></div></li>
             <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Leads de Meta Ads</b><p>Conectado: cada formulario de tus anuncios llega solo a Solicitudes.</p></div></li>
-            <li><span class="ck rec"></span><div><b>Pagos con tarjeta (Stripe)</b><p>Programado y listo: enlaces de pago por WhatsApp, botón «Pagar con tarjeta» en el portal y registro automático en Cobros con su recibo. Se activa al pegar las claves de Stripe en Ajustes.</p></div></li>
+            <li><span class="ck ok"><svg class="icon"><use href="#i-check"/></svg></span><div><b>Pagos con tarjeta (Stripe)</b><p>Conectado: facturas y cuotas con tarjeta, cobro automático mensual, pago del saldo en el portal y registro automático en Cobros con su recibo. Detalle en la sección <a href="#pagos">Pagos</a>.</p></div></li>
             <li><span class="ck rec"></span><div><b>Google Calendar</b><p>Para ver tus citas en tu calendario.</p></div></li>
             <li><span class="ck rec"></span><div><b>QuickBooks</b><p>Para sincronizar pagos y clientes con tu contabilidad (requiere QuickBooks Online).</p></div></li>
             <li><span class="ck rec"></span><div><b>Asistente con IA</b><p>Lee cada mensaje, detecta el servicio y qué tan interesado está, y te sugiere una respuesta. Se activa con la clave gratuita de Groq.</p></div></li>
