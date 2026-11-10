@@ -208,6 +208,8 @@
             if (p.estado_cobro === 'pendiente') acc.appendChild(el('button', { class: 'mini-btn', type: 'button', text: 'Cancelar', onclick: function () { cancelarAuto(p); } }));
           }
           card.appendChild(acc);
+        } else if (integ.pagos && p.activo && p.servicio === 'credito') {
+          card.appendChild(el('div', { class: 'muted', style: 'margin:-2px 0 10px;font-size:12.5px', text: 'Reparación de crédito no se cobra con tarjeta (Stripe no lo permite): cóbralo por Zelle o efectivo.' }));
         }
       });
       // Enlaces de pago enviados y si ya se pagaron
@@ -268,7 +270,7 @@
     A.modal({
       titulo: nuevo ? 'Nuevo cobro mensual' : 'Cobro mensual', ok: nuevo ? 'Crear' : 'Guardar',
       campos: [
-        { k: 'servicio', label: 'Servicio', type: 'select', value: p.servicio || 'credito', options: Object.keys(SERV_PLAN).map(function (k) { return [k, SERV_PLAN[k]]; }) },
+        { k: 'servicio', label: 'Servicio', type: 'select', value: p.servicio || 'contabilidad', options: Object.keys(SERV_PLAN).map(function (k) { return [k, SERV_PLAN[k]]; }) },
         { k: 'monto', label: 'Monto mensual (USD)', type: 'number', required: true, min: '1', step: '0.01', value: p.monto },
         { k: 'dia_cobro', label: 'Día de cobro (1-28)', type: 'number', min: '1', step: '1', value: p.dia_cobro || 1 },
         { k: 'inicio', label: 'Desde', type: 'date', value: p.inicio || A.hoyISO() },
