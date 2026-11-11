@@ -1232,6 +1232,25 @@ a.stat { display: block; color: inherit; animation: rise 0.5s var(--ease) both; 
 .fi-prio-f .n { font-weight: 700; text-align: center; }
 .fi-prio .link-btn { align-self: flex-start; }
 .fi-acceso { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.fi-kv { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.fi-kv-f { display: grid; grid-template-columns: 190px minmax(0, 1fr); border-top: 1px solid var(--line); }
+.fi-kv-f:first-child { border-top: 0; }
+.fi-kv-k { display: flex; align-items: center; padding: 10px 14px; background: var(--stone-50); font-size: 13px; font-weight: 700; }
+.fi-kv-v { padding: 7px 10px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.fi-kv-v .fi-ro { padding: 6px 4px; background: none; }
+.fi-dir { display: grid; grid-template-columns: 2fr 1fr .8fr .7fr; gap: 6px; }
+.fi-mon { grid-template-columns: 1fr 1.6fr; }
+.fi-prot { padding: 6px 4px; font-size: 13.5px; color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere; }
+.fi-prot.visto { color: var(--ink); font-weight: 600; }
+.fi-prot-acc { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 10px; font-size: 12.5px; }
+.fi-checks-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 4px 2px; }
+.fi-tab { display: flex; flex-direction: column; gap: 6px; }
+.fi-tab-f { display: grid; gap: 6px; align-items: center; }
+.fi-tab-f.cab span { font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.fi-tab-f .n { font-weight: 700; text-align: center; font-size: 13px; }
+.fi-tab-c { min-width: 0; display: block; }
+.fi-tab-c .input { width: 100%; }
+.fi-tab-acc { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 4px; }
 .fi-tbl { margin: 0; }
 .fi-doc { display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid var(--line); font-size: 13.5px; }
 .fi-doc-n { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -1247,6 +1266,15 @@ a.stat { display: block; color: inherit; animation: rise 0.5s var(--ease) both; 
   .fi-pts .val { font-size: 16px; padding: 6px 2px; }
   .fi-prio-f { grid-template-columns: 22px 1fr; }
   .fi-prio-f.cab { display: none; }
+  .fi-kv-f { grid-template-columns: 1fr; }
+  .fi-kv-k { padding: 8px 12px; }
+  .fi-dir, .fi-mon { grid-template-columns: 1fr 1fr; }
+  .fi-checks-4 { grid-template-columns: 1fr 1fr; }
+  .fi-tab-f.cab { display: none; }
+  .fi-tab-f { grid-template-columns: 1fr 1fr !important; padding: 10px; border: 1px solid var(--line); border-radius: 12px; position: relative; }
+  .fi-tab-f .n { grid-column: 1 / -1; text-align: left; }
+  .fi-tab-f .icon-btn { position: absolute; top: 6px; right: 6px; }
+  .fi-tab-c::before { content: attr(data-t); display: block; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
 }
 
 /* ---------- Pipelines ---------- */
