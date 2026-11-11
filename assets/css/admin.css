@@ -323,6 +323,16 @@ a.stat { display: block; color: inherit; animation: rise 0.5s var(--ease) both; 
 .doc-n .muted { display: block; font-size: 12px; }
 .doc-n .icon { color: var(--accent); }
 .doc-a { display: flex; gap: 6px; align-items: center; flex: none; }
+.doc-sens { background: #fbf3ec; }
+.doc-sens .doc-n .icon { color: #b4472f; }
+.doc-grupo { margin-bottom: 10px; }
+.doc-grupo > summary { display: flex; justify-content: space-between; align-items: center; padding: 8px 4px; cursor: pointer; font-size: 12px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; list-style: none; }
+.doc-grupo > summary::-webkit-details-marker { display: none; }
+.doc-grupo > summary::before { content: '›'; margin-right: 8px; font-size: 16px; transition: transform .15s; }
+.doc-grupo[open] > summary::before { transform: rotate(90deg); }
+.doc-grupo > summary > span:first-child { flex: 1; }
+.doc-subir-a { display: flex; align-items: center; gap: 10px; margin: 10px 0 8px; font-size: 13px; font-weight: 600; }
+.doc-subir-a .input { max-width: 260px; }
 .drop { display: flex; align-items: center; gap: 14px; margin-top: 12px; padding: 16px 18px; border-radius: 14px; border: 1.5px dashed var(--line-strong); cursor: pointer; transition: border-color 0.2s, background 0.2s; }
 .drop:hover, .drop.over { border-color: var(--accent); background: var(--accent-50); }
 .drop .icon { color: var(--accent); }
@@ -1233,6 +1243,10 @@ a.stat { display: block; color: inherit; animation: rise 0.5s var(--ease) both; 
 .fi-prio .link-btn { align-self: flex-start; }
 .fi-acceso { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
 .fi-kv { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.fi-tabs { display: flex; gap: 6px; margin-top: 18px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.fi-tabb { padding: 10px 16px; border: 0; border-bottom: 2px solid transparent; background: none; font: inherit; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.fi-tabb.on { color: var(--ink); border-bottom-color: var(--charcoal); }
+.fi-pts-3 { grid-template-columns: 90px repeat(3, minmax(0, 1fr)); max-width: 560px; }
 .fi-kv-f { display: grid; grid-template-columns: 190px minmax(0, 1fr); border-top: 1px solid var(--line); }
 .fi-kv-f:first-child { border-top: 0; }
 .fi-kv-k { display: flex; align-items: center; padding: 10px 14px; background: var(--stone-50); font-size: 13px; font-weight: 700; }

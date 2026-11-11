@@ -131,8 +131,10 @@
         if (d.caso_id) {
           var kc = await sb.from('casos').select('servicio').eq('id', d.caso_id).maybeSingle();
           if (kc.data && kc.data.servicio === 'credito') {
-            var env = await sb.from('cartas_disputa').select('id', { count: 'exact', head: true }).eq('caso_id', d.caso_id).eq('estado', 'enviada');
-            if (!env.count) { A.msg(aviso, 'En reparación de crédito no se puede cobrar antes de hacer el trabajo (ley CROA). Envía y marca como enviada la primera ronda de cartas de este caso y después crea el cobro.'); return false; }
+            // El trabajo hecho se ve por las cartas enviadas desde el CRM o por las disputas registradas (cartas hechas en Credit Repair Cloud)
+            var env = await Promise.all([sb.from('cartas_disputa').select('id', { count: 'exact', head: true }).eq('caso_id', d.caso_id).eq('estado', 'enviada'),
+              sb.from('disputas').select('id', { count: 'exact', head: true }).eq('caso_id', d.caso_id)]);
+            if (!(env[0].count || env[1].count)) { A.msg(aviso, 'En reparación de crédito no se puede cobrar antes de hacer el trabajo (ley CROA). Registra en el caso las disputas de la primera ronda enviada y después crea el cobro.'); return false; }
           }
         }
         var plan = cuotas.activo() ? cuotas.plan(A.hoyISO(), d.monto) : [];
