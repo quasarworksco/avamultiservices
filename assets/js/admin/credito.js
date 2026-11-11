@@ -56,6 +56,8 @@
   function atrasosTxt(at) { return at && (at[30] || at[60] || at[90]) ? [at[30] ? at[30] + '×30' : '', at[60] ? at[60] + '×60' : '', at[90] ? at[90] + '×90' : ''].filter(Boolean).join(' ') + ' días tarde' : ''; }
 
   /* ---------- Sección en el caso de crédito ---------- */
+  // Generar cartas está oculto mientras las cartas se hacen en Credit Repair Cloud (no se borra nada: cambiar a true para volver a usarlo)
+  var CARTAS_ACTIVAS = false;
   A.seccionCredito = async function (k, recargar) {
     var caja = el('section', { class: 'd-sec cr-sec' });
     var res = await Promise.all([
@@ -66,16 +68,16 @@
     var rep = (res[0].data || [])[0], cartas = res[1].data || [], quejas = res[2].data || [];
     var archivo = el('input', { type: 'file', accept: 'application/pdf', hidden: true });
     archivo.addEventListener('change', function () { var f = archivo.files[0]; archivo.value = ''; if (f) importar(k, f, recargar); });
-    caja.appendChild(el('div', { class: 'card-h' }, [el('h3', { text: 'Reporte y cartas de disputa' }), el('div', { style: 'display:flex;gap:6px' }, [
+    caja.appendChild(el('div', { class: 'card-h' }, [el('h3', { text: CARTAS_ACTIVAS ? 'Reporte y cartas de disputa' : 'Reporte de crédito' }), el('div', { style: 'display:flex;gap:6px' }, [
       el('a', { class: 'mini-btn', href: '#/ficha/' + k.id, text: 'Ficha del caso', title: 'Ficha de observaciones (uso interno)' }),
-      el('button', { class: 'mini-btn', type: 'button', text: 'Plantillas', title: 'Ver y editar los modelos de cartas', onclick: function () { plantillas(); } }),
+      CARTAS_ACTIVAS ? el('button', { class: 'mini-btn', type: 'button', text: 'Plantillas', title: 'Ver y editar los modelos de cartas', onclick: function () { plantillas(); } }) : null,
       el('button', { class: 'mini-btn', type: 'button', text: rep ? 'Importar nuevo reporte' : 'Importar reporte', onclick: function () { archivo.click(); } })
     ])]));
     caja.appendChild(archivo);
     if (!rep) {
       caja.appendChild(el('div', { class: 'cr-vacio' }, [A.icon('i-file', 'icon-sm'), el('div', null, [
         el('b', { text: 'Sube el reporte 3B de SmartCredit en PDF' }),
-        el('div', { class: 'muted', text: 'En SmartCredit abre el reporte de 3 burós y usa «Imprimir → Guardar como PDF». El panel lee los puntajes, las cuentas negativas y las consultas, y arma las cartas.' })
+        el('div', { class: 'muted', text: 'En SmartCredit abre el reporte de 3 burós y usa «Imprimir → Guardar como PDF». El panel lee los puntajes, las cuentas negativas y las consultas' + (CARTAS_ACTIVAS ? ', y arma las cartas.' : ' para la ficha del caso.') })
       ]), el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: function () { archivo.click(); } }, [A.icon('i-upload', 'icon-sm'), el('span', { text: 'Importar PDF' })])]));
     } else {
       var neg = (rep.cuentas || []).filter(function (c) { return c.negativa; }).length;
@@ -83,11 +85,22 @@
         el('div', { class: 'cr-pts' }, BUROS.map(function (b) { return el('span', { style: '--b:' + BURO[b].c }, [el('small', { text: BURO[b].n }), el('b', { text: rep.puntajes[b] || '—' })]); })),
         el('div', { class: 'cr-rep-t' }, [el('b', { text: 'Reporte del ' + A.fecha(rep.fecha_reporte || rep.created_at.slice(0, 10)) }),
           el('div', { class: 'muted', text: neg + ' cuentas negativas · ' + (rep.consultas || []).length + ' consultas' })]),
-        el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: function () { preparar(k, rep, cartas, recargar); } }, [A.icon('i-edit', 'icon-sm'), el('span', { text: 'Preparar cartas' })])
+        CARTAS_ACTIVAS ? el('button', { class: 'btn btn-dark btn-sm', type: 'button', onclick: function () { preparar(k, rep, cartas, recargar); } }, [A.icon('i-edit', 'icon-sm'), el('span', { text: 'Preparar cartas' })])
+          : el('a', { class: 'btn btn-dark btn-sm', href: '#/ficha/' + k.id }, [A.icon('i-file', 'icon-sm'), el('span', { text: 'Pasar a la ficha' })])
       ]));
       if (A.seccionCotizacion) caja.appendChild(await A.seccionCotizacion(k, rep, recargar));
     }
-    if (cartas.length) {
+    if (!CARTAS_ACTIVAS) {
+      // Quejas del CFPB por ronda, con las rondas de las disputas registradas
+      if (A.filaCFPB) {
+        var dr = await sb.from('disputas').select('ronda,buro').eq('caso_id', k.id);
+        var porRonda = {};
+        (dr.data || []).forEach(function (d) { (porRonda[d.ronda] = porRonda[d.ronda] || []).push({ buro: d.buro }); });
+        Object.keys(porRonda).sort(function (a, b) { return a - b; }).forEach(function (rn) {
+          caja.appendChild(el('div', { class: 'ronda' }, [el('div', { class: 'ronda-h cr-ronda-h' }, [el('span', { text: 'Ronda ' + rn + ' · queja del CFPB' })]), A.filaCFPB(k, Number(rn), quejas, porRonda[rn], recargar)]));
+        });
+      }
+    } else if (cartas.length) {
       var rondas = {};
       cartas.forEach(function (c) { (rondas[c.ronda] = rondas[c.ronda] || []).push(c); });
       Object.keys(rondas).sort(function (a, b) { return a - b; }).forEach(function (rn) {
@@ -162,6 +175,7 @@
     var neg = r.cuentas.filter(function (c) { return c.negativa; }).length;
     A.toast('Reporte importado: ' + neg + ' cuentas negativas y ' + r.consultas.length + ' consultas.', 'ok');
     recargar();
+    if (!CARTAS_ACTIVAS) return;
     var cartas = await sb.from('cartas_disputa').select('id,ronda,estado').eq('caso_id', k.id);
     preparar(k, ins.data, cartas.data || [], recargar);
   }
