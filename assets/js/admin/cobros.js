@@ -55,14 +55,17 @@
       c.telefono || c.email ? el('div', { class: 'muted', text: [c.telefono ? String(c.telefono).replace(/^\+?1?(\d{3})(\d{3})(\d{4})$/, '($1) $2-$3') : null, c.email].filter(Boolean).join(' · ') }) : null]));
     hoja.appendChild(el('div', { class: 'fac-tabla' }, [
       el('div', { class: 'fac-fila fac-cab' }, [el('span', { text: 'Concepto' }), el('span', { text: 'Monto' })]),
-      el('div', { class: 'fac-fila' }, [el('span', null, [el('b', { text: concepto }), servicio && servicio !== concepto ? el('small', { text: servicio }) : null]), el('b', { text: A.dinero(x.monto) })]),
+      el('div', { class: 'fac-fila' }, [el('span', null, [el('b', { text: concepto + (x.cuota && !/cuota/i.test(concepto) ? ' · cuota ' + x.cuota : '') }), servicio && servicio !== concepto ? el('small', { text: servicio }) : null]), el('b', { text: A.dinero(x.monto) })]),
       el('div', { class: 'fac-fila fac-total' }, [el('span', { text: 'Total pagado' }), el('b', { text: A.dinero(x.monto) })])
     ]));
     hoja.appendChild(el('div', { class: 'fac-info' }, [
       el('span', { class: 'fac-ok', text: '✓ Pagado' }),
       el('span', { text: 'Método: ' + (A.METODOS[x.metodo] || x.metodo) + (x.pasarela_id ? ' (' + A.pasarela(x) + ')' : '') }),
-      saldo != null ? el('span', { text: 'Saldo pendiente de este servicio: ' + A.dinero(saldo) }) : null
+      saldo != null && !(r.plan && r.plan.length) ? el('span', { text: 'Saldo pendiente de este servicio: ' + A.dinero(saldo) }) : null
     ]));
+    // Pagos en cuotas: el mismo plan que ve el cliente en su recibo
+    var planPago = window.AVA_PLAN && window.AVA_PLAN.nodo(r.plan, r.cuota);
+    if (planPago) hoja.appendChild(planPago);
     hoja.appendChild(el('p', { class: 'fac-pie', text: 'Gracias por tu confianza.' }));
 
     var url = A.urlRecibo(x);
@@ -97,12 +100,14 @@
         if (!(d.monto > 0)) { A.msg(aviso, 'Escribe un monto mayor que cero.'); return false; }
         var plan = cuotas.activo() ? cuotas.plan(d.fecha || A.hoyISO(), d.monto) : [];
         if (plan.length && plan[0].fecha <= A.hoyISO()) { A.msg(aviso, 'La próxima cuota quedaría para hoy o antes. Revisa la fecha del pago o cada cuánto paga.'); return false; }
+        // Este pago es la cuota 1 del plan: comparte grupo con las que se programan
+        if (plan.length) { d.cuota = '1 de ' + (plan.length + 1); d.grupo = crypto.randomUUID(); }
         var r = await sb.from('pagos').insert(d).select('id,numero,token,monto,cliente_id').single();
         if (r.error) { A.msg(aviso, 'No se pudo registrar el pago.'); return false; }
         if (plan.length) {
           var caso = m.inputs.caso_id.value ? m.inputs.caso_id.options[m.inputs.caso_id.selectedIndex].text.replace(/ \(.*\)$/, '') : '';
           var concepto = (d.nota || caso || 'Pago').replace(/\s*·?\s*cuota\s+\d+\s+de\s+\d+\s*$/i, '');
-          var okc = await A.programarCuotas({ cliente_id: d.cliente_id, caso_id: d.caso_id, concepto: concepto, metodos: await A.formasCuota(d.caso_id) }, plan, 2, plan.length + 1);
+          var okc = await A.programarCuotas({ cliente_id: d.cliente_id, caso_id: d.caso_id, concepto: concepto, metodos: await A.formasCuota(d.caso_id), grupo: d.grupo }, plan, 2, plan.length + 1);
           if (okc) A.toast(plan.length === 1 ? 'Próxima cuota programada para el ' + A.fecha(plan[0].fecha) + '.' : plan.length + ' cuotas programadas, la primera el ' + A.fecha(plan[0].fecha) + '.');
           else A.toast('El pago se registró, pero no se pudieron programar las cuotas.', 'error');
         }

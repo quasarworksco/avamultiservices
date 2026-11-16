@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="../assets/css/styles.css">
-  <link rel="stylesheet" href="../assets/css/publico.css">
+  <link rel="stylesheet" href="../assets/css/publico.css?v=20261116a">
   <style>
     .rc { max-width: 560px; margin: 26px auto 0; }
     .rc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
@@ -47,9 +47,11 @@
       <div class="rc-monto"><span>Monto recibido</span><b id="monto"></b><div class="rc-ok"><svg><use href="#i-check"/></svg>Pagado</div></div>
       <div class="rc-row"><span>Facturado a</span><b id="cliente"></b></div>
       <div class="rc-row"><span>Concepto</span><b id="nota"></b></div>
+      <div class="rc-row" id="r-cuota" hidden><span>Cuota</span><b id="cuota"></b></div>
       <div class="rc-row" id="r-serv"><span>Servicio</span><b id="servicio"></b></div>
       <div class="rc-row"><span>Método de pago</span><b id="metodo"></b></div>
       <div class="rc-saldo" id="r-saldo"><span>Saldo pendiente de este servicio</span><b id="saldo"></b></div>
+      <div id="plan"></div>
       <p class="rc-pie">AVA Multiservices · Dallas, Texas<span id="tel"></span><br>Gracias por tu confianza.</p>
     </div>
   </div>
@@ -60,6 +62,7 @@
 </div></main>
 <footer class="p-foot">AVA Multiservices · Dallas, Texas</footer>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="../assets/js/recibo.js?v=2"></script>
+<script src="../assets/js/plan-pagos.js?v=20261116a"></script>
+<script src="../assets/js/recibo.js?v=20261116a"></script>
 </body>
 </html>

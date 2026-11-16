@@ -57,7 +57,11 @@
       $('fecha').textContent = 'Emitida el ' + fecha(d.fecha);
       $('vence').textContent = d.vence && !pagada ? 'Pagar antes del ' + fecha(d.vence) : '';
       $('cliente').textContent = d.cliente;
-      $('concepto').textContent = d.concepto;
+      $('concepto').textContent = d.concepto + (d.cuota ? ' · cuota ' + d.cuota : '');
+      // Pagos en cuotas: el plan completo con lo pagado y lo que falta
+      $('plan').innerHTML = '';
+      var plan = window.AVA_PLAN && window.AVA_PLAN.nodo(d.plan, d.cuota);
+      if (plan) $('plan').appendChild(plan);
       if (d.servicio && d.servicio !== d.concepto) { $('servicio').textContent = d.servicio; $('servicio').hidden = false; }
       if (d.detalle) { $('detalle').textContent = d.detalle; $('detalle').hidden = false; }
       $('monto').textContent = dinero(d.monto);

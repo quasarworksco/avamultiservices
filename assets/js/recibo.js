@@ -30,6 +30,10 @@
       $('saldo').textContent = saldo != null ? dinero(saldo) : '';
       $('r-saldo').hidden = saldo == null;
       $('tel').textContent = d.telefono ? ' · ' + d.telefono : '';
+      if (d.cuota) { $('cuota').textContent = d.cuota; $('r-cuota').hidden = false; }
+      // Pagos en cuotas: el plan completo con lo pagado y lo que falta (y el saldo del plan en lugar del del servicio)
+      var plan = window.AVA_PLAN && window.AVA_PLAN.nodo(d.plan, d.cuota);
+      if (plan) { $('plan').appendChild(plan); $('r-saldo').hidden = true; }
       $('cargando').hidden = true; $('recibo').hidden = false; $('acciones').hidden = false;
       $('pdf').onclick = function () { pdf(d, saldo); };
     })
@@ -72,8 +76,9 @@
     y += 22;
     doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor.apply(doc, acento); doc.text('PAGADO', W / 2, y, { align: 'center' });
     y += 34;
-    var filas = [['Facturado a', d.cliente], ['Concepto', d.concepto], ['Servicio', d.servicio !== d.concepto ? d.servicio : null], ['Método de pago', METODOS[d.metodo] || d.metodo]].filter(function (f) { return f[1]; });
-    if (saldo != null) filas.push(['Saldo pendiente de este servicio', dinero(saldo)]);
+    var filas = [['Facturado a', d.cliente], ['Concepto', d.concepto], ['Cuota', d.cuota], ['Servicio', d.servicio !== d.concepto ? d.servicio : null], ['Método de pago', METODOS[d.metodo] || d.metodo]].filter(function (f) { return f[1]; });
+    var conPlan = d.plan && d.plan.length && window.AVA_PLAN;
+    if (saldo != null && !conPlan) filas.push(['Saldo pendiente de este servicio', dinero(saldo)]);
     filas.forEach(function (f) {
       doc.setDrawColor.apply(doc, linea); doc.line(x, y, der, y);
       y += 22;
@@ -84,7 +89,29 @@
       y += 14 * (val.length - 1) + 14;
     });
     doc.setDrawColor.apply(doc, linea); doc.line(x, y, der, y);
-    y += 40;
+    // Plan de pagos en cuotas
+    if (conPlan) {
+      var s = window.AVA_PLAN.resumen(d.plan);
+      y += 30;
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor.apply(doc, acento); doc.text('PLAN DE PAGOS · ' + s.cuotas + ' CUOTAS', x, y);
+      y += 18;
+      d.plan.forEach(function (c) {
+        var actual = c.cuota === d.cuota;
+        doc.setFont('helvetica', actual ? 'bold' : 'normal'); doc.setFontSize(10.5); doc.setTextColor.apply(doc, tinta);
+        doc.text('Pago ' + c.cuota, x, y);
+        doc.setTextColor.apply(doc, gris); doc.text(window.AVA_PLAN.estado(c) + ' · ' + window.AVA_PLAN.cuando(c), x + 90, y);
+        doc.setTextColor.apply(doc, tinta); doc.text(dinero(c.monto), der, y, { align: 'right' });
+        y += 18;
+      });
+      doc.setDrawColor.apply(doc, linea); doc.line(x, y - 6, der, y - 6);
+      y += 10;
+      [['Total del plan', s.total], ['Pagado hasta hoy', s.pagado], [s.saldo > 0 ? 'Saldo por pagar' : 'Plan pagado completo', s.saldo]].forEach(function (f, i) {
+        doc.setFont('helvetica', i === 2 ? 'bold' : 'normal'); doc.setFontSize(i === 2 ? 12 : 10.5); doc.setTextColor.apply(doc, i === 2 ? tinta : gris);
+        doc.text(f[0], x, y); doc.setTextColor.apply(doc, tinta); doc.text(dinero(f[1]), der, y, { align: 'right' });
+        y += 18;
+      });
+    }
+    y += 30;
     doc.setFont('helvetica', 'normal'); doc.setFontSize(10); doc.setTextColor.apply(doc, gris);
     doc.text('AVA Multiservices · Dallas, Texas' + (d.telefono ? ' · ' + d.telefono : ''), W / 2, y, { align: 'center' });
     doc.text('Gracias por tu confianza.', W / 2, y + 15, { align: 'center' });
