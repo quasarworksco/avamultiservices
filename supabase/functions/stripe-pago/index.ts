@@ -101,10 +101,14 @@ async function crearEnlace(db: SupabaseClient, p: Cobro) {
 }
 
 // Enlace de tarjeta de una factura, desde su página pública. Reutiliza el que ya tiene si sigue vigente y es del mismo monto.
+// Stripe no acepta reparación de crédito, alivio de deudas ni asesoría de crédito: tampoco por el concepto del cobro
+const PROHIBIDO = /cr[eé]dit|reducci[oó]n de deud|alivio de deud|consolidaci[oó]n de deud|debt (relief|reduction|settlement)/i;
+const MSG_PROHIBIDO = 'Este concepto no se puede cobrar con tarjeta (Stripe no acepta servicios de crédito o deudas). Cóbralo por Zelle, transferencia o efectivo.';
+
 async function enlaceFactura(db: SupabaseClient, token: string) {
   const { data: f } = await db.from('facturas').select('id,numero,token,cliente_id,caso_id,concepto,monto,metodos,estado,enlace_id,casos(servicio)').eq('token', token).maybeSingle();
   if (!f || f.estado !== 'pendiente' || !(f.metodos || []).includes('tarjeta')) throw new Error('Esta factura no se puede pagar con tarjeta.');
-  if ((f.casos as { servicio?: string } | null)?.servicio === 'credito') throw new Error('Este servicio no se puede pagar con tarjeta. Paga por Zelle o en la oficina.');
+  if ((f.casos as { servicio?: string } | null)?.servicio === 'credito' || PROHIBIDO.test(f.concepto || '')) throw new Error('Este servicio no se puede pagar con tarjeta. Paga por Zelle o en la oficina.');
   if (f.enlace_id) {
     const { data: e } = await db.from('enlaces_pago').select('id,url,monto,estado,enlace_id').eq('id', f.enlace_id).maybeSingle();
     if (e?.estado === 'pendiente' && Number(e.monto) === Number(f.monto)) return e.url;
@@ -167,11 +171,22 @@ Deno.serve(async (req) => {
   if (!K.STRIPE_SECRET_KEY) return json(req, 400, { error: 'Los pagos con tarjeta todavía no están conectados.', codigo: 'no_conectado' });
   // Cron: verifica todos los enlaces pendientes
   const dado = req.headers.get('x-cron-secret');
-  if (dado && dado === (await db.rpc('cron_secreto')).data) {
-    try { return json(req, 200, { registrados: await verificarPendientes(db) }); } catch (e) { return json(req, 400, { error: (e as Error).message }); }
-  }
   let b: Record<string, any> = {};
   try { b = await req.json(); } catch (_) { /* */ }
+  if (dado && dado === (await db.rpc('cron_secreto')).data) {
+    // Mantenimiento: desactivar en Stripe enlaces que ya no se deben usar
+    if (b.tipo === 'desactivar' && Array.isArray(b.ids)) {
+      const { data: es } = await db.from('enlaces_pago').select('id,enlace_id,estado').in('id', b.ids.map(String));
+      const hechos: string[] = [];
+      for (const e of es || []) {
+        if (e.estado === 'pagado' || !e.enlace_id) continue;
+        try { await stripe('payment_links/' + e.enlace_id, 'POST', { active: false }); hechos.push(e.id); } catch (_) { /* ya no existe */ }
+        await db.from('enlaces_pago').update({ estado: 'cancelado' }).eq('id', e.id);
+      }
+      return json(req, 200, { desactivados: hechos.length });
+    }
+    try { return json(req, 200, { registrados: await verificarPendientes(db) }); } catch (e) { return json(req, 400, { error: (e as Error).message }); }
+  }
   if (b.tipo === 'factura') {
     if (!/^[0-9a-f-]{36}$/i.test(String(b.token || ''))) return json(req, 400, { error: 'Factura no válida' });
     try { return json(req, 200, { url: await enlaceFactura(db, String(b.token)) }); } catch (e) { return json(req, 400, { error: (e as Error).message }); }
@@ -212,6 +227,7 @@ Deno.serve(async (req) => {
       const monto = Math.round(Number(b.monto) * 100) / 100;
       if (!(monto >= 1 && monto <= 50000)) return json(req, 400, { error: 'Monto inválido' });
       const concepto = String(b.descripcion || 'Pago a AVA Multiservices').trim() || 'Pago a AVA Multiservices';
+      if (PROHIBIDO.test(concepto)) return json(req, 400, { error: MSG_PROHIBIDO });
       // Desde una factura: al pagar, el cliente vuelve a su factura y la ve pagada
       const ft = /^[0-9a-f-]{36}$/i.test(String(b.factura_token || '')) ? String(b.factura_token) : '';
       const n = await crearEnlace(db, { cliente_id: String(b.cliente_id), caso_id: b.caso_id ? String(b.caso_id) : null, plan_id: b.plan_id ? String(b.plan_id) : null, monto, concepto, origen: 'panel', autor: u.user.id,
