@@ -185,6 +185,21 @@ Deno.serve(async (req) => {
       }
       return json(req, 200, { desactivados: hechos.length });
     }
+    // Mantenimiento: cambiar el nombre que ve el cliente al pagar, sin cambiar el enlace
+    if (b.tipo === 'renombrar' && Array.isArray(b.ids) && String(b.nombre || '').trim()) {
+      const { data: es } = await db.from('enlaces_pago').select('id,enlace_id,concepto').in('id', b.ids.map(String));
+      let hechos = 0;
+      for (const e of es || []) {
+        const nombre = String(b.prefijo ? (e.concepto || '').replace(/·.*$/, '').trim() + ' · ' + b.nombre : b.nombre).slice(0, 200);
+        try {
+          const li = await stripe('payment_links/' + e.enlace_id + '/line_items?limit=1');
+          const prod = li.data?.[0]?.price?.product;
+          if (prod) { await stripe('products/' + prod, 'POST', { name: nombre }); hechos++; }
+        } catch (_) { /* enlace que ya no existe */ }
+        await db.from('enlaces_pago').update({ concepto: nombre }).eq('id', e.id);
+      }
+      return json(req, 200, { renombrados: hechos });
+    }
     try { return json(req, 200, { registrados: await verificarPendientes(db) }); } catch (e) { return json(req, 400, { error: (e as Error).message }); }
   }
   if (b.tipo === 'factura') {
