@@ -53,3 +53,24 @@ body::before { display: none; }
 .link-btn { border: 0; background: none; padding: 0; color: var(--accent); font: inherit; font-weight: 600; font-size: 13.5px; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
 .contrato.fx-doc { white-space: normal; line-height: 1.65; }
 .p-grid .field > div > label { display: block; margin-bottom: 7px; font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-2); }
+
+/* Plan de pagos en cuotas (factura, recibo y CRM) */
+.pp { margin-top: 16px; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: #fff; }
+.pp-h { padding: 10px 16px; background: var(--stone-50, #f6f5f2); font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+.pp-r { display: flex; justify-content: space-between; gap: 12px; padding: 9px 16px; border-top: 1px solid var(--line); font-size: 14px; }
+.pp-r span { color: var(--muted); }
+.pp-l { border-top: 1px solid var(--line); }
+.pp-c { display: grid; grid-template-columns: auto auto 1fr auto; align-items: center; gap: 10px; padding: 10px 16px; border-top: 1px dashed var(--line); font-size: 13.5px; }
+.pp-c:first-child { border-top: 0; }
+.pp-c.actual { background: #fffaf3; box-shadow: inset 3px 0 0 var(--accent, #736251); }
+.pp-n { font-weight: 600; white-space: nowrap; }
+.pp-e { padding: 2px 9px; border-radius: 999px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+.pp-e.ok { background: #e3f4e8; color: #15803d; }
+.pp-e.pen { background: #fdf1e1; color: #a2622a; }
+.pp-e.ven { background: #fbe4df; color: #b4472f; }
+.pp-e.pro { background: #eef2ff; color: #4054b2; }
+.pp-f { color: var(--muted); font-size: 12.5px; }
+.pp-m { text-align: right; white-space: nowrap; }
+.pp-debe { background: var(--stone-50, #f6f5f2); font-weight: 700; font-size: 15px; }
+.pp-debe span { color: var(--ink, #2a2a2a); }
+@media (max-width: 520px) { .pp-c { grid-template-columns: 1fr auto; row-gap: 4px; } .pp-e { justify-self: start; } .pp-f { grid-column: 1; } .pp-m { grid-row: 1; grid-column: 2; } }

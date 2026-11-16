@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Manrope:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="../assets/css/styles.css">
-  <link rel="stylesheet" href="../assets/css/publico.css">
+  <link rel="stylesheet" href="../assets/css/publico.css?v=20261116a">
   <style>
     .fc { max-width: 600px; margin: 26px auto 0; }
     .fc-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
@@ -67,6 +67,7 @@
         <div class="fc-fila"><span><b id="concepto"></b><small id="servicio" hidden></small><small id="detalle" hidden></small></span><b id="monto"></b></div>
         <div class="fc-fila fc-total"><span id="total-t">Total a pagar</span><b id="total"></b></div>
       </div>
+      <div id="plan"></div>
       <div id="estado" class="fc-est"></div>
       <p class="fc-aviso" id="confirmando" hidden>Recibimos tu pago con tarjeta y lo estamos confirmando con Stripe. Esta página se actualiza sola en unos segundos.</p>
       <p class="fc-aviso ok" id="gracias" hidden>¡Gracias! Tu pago quedó registrado. Abajo puedes ver tu comprobante.</p>
@@ -85,6 +86,7 @@
   </div>
 </div></main>
 <footer class="p-foot">AVA Multiservices · Dallas, Texas</footer>
-<script src="../assets/js/factura.js?v=20261110a"></script>
+<script src="../assets/js/plan-pagos.js?v=20261116a"></script>
+<script src="../assets/js/factura.js?v=20261116a"></script>
 </body>
 </html>

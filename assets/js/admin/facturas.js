@@ -80,7 +80,7 @@
     var filas = plan.map(function (x, i) {
       var vence = new Date(x.fecha + 'T12:00:00'); vence.setDate(vence.getDate() + 3);
       return { cliente_id: base.cliente_id, caso_id: base.caso_id || null, concepto: base.concepto, detalle: base.detalle || null, monto: x.monto,
-        metodos: base.metodos && base.metodos.length ? base.metodos : ['zelle', 'efectivo'], estado: 'programada', enviar_el: x.fecha, vence: vence.toISOString().slice(0, 10), cuota: (primera + i) + ' de ' + total };
+        metodos: base.metodos && base.metodos.length ? base.metodos : ['zelle', 'efectivo'], estado: 'programada', enviar_el: x.fecha, vence: vence.toISOString().slice(0, 10), cuota: (primera + i) + ' de ' + total, grupo: base.grupo || null };
     });
     if (!filas.length) return true;
     var r = await sb.from('facturas').insert(filas);
@@ -138,13 +138,14 @@
           }
         }
         var plan = cuotas.activo() ? cuotas.plan(A.hoyISO(), d.monto) : [];
-        if (plan.length) d.cuota = '1 de ' + (plan.length + 1);
+        // Todas las cuotas del plan comparten un grupo: así el cliente ve el plan completo en su factura y su recibo
+        if (plan.length) { d.cuota = '1 de ' + (plan.length + 1); d.grupo = crypto.randomUUID(); }
         var r = await sb.from('facturas').insert(d).select('*, clientes(id,nombre,apellidos,telefono,email)').single();
         if (r.error) { A.msg(aviso, 'No se pudo crear la factura.'); return false; }
         var f = r.data;
         if (plan.length) {
           var met = d.metodos;
-          var okc = await A.programarCuotas({ cliente_id: d.cliente_id, caso_id: d.caso_id, concepto: d.concepto, detalle: d.detalle, metodos: met }, plan, 2, plan.length + 1);
+          var okc = await A.programarCuotas({ cliente_id: d.cliente_id, caso_id: d.caso_id, concepto: d.concepto, detalle: d.detalle, metodos: met, grupo: d.grupo }, plan, 2, plan.length + 1);
           if (!okc) A.toast('La factura se creó, pero no se pudieron programar las demás cuotas.', 'error');
         }
         // Con tarjeta se crea el enlace de Stripe y queda unido a la factura (al pagarlo, la factura se marca sola)
@@ -219,6 +220,11 @@
     ]));
     hoja.appendChild(el('div', { class: 'fac-info' }, [el('span', { class: est[0], text: est[1] }),
       f.estado === 'pagada' && f.pagos ? el('span', { text: 'Pagada el ' + A.fecha(f.pagos.fecha) + ' · ' + (A.METODOS[f.pagos.metodo] || f.pagos.metodo) }) : null]));
+    // Pagos en cuotas: el mismo plan que ve el cliente en su factura
+    if (f.grupo && window.AVA_PLAN) {
+      var cajaPlan = el('div'); hoja.appendChild(cajaPlan);
+      sb.rpc('plan_cuotas', { p_grupo: f.grupo }).then(function (pr) { var n = window.AVA_PLAN.nodo(pr.data, f.cuota); if (n) cajaPlan.appendChild(n); });
+    }
     if (f.estado === 'pendiente' || f.estado === 'programada') {
       var formas = el('div', { class: 'fac-formas' }, [el('div', { class: 'fac-formas-t', text: 'Cómo pagar' })]);
       f.metodos.forEach(function (k) {
